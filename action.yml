@@ -1,0 +1,72 @@
+name: "Bump version"
+description: "Github action that bumps semver version and adds extended information to it."
+inputs:
+  semverIncrementLevel:
+    description: "Level of the semver (major.minor.patch) to be increased to get the new package version."
+    required: true
+    default: "patch"
+  releaseBranches:
+    description: branches for which productVersion should be empty
+    required: false
+    default: "master,dev"
+
+outputs:
+  assemblyVersion:
+    description: "Number-based part of the version (major.minor.patch)"
+    value: ${{ steps.composeVersions.outputs.assemblyVersion }}
+  productVersion:
+    description: "Optional informational part of version: branchName-buildNumber-commitHash"
+    value: ${{ steps.composeVersions.outputs.productVersion }}
+  fullVersion:
+    description: "assemblyVersion-productVersion"
+    value: ${{ steps.composeVersions.outputs.fullVersion }}
+runs:
+  using: "composite"
+  steps:
+    - name: Set Bump Increment Level
+      id: bumpLevel
+      run: |
+        LEVEL="${{inputs.semverIncrementLevel}}"
+        LEVEL=${LEVEL:-patch}
+        echo '::set-output name=finalLevel::'$LEVEL
+      shell: bash
+
+    - name: Get next semver
+      id: bumpSemver
+      uses: anothrNick/github-tag-action@1.26.0
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        DEFAULT_BUMP: ${{steps.bumpLevel.outputs.finalLevel}}
+        DRY_RUN: "true"
+        WITH_V: "false"
+        RELEASE_BRANCHES: ${{inputs.releaseBranches}}
+        INITIAL_VERSION: 0.1.0
+      shell: bash
+
+    - name: Compose assembly version and product version
+      id: composeVersions
+      run: |
+        BUMPED_VERSION="${{steps.bumpSemver.outputs.new_tag}}"
+        ASSEMBLY_VERSION=${BUMPED_VERSION%-*}
+        COMMIT_HASH=${BUMPED_VERSION#*-}
+        if [ $COMMIT_HASH == $BUMPED_VERSION ]
+        then
+            PRODUCT_VERSION=
+            FULL_VERSION=${ASSEMBLY_VERSION}
+        else
+            BRANCH_NAME=${GITHUB_REF##*/}
+            PRODUCT_VERSION=${BRANCH_NAME}-${{github.run_number}}-${COMMIT_HASH}
+            FULL_VERSION=${ASSEMBLY_VERSION}-${PRODUCT_VERSION}
+        fi
+        echo '::set-output name=assemblyVersion::'$ASSEMBLY_VERSION
+        echo '::set-output name=productVersion::'$PRODUCT_VERSION
+        echo '::set-output name=fullVersion::'$FULL_VERSION
+      shell: bash
+
+    - name: Print bumpSemver outputs
+      run: |
+        echo "latest tag is ${{steps.bumpSemver.outputs.tag}}"
+        echo "bumping ${{steps.bumpSemver.outputs.part}} level on ${{github.ref}} gives new tag ${{steps.bumpSemver.outputs.new_tag}}"
+        echo "assembly version ${{steps.composeVersions.outputs.assemblyVersion}}"
+        echo "product version ${{steps.composeVersions.outputs.productVersion}}"
+      shell: bash
