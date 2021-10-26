@@ -45,7 +45,6 @@ runs:
         WITH_V: "false"
         RELEASE_BRANCHES: ${{inputs.releaseBranches}}
         INITIAL_VERSION: 0.1.0
-      shell: bash
 
     - name: Compose assembly version and product version
       id: composeVersions
