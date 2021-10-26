@@ -8,7 +8,10 @@ inputs:
   releaseBranches:
     description: branches for which productVersion should be empty
     required: false
-    default: "master,dev"
+    default: "master"
+  githubToken:
+    description: GitHub token
+    required: true
 
 outputs:
   assemblyVersion:
@@ -29,19 +32,17 @@ runs:
         LEVEL="${{inputs.semverIncrementLevel}}"
         LEVEL=${LEVEL:-patch}
         echo '::set-output name=finalLevel::'$LEVEL
-      shell: bash
 
     - name: Get next semver
       id: bumpSemver
       uses: anothrNick/github-tag-action@1.26.0
       env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        GITHUB_TOKEN: ${{inputs.githubToken}}
         DEFAULT_BUMP: ${{steps.bumpLevel.outputs.finalLevel}}
         DRY_RUN: "true"
         WITH_V: "false"
         RELEASE_BRANCHES: ${{inputs.releaseBranches}}
         INITIAL_VERSION: 0.1.0
-      shell: bash
 
     - name: Compose assembly version and product version
       id: composeVersions
@@ -61,7 +62,6 @@ runs:
         echo '::set-output name=assemblyVersion::'$ASSEMBLY_VERSION
         echo '::set-output name=productVersion::'$PRODUCT_VERSION
         echo '::set-output name=fullVersion::'$FULL_VERSION
-      shell: bash
 
     - name: Print bumpSemver outputs
       run: |
@@ -69,4 +69,3 @@ runs:
         echo "bumping ${{steps.bumpSemver.outputs.part}} level on ${{github.ref}} gives new tag ${{steps.bumpSemver.outputs.new_tag}}"
         echo "assembly version ${{steps.composeVersions.outputs.assemblyVersion}}"
         echo "product version ${{steps.composeVersions.outputs.productVersion}}"
-      shell: bash
