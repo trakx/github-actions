@@ -58,7 +58,7 @@ runs:
             FULL_VERSION=${ASSEMBLY_VERSION}
         else
             BRANCH_NAME=${GITHUB_REF##*/}
-            BRANCH_NAME=${BRANCH_NAME//[^a-zA-Z]/-}
+            BRANCH_NAME=${BRANCH_NAME//[^0-9a-zA-Z]/-}
             PRODUCT_VERSION=${BRANCH_NAME}-${{github.run_number}}-${COMMIT_HASH}
             FULL_VERSION=${ASSEMBLY_VERSION}-${PRODUCT_VERSION}
         fi
