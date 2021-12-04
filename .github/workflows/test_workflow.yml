@@ -14,7 +14,7 @@ env:
 jobs:
   do_dev:
     runs-on: dev-trakx-runner
-    if: github.event.inputs.runner == dev-trakx-runner
+    if: github.event.inputs.runner == 'dev-trakx-runner'
 
     steps:
 
@@ -24,7 +24,7 @@ jobs:
 
   do_stage:
     runs-on: stage-trakx-runner
-    if: github.event.inputs.runner == stage-trakx-runner
+    if: github.event.inputs.runner == 'stage-trakx-runner'
 
     steps:
 
