@@ -1,11 +1,13 @@
 name: "Print runner name"
 
-description: "Github reusable action POC"
-inputs:
-  runner_name:
-    description: "Name of runner to print in the echo statement."
-    required: true
-    default: "not-found"
+on: 
+  workflow_call:
+    inputs: 
+      runner_name:
+        description: "Name of runner to print in the echo statement."
+        type: string
+        required: true
+        default: "not-found"
 
 jobs:
   print:
