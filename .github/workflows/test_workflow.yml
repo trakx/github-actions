@@ -19,6 +19,7 @@ jobs:
     steps:
 
     - name: Print runner name
+      run: |
         echo "runner name is ${{github.event.inputs.runner}}"
 
   do_stage:
@@ -28,4 +29,5 @@ jobs:
     steps:
 
     - name: Print runner name
+      run: |
         echo "runner name is ${{github.event.inputs.runner}}"
