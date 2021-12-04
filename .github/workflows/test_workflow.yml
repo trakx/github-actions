@@ -1,0 +1,23 @@
+name: Test workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: runner
+        required: true
+        default: 'dev-trakx-runner'
+
+env:
+  RUNNER: ${{github.event.inputs.runner}}
+
+jobs:
+  redeploy:
+    name: redeploy
+    runs-on: ${{github.event.inputs.runner}}
+
+    steps:
+
+    - name: Print branch name and repo outputs
+      run: |
+        echo "runner name is ${{github.event.inputs.runner}}"
