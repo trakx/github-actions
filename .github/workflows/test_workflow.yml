@@ -12,12 +12,20 @@ env:
   RUNNER: ${{github.event.inputs.runner}}
 
 jobs:
-  redeploy:
-    name: redeploy
-    runs-on: ${{github.event.inputs.runner}}
+  do_dev:
+    runs-on: dev-trakx-runner
+    if: github.event.inputs.runner == "dev-trakx-runner"
 
     steps:
 
-    - name: Print branch name and repo outputs
-      run: |
+    - name: Print runner name
+        echo "runner name is ${{github.event.inputs.runner}}"
+
+  do_stage:
+    runs-on: stage-trakx-runner
+    if: github.event.inputs.runner == "stage-trakx-runner"
+
+    steps:
+
+    - name: Print runner name
         echo "runner name is ${{github.event.inputs.runner}}"
