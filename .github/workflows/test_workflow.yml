@@ -3,8 +3,8 @@ name: Test workflow
 on:
   workflow_dispatch:
     inputs:
-      project:
-        description: runner
+      runner:
+        description: Runner name
         required: true
         default: 'dev-trakx-runner'
 
