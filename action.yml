@@ -12,6 +12,10 @@ inputs:
   githubToken:
     description: GitHub token
     required: true
+  dryRun:
+    description: true by default, means the tag is not pushed on local repo.
+    required: false
+    default: "true"
 
 
 outputs:
@@ -41,8 +45,9 @@ runs:
       env:
         GITHUB_TOKEN: ${{inputs.githubToken}}
         DEFAULT_BUMP: ${{steps.bumpLevel.outputs.finalLevel}}
-        DRY_RUN: "true"
+        DRY_RUN: ${{inputs.dryRun}}
         WITH_V: "false"
+        PRERELEASE_SUFFIX: ""
         RELEASE_BRANCHES: ${{inputs.releaseBranches}}
         INITIAL_VERSION: 0.1.0
 
