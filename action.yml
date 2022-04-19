@@ -41,7 +41,7 @@ runs:
       run: |
         LEVEL="${{inputs.semverIncrementLevel}}"
         LEVEL=${LEVEL:-patch}
-        echo "bump level set to ${{LEVEL}}"
+        echo "bump level set to $LEVEL"
         echo '::set-output name=finalLevel::'$LEVEL
       shell: bash
 
