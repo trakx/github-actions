@@ -36,7 +36,7 @@ runs:
   using: "composite"
   steps:
     - name: Set Bump Increment Level
-      if: inputs.customTag == ''
+      if: ${{ inputs.customTag == "" }}
       id: bumpLevel
       run: |
         LEVEL="${{inputs.semverIncrementLevel}}"
@@ -46,7 +46,7 @@ runs:
       shell: bash
 
     - name: Get commit shortened commit hash
-      if: inputs.customTag == ''
+      if: ${{ inputs.customTag == "" }}
       shell: bash
       id: shortHash
       run: |
@@ -67,7 +67,7 @@ runs:
         CUSTOM_TAG: ${{inputs.customTag}}
 
     - name: Compose assembly version and product version
-      if: inputs.customTag == ''
+      if: ${{ inputs.customTag == "" }}
       id: composeVersions
       run: |
         BUMPED_VERSION="${{steps.bumpSemver.outputs.new_tag}}"
