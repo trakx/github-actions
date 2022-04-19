@@ -12,9 +12,6 @@ on:
         description: branches for which productVersion should be empty
         required: false
         default: "master,stage"
-      githubToken:
-        description: GitHub token
-        required: true
       customTag:
         description: Use a custom tag and push it to the repo
         required: false
