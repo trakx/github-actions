@@ -1,0 +1,56 @@
+# a demo action use to test/show how this bump version action should be used
+name: Demo Action
+
+on:
+  workflow_dispatch:
+    inputs:
+      semverIncrementLevel:
+        description: "Level of the semver (major.minor.patch) to be increased to get the new package version."
+        required: true
+        default: "patch"
+      releaseBranches:
+        description: branches for which productVersion should be empty
+        required: false
+        default: "master,stage"
+      githubToken:
+        description: GitHub token
+        required: true
+      customTag:
+        description: Use a custom tag and push it to the repo
+        required: false
+        default: ""
+
+jobs:
+
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v3
+
+    - name: Get bumped version
+      id: bumpVersion
+      uses: trakx/bump-version-action@dev
+      with:
+        semverIncrementLevel: ${{github.event.inputs.semverIncrementLevel}}
+        releaseBranches: ${{github.event.inputs.releaseBranches}}
+        customTag: ${{github.event.inputs.customTag}}
+        githubToken: ${{secrets.GITHUB_TOKEN}}
+        dryRun: true
+        
+    - name: Build some packages
+      shell: bash
+      run: |
+        echo "usually build some packages using the output of the previous step"
+        
+    
+    - name: push version tag
+      id: pushTag
+      uses: trakx/bump-version-action@dev
+      with:
+        customTag: v${{steps.bumpVersion.outputs.fullVersion}}
+        githubToken: ${{secrets.GITHUB_TOKEN}}
+        dryRun: false
