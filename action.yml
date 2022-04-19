@@ -8,15 +8,18 @@ inputs:
   releaseBranches:
     description: branches for which productVersion should be empty
     required: false
-    default: "master"
+    default: "master,stage"
   githubToken:
     description: GitHub token
     required: true
+  customTag:
+    description: Use a custom tag and push it to the repo
+    required: false
+    default: ""
   dryRun:
     description: true by default, means the tag is not pushed on local repo.
     required: false
     default: "true"
-
 
 outputs:
   assemblyVersion:
@@ -28,18 +31,29 @@ outputs:
   fullVersion:
     description: "assemblyVersion-productVersion"
     value: ${{ steps.composeVersions.outputs.fullVersion }}
+
 runs:
   using: "composite"
   steps:
     - name: Set Bump Increment Level
+      if: inputs.customTag == ''
       id: bumpLevel
       run: |
         LEVEL="${{inputs.semverIncrementLevel}}"
         LEVEL=${LEVEL:-patch}
+        echo "bump level set to ${{LEVEL}}"
         echo '::set-output name=finalLevel::'$LEVEL
       shell: bash
 
-    - name: Get next semver
+    - name: Get commit shortened commit hash
+      if: inputs.customTag == ''
+      shell: bash
+      id: shortHash
+      run: |
+        short_hash=$(git rev-parse --short "$GITHUB_SHA")
+        echo '::set-output name=shortHash::'$short_hash
+
+    - name: Get next or latest semver
       id: bumpSemver
       uses: anothrNick/github-tag-action@1.39.0
       env:
@@ -47,29 +61,34 @@ runs:
         DEFAULT_BUMP: ${{steps.bumpLevel.outputs.finalLevel}}
         DRY_RUN: ${{inputs.dryRun}}
         WITH_V: "false"
-        PRERELEASE_SUFFIX: ""
+        PRERELEASE_SUFFIX: ${{steps.shortHash.outputs.shortHash}}
         RELEASE_BRANCHES: ${{inputs.releaseBranches}}
         INITIAL_VERSION: 0.1.0
+        CUSTOM_TAG: ${{inputs.customTag}}
 
     - name: Compose assembly version and product version
+      if: inputs.customTag == ''
       id: composeVersions
       run: |
         BUMPED_VERSION="${{steps.bumpSemver.outputs.new_tag}}"
         CURRENT_VERSION="${{steps.bumpSemver.outputs.tag}}"
+        #if bumped version is null, use current version without `v` prefix
         BUMPED_VERSION="${BUMPED_VERSION:-${CURRENT_VERSION:1}}"
-        ASSEMBLY_VERSION=${BUMPED_VERSION%-*}
-        COMMIT_HASH=${BUMPED_VERSION#*-}
-        if [ $COMMIT_HASH == $BUMPED_VERSION ]
+        #assembly version is the semver part of the full version tag
+        SUBSTRING_LEFT_OF_DASH=${BUMPED_VERSION%-*}
+        SUBSTRING_RIGHT_OF_DASH=${BUMPED_VERSION#*-}
+        #if it is a release version (release branch)
+        if [ $SUBSTRING_RIGHT_OF_DASH == $BUMPED_VERSION ]
         then
             PRODUCT_VERSION=
-            FULL_VERSION=${ASSEMBLY_VERSION}
+            FULL_VERSION=${SUBSTRING_LEFT_OF_DASH}
         else
             BRANCH_NAME=${GITHUB_REF##*/}
             BRANCH_NAME=${BRANCH_NAME//[^0-9a-zA-Z]/-}
-            PRODUCT_VERSION=${BRANCH_NAME}-${{github.run_number}}-${COMMIT_HASH}
-            FULL_VERSION=${ASSEMBLY_VERSION}-${PRODUCT_VERSION}
+            PRODUCT_VERSION=${BRANCH_NAME}-${{github.run_number}}-${{steps.shortHash.outputs.shortHash}}
+            FULL_VERSION=${SUBSTRING_LEFT_OF_DASH}-${PRODUCT_VERSION}
         fi
-        echo '::set-output name=assemblyVersion::'$ASSEMBLY_VERSION
+        echo '::set-output name=assemblyVersion::'$SUBSTRING_LEFT_OF_DASH
         echo '::set-output name=productVersion::'$PRODUCT_VERSION
         echo '::set-output name=fullVersion::'$FULL_VERSION
       shell: bash
