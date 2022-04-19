@@ -13,7 +13,7 @@ inputs:
     description: GitHub token
     required: true
   customTag:
-    description: Use a custom tag and push it to the repo
+    description: Use a custom tag and push it to the repo, a 'v' will be added automatically.
     required: false
     default: ""
   dryRun:
@@ -94,6 +94,7 @@ runs:
       shell: bash
 
     - name: Print bumpSemver outputs
+      if: ${{ inputs.customTag == '' }}
       run: |
         echo "current tag is ${{steps.bumpSemver.outputs.tag}}"
         echo "bumping ${{steps.bumpSemver.outputs.part}} level on ${{github.ref}} gives new tag ${{steps.bumpSemver.outputs.new_tag}}"
