@@ -21,10 +21,8 @@ runs:
         git tag --list
         tagPattern="^$TAG$"
         echo "tag pattern is $tagPattern"
-        git tag --list | grep -E "^v9.1.0$"
-        git tag --list | grep -E "$tagPattern"
-        # existing_tag="$(git tag --list | grep -E "$tagPattern")"
-        echo "found tag info $existing_tag"
+        git tag --list | grep -E "$tagPattern" > file.txt
+        cat file.txt
         if [ git tag --list | grep -E "$tagPattern" ]
         then
           echo "tag $TAG does not exist yet"
