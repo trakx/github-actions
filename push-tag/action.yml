@@ -16,6 +16,8 @@ runs:
       shell: bash
       id: exists
       run: |
+        git config --global --add safe.directory /github/workspace
+        cd /github/workspace
         TAG="${{inputs.tag}}"
         echo "looking for tag info for $TAG"
         git tag --list
