@@ -30,7 +30,7 @@ jobs:
 
     - name: Get current or bumped version tag
       id: bumpVersion
-      uses: trakx/bump-version-action/get-tag.yml@dev
+      uses: trakx/bump-version-action/get-tag@dev
       with:
         semverIncrementLevel: ${{github.event.inputs.semverIncrementLevel}}
         releaseBranches: ${{github.event.inputs.releaseBranches}}
@@ -43,7 +43,7 @@ jobs:
         
     - name: Push version tag if needed
       id: pushTag
-      uses: trakx/bump-version-action/push-tag.yml@dev
+      uses: trakx/bump-version-action/push-tag@dev
       with:
         tag: v${{steps.bumpVersion.outputs.fullVersion}}
         githubToken: ${{secrets.GITHUB_TOKEN}}
