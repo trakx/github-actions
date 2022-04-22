@@ -20,10 +20,10 @@ runs:
         if [-z "$existing_tag" ]
         then
           echo "tag ${{inputs.tag}} does not exist yet"
-          $FOUND='false'
+          FOUND='false'
         else
           echo "tag ${{inputs.tag}} already exists"
-          $FOUND='true'
+          FOUND='true'
         fi
         echo '::set-output name=tag_exists::'$FOUND
 
