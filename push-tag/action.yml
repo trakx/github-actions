@@ -15,7 +15,7 @@ runs:
     - name: Check if tag has been pushed
       shell: bash
       id: exists
-      runs: |
+      run: |
         existing_tag=$(git show-ref ${{inputs.tag}})
         if [-z existing_tag]:
           echo "tag ${{inputs.tag}} does not exist yet"
@@ -31,5 +31,5 @@ runs:
       uses: anothrNick/github-tag-action@1.39.0
       env:
         GITHUB_TOKEN: ${{inputs.githubToken}}
-        DRY_RUN: false
+        DRY_RUN: 'false'
         CUSTOM_TAG: ${{inputs.tag}}

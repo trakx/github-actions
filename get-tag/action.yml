@@ -49,7 +49,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{inputs.githubToken}}
         DEFAULT_BUMP: ${{steps.bumpLevel.outputs.finalLevel}}
-        DRY_RUN: true
+        DRY_RUN: 'true'
         WITH_V: "false"
         PRERELEASE_SUFFIX: ${{steps.shortHash.outputs.shortHash}}
         RELEASE_BRANCHES: ${{inputs.releaseBranches}}
