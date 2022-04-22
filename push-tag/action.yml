@@ -17,7 +17,7 @@ runs:
       id: exists
       run: |
         existing_tag=$(git show-ref ${{inputs.tag}})
-        if [-z existing_tag]:
+        if [-z "$existing_tag" ]:
           echo "tag ${{inputs.tag}} does not exist yet"
           $FOUND='false'
         else:
