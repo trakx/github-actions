@@ -41,7 +41,7 @@ jobs:
         githubToken: ${{secrets.GITHUB_TOKEN}}
 
     - name: Push version tag if needed
-      id: pushTag
+      id: pushTagxxx
       uses: trakx/bump-version-action/push-tag@temp
       with:
         tag: v${{steps.bumpVersion.outputs.fullVersion}}0.2.20001
