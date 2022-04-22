@@ -18,13 +18,8 @@ runs:
       run: |
         TAG="${{inputs.tag}}"
         echo "looking for tag info for $TAG"
-        git tag --list
         tagPattern="^$TAG$"
-        echo "tag patter is $tagPattern"
-        git tag --list | grep -E "^v9.1.0$"
-        git tag --list | grep -E "$tagPattern"
-        existing_tag="$(git tag --list | grep -E "$tagPattern")"
-        echo "found tag info $existing_tag"
+        existing_tag=$(git tag --list | grep "$tagPattern" || [[ $? == 1 ]])
         if [ -z "$existing_tag" ]
         then
           echo "tag $TAG does not exist yet"

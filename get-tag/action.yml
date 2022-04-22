@@ -9,9 +9,6 @@ inputs:
     description: branches for which productVersion should be empty
     required: false
     default: "master,stage"
-  githubToken:
-    description: GitHub token
-    required: true
 
 outputs:
   assemblyVersion:

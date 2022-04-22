@@ -30,7 +30,6 @@ jobs:
       with:
         semverIncrementLevel: ${{github.event.inputs.semverIncrementLevel}}
         releaseBranches: ${{github.event.inputs.releaseBranches}}
-        githubToken: ${{secrets.GITHUB_TOKEN}}
                 
     - name: Push version tag if needed
       id: pushTag
