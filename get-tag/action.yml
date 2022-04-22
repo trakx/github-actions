@@ -81,7 +81,6 @@ runs:
         echo '::set-output name=assemblyVersion::'$SUBSTRING_LEFT_OF_DASH
         echo '::set-output name=productVersion::'$PRODUCT_VERSION
         echo '::set-output name=fullVersion::'$FULL_VERSION
-        $FULL_VERSION > version-${{env.GITHUB_SHA}}
       shell: bash
 
     - name: Print bumpSemver outputs
