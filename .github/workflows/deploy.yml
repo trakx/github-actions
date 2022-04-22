@@ -5,7 +5,6 @@ on:
     branches:
       - dev
       - master
-      - temp
 
   workflow_dispatch:
     inputs:
@@ -27,14 +26,14 @@ jobs:
 
     - name: Get current or bumped version tag
       id: bumpVersion
-      uses: trakx/bump-version-action/get-tag@temp
+      uses: trakx/bump-version-action/get-tag@dev
       with:
         semverIncrementLevel: ${{github.event.inputs.semverIncrementLevel}}
         releaseBranches: ${{github.event.inputs.releaseBranches}}
                 
     - name: Push version tag if needed
       id: pushTag
-      uses: trakx/bump-version-action/push-tag@temp
+      uses: trakx/bump-version-action/push-tag@dev
       with:
         tag: v${{steps.bumpVersion.outputs.fullVersion}}
         githubToken: ${{secrets.GITHUB_TOKEN}}
