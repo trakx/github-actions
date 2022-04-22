@@ -16,8 +16,8 @@ runs:
       shell: bash
       id: existing_ref
       run: |
-        set -o pipefail
-        SOME_REF=$(git tag --list | grep '0.2.20')
+        tagPattern="^{inputs.tag}$"
+        existing=$(git tag --list | {grep "$tagPattern" || :; } )
         echo '::set-output name=existing_ref::'$SOME_REF
 
     - name: show ref
