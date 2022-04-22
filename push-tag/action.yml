@@ -18,7 +18,7 @@ runs:
       run: |
         tagPattern="^{inputs.tag}$"
         existing=$(git tag --list | { grep "$tagPattern" || true })
-        echo '::set-output name=existing_ref::'$SOME_REF
+        echo '::set-output name=existing_ref::'$existing
 
     - name: show ref
       shell: bash
