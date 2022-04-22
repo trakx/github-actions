@@ -25,24 +25,17 @@ jobs:
     - name: checkout
       uses: actions/checkout@v3
 
-    # - name: Get current or bumped version tag
-    #   id: bumpVersion
-    #   uses: trakx/bump-version-action/get-tag@temp
-    #   with:
-    #     semverIncrementLevel: ${{github.event.inputs.semverIncrementLevel}}
-    #     releaseBranches: ${{github.event.inputs.releaseBranches}}
-    #     githubToken: ${{secrets.GITHUB_TOKEN}}
+    - name: Get current or bumped version tag
+      id: bumpVersion
+      uses: trakx/bump-version-action/get-tag@temp
+      with:
+        semverIncrementLevel: ${{github.event.inputs.semverIncrementLevel}}
+        releaseBranches: ${{github.event.inputs.releaseBranches}}
+        githubToken: ${{secrets.GITHUB_TOKEN}}
                 
     - name: Push version tag if needed
       id: pushTag
       uses: trakx/bump-version-action/push-tag@temp
       with:
-        tag: v${{steps.bumpVersion.outputs.fullVersion}}0.2.20
-        githubToken: ${{secrets.GITHUB_TOKEN}}
-
-    - name: Push version tag if needed
-      id: pushTagxxx
-      uses: trakx/bump-version-action/push-tag@temp
-      with:
-        tag: v${{steps.bumpVersion.outputs.fullVersion}}0.2.20001
+        tag: v${{steps.bumpVersion.outputs.fullVersion}}
         githubToken: ${{secrets.GITHUB_TOKEN}}
