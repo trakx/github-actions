@@ -16,13 +16,16 @@ runs:
       shell: bash
       id: exists
       run: |
-        existing_tag=$(git show-ref ${{inputs.tag}})
+        TAG="${{inputs.tag}}"
+        echo "looking for tag info for $TAG"
+        existing_tag=$(git show-ref $TAG)
+        echo "found tag info $existing_tag"
         if [ -z "$existing_tag" ]
         then
-          echo "tag ${{inputs.tag}} does not exist yet"
+          echo "tag $TAG does not exist yet"
           FOUND="false"
         else
-          echo "tag ${{inputs.tag}} already exists"
+          echo "tag $TAG already exists"
           FOUND="true"
         fi
         echo '::set-output name=tag_exists::'$FOUND
