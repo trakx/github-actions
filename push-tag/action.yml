@@ -18,7 +18,7 @@ runs:
       run: |
         TAG="${{inputs.tag}}"
         echo "looking for tag info for $TAG"
-        existing_tag=$(git show-ref $TAG)
+        existing_tag=`git show-ref $TAG`
         echo "found tag info $existing_tag"
         if [ -z "$existing_tag" ]
         then
