@@ -12,19 +12,23 @@ runs:
   using: "composite"
   steps:
 
-    - name: Get commit shortened commit hash
+    - name: Check if tag has been pushed
       shell: bash
-      id: existing_ref
+      id: exists
       run: |
-        tagPattern="^{inputs.tag}$"
-        existing=$(git tag --list | grep "$tagPattern" || [[ $? == 1 ]])
-        echo '::set-output name=existing_ref::'$existing
-
-    - name: show ref
-      shell: bash
-      id: show_ref
-      run: |        
-        echo ${{steps.existing_ref.outputs.existing_ref}}
+        TAG="${{inputs.tag}}"
+        echo "looking for tag info for $TAG"
+        tagPattern="^$TAG$"
+        existing_tag=$(git tag --list | grep "$tagPattern" || [[ $? == 1 ]])
+        if [ -z "$existing_tag" ]
+        then
+          echo "tag $TAG does not exist yet"
+          FOUND="false"
+        else
+          echo "tag $TAG already exists"
+          FOUND="true"
+        fi
+        echo '::set-output name=tag_exists::'$FOUND
 
     - name: Push tag
       if: ${{ steps.exists.outputs.tag_exists == 'false' }}
