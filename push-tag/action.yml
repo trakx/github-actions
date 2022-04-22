@@ -12,28 +12,18 @@ runs:
   using: "composite"
   steps:
 
-    - name: Check if tag has been pushed
+    - name: Get commit shortened commit hash
       shell: bash
-      id: exists
+      id: existing_ref
       run: |
-        git config --global --add safe.directory /github/workspace
-        cd /github/workspace
-        TAG="${{inputs.tag}}"
-        echo "looking for tag info for $TAG"
-        git tag --list
-        tagPattern="^$TAG$"
-        echo "tag pattern is $tagPattern"
-        git tag --list | grep -E "$tagPattern" > file.txt
-        cat file.txt
-        if [ git tag --list | grep -E "$tagPattern" ]
-        then
-          echo "tag $TAG does not exist yet"
-          FOUND="false"
-        else
-          echo "tag $TAG already exists"
-          FOUND="true"
-        fi
-        echo '::set-output name=tag_exists::'$FOUND
+        SOME_REF=$(git show-ref v0.2.20)
+        echo '::set-output name=existing_ref::'$SOME_REF
+
+    - name: show ref
+      shell: bash
+      id: show_ref
+      run: |        
+        echo ${{steps.existing_ref.outputs.existing_ref}}
 
     - name: Push tag
       if: ${{ steps.exists.outputs.tag_exists == 'false' }}
