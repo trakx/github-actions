@@ -17,7 +17,7 @@ runs:
       id: existing_ref
       run: |
         set -o pipefail
-        SOME_REF=$(git show-ref v0.2.20)
+        SOME_REF=$(git --version)
         echo '::set-output name=existing_ref::'$SOME_REF
 
     - name: show ref
