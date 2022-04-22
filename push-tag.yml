@@ -1,0 +1,35 @@
+name: "Push tag"
+description: "Github action trying to retrieve tag as artifact and push it."
+inputs:
+  tag:
+    description: Use a custom tag and push it to the repo, a 'v' will be added automatically.
+    required: true
+  githubToken:
+    description: GitHub token
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Check if tag has been pushed
+      shell: bash
+      id: exists
+      runs: |
+        existing_tag=$(git show-ref ${{inputs.tag}})
+        if [-z existing_tag]:
+          echo "tag ${{inputs.tag}} does not exist yet"
+          $FOUND='false'
+        else:
+          echo "tag ${{inputs.tag}} already exists"
+          $FOUND='true'
+        fi
+        echo '::set-output name=tag_exists::'$FOUND
+
+    - name: Push tag
+      if: ${{ steps.exists.outputs.tag_exists == 'false' }}
+      uses: anothrNick/github-tag-action@1.39.0
+      env:
+        GITHUB_TOKEN: ${{inputs.githubToken}}
+        DRY_RUN: false
+        CUSTOM_TAG: ${{inputs.tag}}

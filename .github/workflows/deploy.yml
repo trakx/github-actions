@@ -1,0 +1,37 @@
+name: Tag new commit
+
+on: 
+  push:
+    branches:
+      - dev
+      - master
+
+  workflow_dispatch:
+    inputs:
+      semverIncrementLevel:
+        description: 'Level of the semver (major.minor.patch) to be increased to get the new package version.'
+        required: true
+        default: 'patch'
+
+jobs:
+
+  tag:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Get current or bumped version tag
+      id: bumpVersion
+      uses: trakx/bump-version-action/get-tag.yml@dev
+      with:
+        semverIncrementLevel: ${{github.event.inputs.semverIncrementLevel}}
+        releaseBranches: ${{github.event.inputs.releaseBranches}}
+        githubToken: ${{secrets.GITHUB_TOKEN}}
+                
+    - name: Push version tag if needed
+      id: pushTag
+      uses: trakx/bump-version-action/push-tag.yml@dev
+      with:
+        tag: v${{steps.bumpVersion.outputs.fullVersion}}
+        githubToken: ${{secrets.GITHUB_TOKEN}}

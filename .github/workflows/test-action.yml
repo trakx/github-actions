@@ -28,26 +28,22 @@ jobs:
     - name: checkout
       uses: actions/checkout@v3
 
-    - name: Get bumped version
+    - name: Get current or bumped version tag
       id: bumpVersion
-      uses: trakx/bump-version-action@dev
+      uses: trakx/bump-version-action/get-tag.yml@dev
       with:
         semverIncrementLevel: ${{github.event.inputs.semverIncrementLevel}}
         releaseBranches: ${{github.event.inputs.releaseBranches}}
-        customTag: ${{github.event.inputs.customTag}}
         githubToken: ${{secrets.GITHUB_TOKEN}}
-        dryRun: true
         
     - name: Build some packages
       shell: bash
       run: |
         echo "usually build some packages using the output of the previous step"
         
-    
-    - name: push version tag
+    - name: Push version tag if needed
       id: pushTag
-      uses: trakx/bump-version-action@dev
+      uses: trakx/bump-version-action/push-tag.yml@dev
       with:
-        customTag: v${{steps.bumpVersion.outputs.fullVersion}}
+        tag: v${{steps.bumpVersion.outputs.fullVersion}}
         githubToken: ${{secrets.GITHUB_TOKEN}}
-        dryRun: false
