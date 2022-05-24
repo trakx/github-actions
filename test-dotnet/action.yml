@@ -8,10 +8,10 @@ inputs:
   codacyToken:
     description: "Token used to identify the project on codacy."
     required: true
-  awsAccessKey:
+  awsAccessKeyId:
     description: "Access key used to connect to the AWS environment."
     required: true
-  awsAccessSecret:
+  awsAccessKeySecret:
     description: "Access secret used to connect to the AWS environment."
     required: true
   awsRegion:
