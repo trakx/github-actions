@@ -32,7 +32,7 @@ runs:
 
     - name: Add github nuget source
       shell: bash
-      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json" --name "github" --username "trakx-bot" --password ${{secrets.packageReadonlyPat}} --store-password-in-clear-text
+      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json" --name "github" --username "trakx-bot" --password ${{inputs.packageReadonlyPat}} --store-password-in-clear-text
 
     - name: Install dependencies
       shell: bash
@@ -55,8 +55,8 @@ runs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{secrets.awsAccessKey}}
-        aws-secret-access-key: ${{secrets.awsAccessSecret}}
+        aws-access-key-id: ${{inputs.awsAccessKey}}
+        aws-secret-access-key: ${{inputs.awsAccessSecret}}
         aws-region: ${{inputs.awsRegion}}
 
     - name: Test & Coverage
@@ -74,7 +74,7 @@ runs:
     - name: Publish Coverage
       shell: bash
       env:
-        CODACY_PROJECT_TOKEN: ${{secrets.codacyToken}}
+        CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
       run: |
         for f in ./src/*.Tests/coverage.opencover.xml; do echo "sending coverage report $f" && \
             bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f --partial --commit-uuid ${{github.sha}}; \
