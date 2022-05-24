@@ -55,8 +55,8 @@ runs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{inputs.awsAccessKey}}
-        aws-secret-access-key: ${{inputs.awsAccessSecret}}
+        aws-access-key-id: ${{inputs.awsAccessKeyId}}
+        aws-secret-access-key: ${{inputs.awsAccessKeySecret}}
         aws-region: ${{inputs.awsRegion}}
 
     - name: Test & Coverage
