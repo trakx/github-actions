@@ -1,0 +1,82 @@
+name: "Build and test dotnet solution"
+description: "Github action to build and test a dotnet solution, posting code coverage results to codacy."
+
+inputs:
+  packageReadonlyPat:
+    description: "Personal access token used to access the github private nuget source."
+    required: true
+  codacyToken:
+    description: "Token used to identify the project on codacy."
+    required: true
+  awsAccessKey:
+    description: "Access key used to connect to the AWS environment."
+    required: true
+  awsAccessSecret:
+    description: "Access secret used to connect to the AWS environment."
+    required: true
+  awsRegion:
+    description: "Region on which to access the AWS environment."
+    required: false
+    default: "eu-west-3"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Add github nuget source
+      shell: bash
+      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json" --name "github" --username "trakx-bot" --password ${{secrets.packageReadonlyPat}} --store-password-in-clear-text
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        for f in ./src/*.sln; do echo "restoring solution $f" && \
+        dotnet restore $f
+        done
+
+    - name: Remove github source
+      shell: bash
+      run: dotnet nuget remove source "github"
+
+    - name: Build
+      shell: bash
+      run: |
+        for f in ./src/*.sln; do echo "restoring solution $f" && \
+        dotnet build $f --configuration Debug --no-restore
+        done
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{secrets.awsAccessKey}}
+        aws-secret-access-key: ${{secrets.awsAccessSecret}}
+        aws-region: ${{inputs.awsRegion}}
+
+    - name: Test & Coverage
+      shell: bash
+      run: |
+        for f in ./src/*.Tests/*.Tests.csproj; do echo "testing project $f" && \
+        dotnet test $f --configuration Debug --no-restore --logger GitHubActions --verbosity normal\
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:UserSourceLink=true \
+            /p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" \
+            /p:Include=\"[Trakx.*]*\"; \
+        done
+
+    - name: Publish Coverage
+      shell: bash
+      env:
+        CODACY_PROJECT_TOKEN: ${{secrets.codacyToken}}
+      run: |
+        for f in ./src/*.Tests/coverage.opencover.xml; do echo "sending coverage report $f" && \
+            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f --partial --commit-uuid ${{github.sha}}; \
+        done
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) final --commit-uuid ${{github.sha}}
