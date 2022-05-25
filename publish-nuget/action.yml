@@ -10,8 +10,12 @@ inputs:
     required: true
   debuggable:
     description: "Set to false if you want a non debuggable (Release) package. Default is true."
-    required: true
+    required: false
     default: "true"
+  semverIncrementLevel:
+    description: "Level of the semver (major.minor.patch) to be increased to get the new package version."
+    required: false
+    default: "patch"
 
 runs:
   using: "composite"
@@ -69,7 +73,6 @@ runs:
             --no-restore
         done
         
-
     - name: Package
       shell: bash
       run: |
@@ -94,4 +97,3 @@ runs:
       with:
         tag: v${{steps.bumpVersion.outputs.fullVersion}}
         githubToken: ${{inputs.githubToken}}
-
