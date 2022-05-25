@@ -32,13 +32,17 @@ runs:
 
     - name: Add github nuget source
       shell: bash
-      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json" --name "github" --username "trakx-bot" --password ${{inputs.packageReadonlyPat}} --store-password-in-clear-text
+      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json" \
+                  --name "github" \
+                  --username "trakx-bot" \
+                  --password ${{inputs.packageReadonlyPat}} \
+                  --store-password-in-clear-text
 
     - name: Install dependencies
       shell: bash
       run: |
         for f in ./src/*.sln; do echo "restoring solution $f" && \
-        dotnet restore $f
+          dotnet restore $f
         done
 
     - name: Remove github source
@@ -49,7 +53,7 @@ runs:
       shell: bash
       run: |
         for f in ./src/*.sln; do echo "restoring solution $f" && \
-        dotnet build $f --configuration Debug --no-restore
+          dotnet build $f --configuration Debug --no-restore
         done
 
     - name: Configure AWS Credentials
@@ -77,6 +81,7 @@ runs:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
       run: |
         for f in ./src/*.Tests/coverage.opencover.xml; do echo "sending coverage report $f" && \
-            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f --partial --commit-uuid ${{github.sha}}; \
+            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
+                --partial --commit-uuid ${{github.sha}}; \
         done
         bash <(curl -Ls https://coverage.codacy.com/get.sh) final --commit-uuid ${{github.sha}}
