@@ -1,0 +1,27 @@
+name: Dependabot Pull Request Approve and Merge
+description: "Call this on pull_request_target events, give it pull request and contnet write accesses"
+
+runs:
+  using: composite
+
+  steps:
+    - name: Fetch dependabot metadata
+      if: ${{ github.actor == 'dependabot[bot]' }}
+      id: dependabot-metadata
+      uses: dependabot/fetch-metadata@v1.1.1
+      with:
+        github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+    - name: Approve dependabot PR
+      if: ${{ github.actor == 'dependabot[bot]' }}
+      run: gh pr review --approve "${{ github.event.pull_request.html_url }}"
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Merge non major updates
+      if: ${{ github.actor == 'dependabot[bot]' && steps.dependabot-metadata.outputs.update-type != 'version-update:semver-major' }}
+      run: gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
