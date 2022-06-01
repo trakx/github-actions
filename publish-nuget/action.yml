@@ -27,7 +27,6 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: trakx/github-actions
-        branch: dev
         path: github-actions
 
     - name: Set compilation mode
