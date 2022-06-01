@@ -28,6 +28,7 @@ runs:
       with:
         repository: trakx/github-actions
         path: github-actions
+        ref: master
 
     - name: Set compilation mode
       shell: bash
