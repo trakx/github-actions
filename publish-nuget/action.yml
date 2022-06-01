@@ -20,8 +20,15 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: checkout
+    - name: Checkout calling repo
       uses: actions/checkout@v3
+
+    - name: Checkout actions repo
+      uses: actions/checkout@v3
+      with:
+        repository: trakx/github-actions
+        branch: dev
+        path: github-actions
 
     - name: Set compilation mode
       shell: bash
@@ -37,7 +44,7 @@ runs:
 
     - name: Bump version
       id: bumpVersion
-      uses: trakx/bump-version-action/get-tag/action.yml@master
+      uses: ./github-actions/get-tag/action.yml
       with:
         semverIncrementLevel: ${{ inputs.semverIncrementLevel }}
 
@@ -96,7 +103,7 @@ runs:
 
     - name: push version tag
       id: pushTag
-      uses: trakx/bump-version-action/push-tag/action.yml@master
+      uses: ./github-actions/push-tag/action.yml
       with:
         tag: v${{steps.bumpVersion.outputs.fullVersion}}
         githubToken: ${{inputs.githubToken}}
