@@ -25,7 +25,7 @@ runs:
 
     - name: Merge non major updates
       if: ${{ github.actor == 'dependabot[bot]' && steps.dependabot-metadata.outputs.update-type != 'version-update:semver-major' }}
-      run: gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
+      run: gh pr merge --squash "${{ github.event.pull_request.html_url }}"
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.githubToken }}
