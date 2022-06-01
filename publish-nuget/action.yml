@@ -100,7 +100,7 @@ runs:
           && dotnet nuget push $f --api-key ${{inputs.githubToken}} --source "https://nuget.pkg.github.com/trakx/index.json"; 
         done
 
-    - name: push version tag
+    - name: Push version tag
       id: pushTag
       uses: ./github-actions/push-tag
       with:
