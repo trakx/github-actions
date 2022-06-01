@@ -37,7 +37,7 @@ runs:
 
     - name: Bump version
       id: bumpVersion
-      uses: ./get-tag/action.yml
+      uses: trakx/bump-version-action/get-tag/action.yml@master
       with:
         semverIncrementLevel: ${{ inputs.semverIncrementLevel }}
 
@@ -96,7 +96,7 @@ runs:
 
     - name: push version tag
       id: pushTag
-      uses: ./push-tag/action.yml
+      uses: trakx/bump-version-action/push-tag/action.yml@master
       with:
         tag: v${{steps.bumpVersion.outputs.fullVersion}}
         githubToken: ${{inputs.githubToken}}
