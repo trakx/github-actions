@@ -89,7 +89,6 @@ runs:
       shell: bash
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
-        CODACY_REPORTER_SKIP_CHECKSUM: true
       run: |
         for f in ./TestResults/*/coverage.cobertura.xml; do echo "sending coverage report $f" && \
             bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
