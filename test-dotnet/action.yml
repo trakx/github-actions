@@ -79,7 +79,7 @@ runs:
     - name: .NET Test
       shell: bash
       run: |
-        for f in ./src/*.Tests/*.Tests.csproj; do echo "testing project $f" && \
+        for f in ./**/*.Tests/*.Tests.csproj; do echo "testing project $f" && \
           dotnet test $f --configuration Debug --no-restore --logger GitHubActions --collect "XPlat Code Coverage" --results-directory "TestResults"
         done
     
