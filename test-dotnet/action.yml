@@ -52,7 +52,7 @@ runs:
     - name: .NET Restore packages
       shell: bash
       run: |
-        for f in ./src/*.sln; do echo "restoring solution $f" && \
+        for f in **/*.sln; do echo "restoring solution $f" && \
           dotnet restore $f --locked-mode
         done
 
@@ -63,7 +63,7 @@ runs:
     - name: .NET Build
       shell: bash
       run: |
-        for f in ./src/*.sln; do echo "restoring solution $f" && \
+        for f in **/*.sln; do echo "restoring solution $f" && \
           dotnet build $f --configuration Debug --no-restore
         done
 
