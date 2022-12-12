@@ -41,7 +41,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        for f in ./**/*.sln; do echo "restoring solution $f" && \
+        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
           dotnet restore $f
         done
 
@@ -52,7 +52,7 @@ runs:
     - name: Build
       shell: bash
       run: |
-        for f in ./**/*.sln; do echo "restoring solution $f" && \
+        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
           dotnet build $f --configuration Debug --no-restore
         done
 
@@ -66,7 +66,7 @@ runs:
     - name: Test & Coverage
       shell: bash
       run: |
-        for f in ./**/*.Tests/*.Tests.csproj; do echo "testing project $f" && \
+        for f in $(find . -name "*.Tests.csproj"); do echo "testing project $f" && \
         dotnet test $f --configuration Debug --no-restore --logger GitHubActions --verbosity normal\
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
