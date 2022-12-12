@@ -80,7 +80,7 @@ runs:
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
       run: |
-        for f in ./**/*.Tests/coverage.opencover.xml; do echo "sending coverage report $f" && \
+        for f in $(find . -name "coverage.opencover.xml"); do echo "sending coverage report $f" && \
             bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
                 --partial --commit-uuid ${{github.sha}}; \
         done
