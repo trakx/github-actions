@@ -21,16 +21,20 @@ inputs:
 
 runs:
   using: "composite"
+  env:
+      COVER_REPORT_FILE: "~/test/coverage.xml"
   steps:
     - name: Checkout
       uses: actions/checkout@v3
-    
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: 6.0.x
 
-    - name: Add github nuget source
+    - name: .NET Install
+      env:
+        DOTNET_INSTALL_DIR: "./.dotnet"  # Required by the runner to install dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.x
+
+    - name: Add Trakx github nuget source
       shell: bash
       run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
                   --name "github"
@@ -38,18 +42,25 @@ runs:
                   --password ${{inputs.packageReadonlyPat}}
                   --store-password-in-clear-text
 
-    - name: Install dependencies
+    - name: Restore Cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: ${{ runner.os }}-nuget-
+
+    - name: .NET Restore packages
       shell: bash
       run: |
         for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
-          dotnet restore $f
+          dotnet restore $f --locked-mode
         done
 
-    - name: Remove github source
+    - name: Remove Trakx github source
       shell: bash
       run: dotnet nuget remove source "github"
 
-    - name: Build
+    - name: .NET Build
       shell: bash
       run: |
         for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
@@ -62,25 +73,24 @@ runs:
         aws-access-key-id: ${{inputs.awsAccessKeyId}}
         aws-secret-access-key: ${{inputs.awsAccessKeySecret}}
         aws-region: ${{inputs.awsRegion}}
-
-    - name: Test & Coverage
+    
+    # GitHubActionsTestLogger nuget package should be installed in the test project 
+    # coverlet.msbuild nuget package should be installed to generate coverage report
+    - name: .NET Test
       shell: bash
       run: |
         for f in $(find . -name "*.Tests.csproj"); do echo "testing project $f" && \
-        dotnet test $f --configuration Debug --no-restore --logger GitHubActions --verbosity normal\
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:UserSourceLink=true \
-            /p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" \
-            /p:Include=\"[Trakx.*]*\"; \
+          dotnet test $f --configuration Debug --no-restore --logger GitHubActions --collect "XPlat Code Coverage" --results-directory "TestResults"
         done
-
+    
+    # .NET Test puts the coverage file under a random directory [Guid]/coverage.cobertura.xml
+    # That's why we locate the coverage file first and pass it to the upload script
     - name: Publish Coverage
       shell: bash
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
       run: |
-        for f in $(find . -name "coverage.opencover.xml"); do echo "sending coverage report $f" && \
+        for f in ./TestResults/*/coverage.cobertura.xml; do echo "sending coverage report $f" && \
             bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
                 --partial --commit-uuid ${{github.sha}}; \
         done
