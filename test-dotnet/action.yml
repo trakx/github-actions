@@ -52,7 +52,7 @@ runs:
     - name: .NET Restore packages
       shell: bash
       run: |
-        for f in ./src/*.sln; do echo "restoring solution $f" && \
+        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
           dotnet restore $f --locked-mode
         done
 
@@ -63,7 +63,7 @@ runs:
     - name: .NET Build
       shell: bash
       run: |
-        for f in ./src/*.sln; do echo "restoring solution $f" && \
+        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
           dotnet build $f --configuration Debug --no-restore
         done
 
@@ -79,7 +79,7 @@ runs:
     - name: .NET Test
       shell: bash
       run: |
-        for f in ./src/*.Tests/*.Tests.csproj; do echo "testing project $f" && \
+        for f in $(find . -name "*.Tests.csproj"); do echo "testing project $f" && \
           dotnet test $f --configuration Debug --no-restore --logger GitHubActions --collect "XPlat Code Coverage" --results-directory "TestResults"
         done
     
