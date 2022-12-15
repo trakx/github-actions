@@ -21,8 +21,6 @@ inputs:
 
 runs:
   using: "composite"
-  env:
-      COVER_REPORT_FILE: "~/test/coverage.xml"
   steps:
     - name: Checkout
       uses: actions/checkout@v3
