@@ -1,36 +1,34 @@
 name: "Manual approval"
 description: "Github action to require manual approval from specific users or org user groups. It will create an issue where approvers can comment to allow or deny the workflow run."
 
-on:
-  workflow_call:
-    inputs:
-      userReaderAppId:
-        description: "Trakx User Reader Github App ID."
-        type: string
-        required: true
-      userReaderAppPrivateKey:
-        description: "Trakx User Reader Github App Private Key."
-        type: string
-        required: true
-      approvers:
-        description: "List of users or org user groups that can approve (separated by comma)."
-        type: string
-        required: true
-      minimumApprovals:
-        description: "Minimum number of approvals required."
-        type: number
-        required: false
-        default: 1
-      issueTitle:
-        description: "Title of the issue to create."
-        type: string
-        required: false
-        default: "Manual approval required"
-      issuerCanApprove:
-        description: "Blocks approval from the workflow run issuer."
-        type: boolean
-        required: false
-        default: false
+inputs:
+  userReaderAppId:
+    description: "Trakx User Reader Github App ID."
+    type: string
+    required: true
+  userReaderAppPrivateKey:
+    description: "Trakx User Reader Github App Private Key."
+    type: string
+    required: true
+  approvers:
+    description: "List of users or org user groups that can approve (separated by comma)."
+    type: string
+    required: true
+  minimumApprovals:
+    description: "Minimum number of approvals required."
+    type: number
+    required: false
+    default: 1
+  issueTitle:
+    description: "Title of the issue to create."
+    type: string
+    required: false
+    default: "Manual approval required"
+  issuerCanApprove:
+    description: "Blocks approval from the workflow run issuer."
+    type: boolean
+    required: false
+    default: false
 
 runs:
   using: "composite"
