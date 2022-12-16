@@ -37,8 +37,8 @@ runs:
       id: generate_token
       uses: tibdex/github-app-token@v1
       with:
-        app_id: ${{ steps.generate_token.outputs.userReaderAppId }}
-        private_key: ${{ steps.generate_token.outputs.userReaderAppPrivateKey }}
+        app_id: ${{ github.event.inputs.userReaderAppId }}
+        private_key: ${{ github.event.inputs.userReaderAppPrivateKey }}
 
     - name: Waiting for Approval
       uses: trstringer/manual-approval@v1.8.0
