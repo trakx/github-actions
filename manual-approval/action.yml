@@ -4,11 +4,9 @@ description: "Github action to require manual approval from specific users or or
 inputs:
   userReaderAppId:
     description: "Trakx User Reader Github App ID."
-    type: string
     required: true
   userReaderAppPrivateKey:
     description: "Trakx User Reader Github App Private Key."
-    type: string
     required: true
   approvers:
     description: "List of users or org user groups that can approve (separated by comma)."
@@ -35,16 +33,25 @@ runs:
   steps:
     - name: Generate token
       id: generate_token
+      env:
+        APP_ID: ${{ github.event.inputs.userReaderAppId }}
+        PRIVATE_KEY: ${{ github.event.inputs.userReaderAppPrivateKey }}
       uses: tibdex/github-app-token@v1
       with:
-        app_id: ${{ github.event.inputs.userReaderAppId }}
-        private_key: ${{ github.event.inputs.userReaderAppPrivateKey }}
+        app_id: ${{ env.APP_ID }}
+        private_key: ${{ env.PRIVATE_KEY }}
 
     - name: Waiting for Approval
       uses: trstringer/manual-approval@v1.8.0
+      env:
+        GITHUB_READ_USERS_APP_TOKEN: ${{ steps.generate_token.outputs.token }}
+        APPROVERS: ${{ github.event.inputs.approvers }}
+        MINIMUM_APPROVALS: ${{ github.event.inputs.minimumApprovals }}
+        ISSUE_TITLE: ${{ github.event.inputs.issueTitle }}
+        EXCLUDE_WORKFLOW_INITIATOR_AS_APPROVER: ${{ github.event.inputs.issuerCanApprove }}
       with:
-        secret: ${{ steps.generate_token.outputs.token }}
-        approvers: "${{ github.event.inputs.approvers }}"
-        minimum-approvals: ${{ github.event.inputs.minimumApprovals }}
-        issue-title: "${{ github.event.inputs.issueTitle }}"
-        exclude-workflow-initiator-as-approver: ${{ github.event.inputs.issuerCanApprove }}
+        secret: ${{ env.GITHUB_READ_USERS_APP_TOKEN }}
+        approvers: "${{ env.APPROVERS }}"
+        minimum-approvals: ${{ env.MINIMUM_APPROVALS }}
+        issue-title: "${{ env.ISSUE_TITLE }}"
+        exclude-workflow-initiator-as-approver: ${{ env.EXCLUDE_WORKFLOW_INITIATOR_AS_APPROVER }}
