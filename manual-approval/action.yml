@@ -4,6 +4,14 @@ description: "Github action to require manual approval from specific users or or
 on:
   workflow_call:
     inputs:
+      userReaderAppId:
+        description: "Trakx User Reader Github App ID."
+        type: string
+        required: true
+      userReaderAppPrivateKey:
+        description: "Trakx User Reader Github App Private Key."
+        type: string
+        required: true
       approvers:
         description: "List of users or org user groups that can approve (separated by comma)."
         type: string
@@ -24,23 +32,21 @@ on:
         required: false
         default: false
 
-jobs:
-  approval:
-    name: "Manual approval"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate token
-        id: generate_token
-        uses: tibdex/github-app-token@v1
-        with:
-          app_id: ${{ secrets.TRAKX_USER_READER_APP_ID }}
-          private_key: ${{ secrets.TRAKX_USER_READER_APP_PRIVATE_KEY }}
+runs:
+  using: "composite"
+  steps:
+    - name: Generate token
+      id: generate_token
+      uses: tibdex/github-app-token@v1
+      with:
+        app_id: ${{ steps.generate_token.outputs.userReaderAppId }}
+        private_key: ${{ steps.generate_token.outputs.userReaderAppPrivateKey }}
 
-      - name: Waiting for Approval
-        uses: trstringer/manual-approval@v1.8.0
-        with:
-          secret: ${{ steps.generate_token.outputs.token }}
-          approvers: "${{ github.event.inputs.approvers }}"
-          minimum-approvals: ${{ github.event.inputs.minimumApprovals }}
-          issue-title: "${{ github.event.inputs.issueTitle }}"
-          exclude-workflow-initiator-as-approver: ${{ github.event.inputs.issuerCanApprove }}
+    - name: Waiting for Approval
+      uses: trstringer/manual-approval@v1.8.0
+      with:
+        secret: ${{ steps.generate_token.outputs.token }}
+        approvers: "${{ github.event.inputs.approvers }}"
+        minimum-approvals: ${{ github.event.inputs.minimumApprovals }}
+        issue-title: "${{ github.event.inputs.issueTitle }}"
+        exclude-workflow-initiator-as-approver: ${{ github.event.inputs.issuerCanApprove }}
