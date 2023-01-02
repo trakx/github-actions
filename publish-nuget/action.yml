@@ -82,15 +82,7 @@ runs:
             -p:SourceRevisionId=${{steps.bumpVersion.outputs.productVersion}} \
             --no-restore
         done
-        
-    # - name: Package
-    #   shell: bash
-    #   run: |
-    #     for f in $(find . -name "*.sln"); do echo "packaging solution $f" && \
-    #       dotnet pack $f \
-    #         --no-build --configuration ${{ steps.comp-mode.outputs.compilationMode }} \
-    #         --output ./nuget/ -p:PackageVersion=${{steps.bumpVersion.outputs.fullVersion}} --include-symbols --include-source
-    #     done
+
     - name: Package
       shell: bash
       run: |
