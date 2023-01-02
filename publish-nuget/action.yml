@@ -83,12 +83,20 @@ runs:
             --no-restore
         done
         
+    # - name: Package
+    #   shell: bash
+    #   run: |
+    #     for f in $(find . -name "*.sln"); do echo "packaging solution $f" && \
+    #       dotnet pack $f \
+    #         --no-build --configuration ${{ steps.comp-mode.outputs.compilationMode }} \
+    #         --output ./nuget/ -p:PackageVersion=${{steps.bumpVersion.outputs.fullVersion}} --include-symbols --include-source
+    #     done
     - name: Package
       shell: bash
       run: |
-        for f in $(find . -name "*.sln"); do echo "packaging solution $f" && \
-          dotnet pack $f \
-            --no-build --configuration ${{ steps.comp-mode.outputs.compilationMode }} \
+        packables=$(grep -rl '/Packable\.Projects\.props"' ./src/**/*.csproj)
+        for project in $packables; do echo "packaging project $project" && \
+          dotnet pack $project --no-build --configuration ${{ steps.comp-mode.outputs.compilationMode }} \
             --output ./nuget/ -p:PackageVersion=${{steps.bumpVersion.outputs.fullVersion}} --include-symbols --include-source
         done
 
