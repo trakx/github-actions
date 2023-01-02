@@ -64,7 +64,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        for f in ./src/*.sln; do echo "restoring solution $f" && \
+        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
         dotnet restore $f
         done
 
@@ -75,19 +75,18 @@ runs:
     - name: Build
       shell: bash
       run: |
-        for f in ./src/*.sln; do echo "building solution $f" && \
+        for f in $(find . -name "*.sln"); do echo "building solution $f" && \
           dotnet build $f \
             --configuration ${{steps.comp-mode.outputs.compilationMode}} \
             -p:Version=${{steps.bumpVersion.outputs.assemblyVersion}} \
             -p:SourceRevisionId=${{steps.bumpVersion.outputs.productVersion}} \
             --no-restore
         done
-        
+
     - name: Package
       shell: bash
       run: |
-        packables=$(grep -rl '<Import Project="\.\.\/Packable\.Projects\.props" \/>' ./src/**/*.csproj)
-        for project in $packables; do echo "packaging project $project" && \
+        for project in $(find ./src -name "*.csproj" -exec grep -rl "Packable.Projects.props" {} \;); do echo "packaging project $project" && \
           dotnet pack $project --no-build --configuration ${{ steps.comp-mode.outputs.compilationMode }} \
             --output ./nuget/ -p:PackageVersion=${{steps.bumpVersion.outputs.fullVersion}} --include-symbols --include-source
         done
