@@ -94,8 +94,7 @@ runs:
     - name: Package
       shell: bash
       run: |
-        ls
-        for project in $(grep -rl 'Packable.Projects.props' src/**/*.csproj); do echo "packaging project $project" && \
+        for project in $(find ./src -name "*.csproj" -exec grep -rl "Packable.Projects.props" {} \;); do echo "packaging project $project" && \
           dotnet pack $project --no-build --configuration ${{ steps.comp-mode.outputs.compilationMode }} \
             --output ./nuget/ -p:PackageVersion=${{steps.bumpVersion.outputs.fullVersion}} --include-symbols --include-source
         done
