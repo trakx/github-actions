@@ -8,7 +8,7 @@ inputs:
   releaseBranches:
     description: branches for which productVersion should be empty
     required: false
-    default: "master,stage"
+    default: "master,stage,prod"
 
 outputs:
   assemblyVersion:

@@ -7,6 +7,10 @@ inputs:
   githubToken:
     description: GitHub token
     required: true
+  releaseBranches:
+    description: branches for which productVersion should be empty
+    required: false
+    default: "master,main,prod"
 
 runs:
   using: "composite"
@@ -37,3 +41,4 @@ runs:
         GITHUB_TOKEN: ${{inputs.githubToken}}
         DRY_RUN: 'false'
         CUSTOM_TAG: ${{inputs.tag}}
+        RELEASE_BRANCHES: ${{inputs.releaseBranches}}
