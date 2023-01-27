@@ -11,7 +11,7 @@ on:
       releaseBranches:
         description: branches for which productVersion should be empty
         required: false
-        default: "master,stage"
+        default: "master,stage,prod"
       customTag:
         description: Use a custom tag and push it to the repo
         required: false
