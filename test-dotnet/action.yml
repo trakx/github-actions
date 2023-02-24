@@ -92,6 +92,6 @@ runs:
       run: |
         for f in $(find ./TestResults -name "coverage.cobertura.xml"); do echo "sending coverage report $f" && \
             bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
-                --partial --commit-uuid ${{github.sha}}; \
+                --partial --commit-uuid ${{github.job_workflow_sha}}; \
         done
-        bash <(curl -Ls https://coverage.codacy.com/get.sh) final --commit-uuid ${{github.sha}}
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) final --commit-uuid ${{github.job_workflow_sha}}
