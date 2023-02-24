@@ -90,6 +90,7 @@ runs:
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
       run: |
+        echo "${{github.job_workflow_sha}}" && \
         for f in $(find ./TestResults -name "coverage.cobertura.xml"); do echo "sending coverage report $f" && \
             bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
                 --partial --commit-uuid ${{github.job_workflow_sha}}; \
