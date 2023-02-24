@@ -78,7 +78,9 @@ runs:
       shell: bash
       run: |
         for f in $(find . -name "*.Tests.csproj"); do echo "testing project $f" && \
-          dotnet test $f --configuration Debug --no-restore --logger GitHubActions --collect "XPlat Code Coverage" --results-directory "TestResults"
+          csprojName=${f##*/} && \
+          projectName="${csprojName/.csproj/}" && \
+          dotnet test $f --configuration Debug --no-restore --logger GitHubActions --collect "XPlat Code Coverage" --results-directory "TestResults/$projectName"
         done
     
     # .NET Test puts the coverage file under a random directory [Guid]/coverage.cobertura.xml
@@ -88,7 +90,7 @@ runs:
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
       run: |
-        for f in ./TestResults/*/coverage.cobertura.xml; do echo "sending coverage report $f" && \
+        for f in $(find ./TestResults -name "coverage.cobertura.xml"); do echo "sending coverage report $f" && \
             bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
                 --partial --commit-uuid ${{github.sha}}; \
         done
