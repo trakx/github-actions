@@ -64,7 +64,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        for f in ./src/*.sln; do echo "restoring solution $f" && \
+        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
         dotnet restore $f
         done
 
@@ -75,7 +75,7 @@ runs:
     - name: Build
       shell: bash
       run: |
-        for f in ./src/*.sln; do echo "building solution $f" && \
+        for f in $(find . -name "*.sln"); do echo "building solution $f" && \
           dotnet build $f \
             --configuration ${{steps.comp-mode.outputs.compilationMode}} \
             -p:Version=${{steps.bumpVersion.outputs.assemblyVersion}} \
