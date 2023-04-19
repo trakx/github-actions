@@ -32,7 +32,7 @@ runs:
           echo "tag $TAG already exists"
           FOUND="true"
         fi
-        echo '::set-output name=tag_exists::'$FOUND
+        echo "tag_exists=$FOUND" >> $GITHUB_OUTPUT
 
     - name: Push tag
       if: ${{ steps.exists.outputs.tag_exists == 'false' }}
