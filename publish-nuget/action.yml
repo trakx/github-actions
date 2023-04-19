@@ -16,12 +16,23 @@ inputs:
     description: "Level of the semver (major.minor.patch) to be increased to get the new package version."
     required: false
     default: "patch"
-
+  actionRef:
+    description: "Run actions from this ref. Default is master."
+    required: false
+    default: "master"
+    
 runs:
   using: "composite"
   steps:
     - name: Checkout calling repo
       uses: actions/checkout@v3
+
+    - name: Checkout actions repo
+      uses: actions/checkout@v3
+      with:
+        repository: trakx/github-actions
+        path: github-actions
+        ref: ${{ inputs.actionRef }}
 
     - name: Set compilation mode
       shell: bash
