@@ -36,7 +36,7 @@ runs:
 
     - name: Push tag
       if: ${{ steps.exists.outputs.tag_exists == 'false' }}
-      uses: anothrNick/github-tag-action@1.39.0
+      uses: anothrNick/github-tag-action@1.62.0
       env:
         GITHUB_TOKEN: ${{inputs.githubToken}}
         DRY_RUN: 'false'
