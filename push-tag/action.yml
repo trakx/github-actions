@@ -41,4 +41,5 @@ runs:
         GITHUB_TOKEN: ${{inputs.githubToken}}
         DRY_RUN: 'false'
         CUSTOM_TAG: ${{inputs.tag}}
+        PRERELEASE: 'true'
         RELEASE_BRANCHES: ${{inputs.releaseBranches}}

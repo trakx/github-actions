@@ -48,6 +48,7 @@ runs:
         DEFAULT_BUMP: ${{steps.bumpLevel.outputs.finalLevel}}
         DRY_RUN: 'true'
         WITH_V: "false"
+        PRERELEASE: 'true'
         PRERELEASE_SUFFIX: ${{steps.shortHash.outputs.shortHash}}
         RELEASE_BRANCHES: ${{inputs.releaseBranches}}
         INITIAL_VERSION: 0.1.0
