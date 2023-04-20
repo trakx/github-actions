@@ -16,7 +16,11 @@ inputs:
     description: "Level of the semver (major.minor.patch) to be increased to get the new package version."
     required: false
     default: "patch"
-
+  actionRef:
+    description: "Run actions from this ref. Default is master."
+    required: false
+    default: "master"
+    
 runs:
   using: "composite"
   steps:
@@ -28,7 +32,7 @@ runs:
       with:
         repository: trakx/github-actions
         path: github-actions
-        ref: master
+        ref: ${{ inputs.actionRef }}
 
     - name: Set compilation mode
       shell: bash
@@ -39,7 +43,7 @@ runs:
         else
           COMP_MODE=Debug
         fi
-        echo '::set-output name=compilationMode::'$COMP_MODE
+        echo "compilationMode=$COMP_MODE" >> $GITHUB_OUTPUT
         echo "compilation mode set to ${{steps.comp-mode.outputs.compilationMode}}"
 
     - name: Bump version

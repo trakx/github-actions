@@ -30,7 +30,7 @@ runs:
         LEVEL="${{inputs.semverIncrementLevel}}"
         LEVEL=${LEVEL:-patch}
         echo "bump level set to $LEVEL"
-        echo '::set-output name=finalLevel::'$LEVEL
+        echo "finalLevel=$LEVEL" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Get commit shortened commit hash
@@ -38,11 +38,11 @@ runs:
       id: shortHash
       run: |
         short_hash=$(git rev-parse --short "$GITHUB_SHA")
-        echo '::set-output name=shortHash::'$short_hash
+        echo "shortHash=$short_hash" >> $GITHUB_OUTPUT
 
     - name: Get next or latest semver
       id: bumpSemver
-      uses: anothrNick/github-tag-action@1.39.0
+      uses: anothrNick/github-tag-action@1.62.0
       env:
         GITHUB_TOKEN: ${{inputs.githubToken}}
         DEFAULT_BUMP: ${{steps.bumpLevel.outputs.finalLevel}}
@@ -75,9 +75,9 @@ runs:
             PRODUCT_VERSION=${BRANCH_NAME}-${{github.run_number}}-${{steps.shortHash.outputs.shortHash}}
             FULL_VERSION=${SUBSTRING_LEFT_OF_DASH}-${PRODUCT_VERSION}
         fi
-        echo '::set-output name=assemblyVersion::'$SUBSTRING_LEFT_OF_DASH
-        echo '::set-output name=productVersion::'$PRODUCT_VERSION
-        echo '::set-output name=fullVersion::'$FULL_VERSION
+        echo "assemblyVersion=$SUBSTRING_LEFT_OF_DASH" >> $GITHUB_OUTPUT
+        echo "productVersion=$PRODUCT_VERSION" >> $GITHUB_OUTPUT
+        echo "fullVersion=$FULL_VERSION" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Print bumpSemver outputs
