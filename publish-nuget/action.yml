@@ -9,7 +9,7 @@ inputs:
     description: "Personal access token used to access the github private nuget source."
     required: true
   debuggable:
-    description: "Set to false if you want a non debuggable (Release) package. Default is true."
+    description: "If true (default), publish a pre-release version. If false, publish a release version."
     required: false
     default: "true"
   semverIncrementLevel:
@@ -43,7 +43,7 @@ runs:
         else
           COMP_MODE=Debug
         fi
-        echo '::set-output name=compilationMode::'$COMP_MODE
+        echo "compilationMode=$COMP_MODE" >> $GITHUB_OUTPUT
         echo "compilation mode set to ${{steps.comp-mode.outputs.compilationMode}}"
 
     - name: Bump version
@@ -51,6 +51,7 @@ runs:
       uses: ./github-actions/get-tag
       with:
         semverIncrementLevel: ${{ inputs.semverIncrementLevel }}
+        preRelease: ${{ inputs.debuggable }}
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
@@ -110,3 +111,4 @@ runs:
       with:
         tag: v${{steps.bumpVersion.outputs.fullVersion}}
         githubToken: ${{inputs.githubToken}}
+        preRelease: ${{ inputs.debuggable }}
