@@ -43,7 +43,7 @@ runs:
         else
           COMP_MODE=Debug
         fi
-        echo "compilationMode=$COMP_MODE" >> $GITHUB_OUTPUT
+        echo '::set-output name=compilationMode::'$COMP_MODE
         echo "compilation mode set to ${{steps.comp-mode.outputs.compilationMode}}"
 
     - name: Bump version
