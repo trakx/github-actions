@@ -11,7 +11,11 @@ inputs:
     description: branches for which productVersion should be empty
     required: false
     default: "master,main,prod"
-
+  preRelease:
+    description: "If tag is for a pre-release version. Default is true."
+    required: false
+    default: "true"
+    
 runs:
   using: "composite"
   steps:
@@ -41,5 +45,5 @@ runs:
         GITHUB_TOKEN: ${{inputs.githubToken}}
         DRY_RUN: 'false'
         CUSTOM_TAG: ${{inputs.tag}}
-        PRERELEASE: 'true'
+        PRERELEASE: ${{inputs.preRelease}}
         RELEASE_BRANCHES: ${{inputs.releaseBranches}}

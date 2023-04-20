@@ -9,6 +9,11 @@ inputs:
     description: branches for which productVersion should be empty
     required: false
     default: "master,stage,prod"
+  preRelease:
+    description: "If tag is for a pre-release version. Default is true."
+    required: false
+    default: "true"
+
 
 outputs:
   assemblyVersion:
@@ -48,7 +53,7 @@ runs:
         DEFAULT_BUMP: ${{steps.bumpLevel.outputs.finalLevel}}
         DRY_RUN: 'true'
         WITH_V: "false"
-        PRERELEASE: 'true'
+        PRERELEASE: ${{inputs.preRelease}}
         PRERELEASE_SUFFIX: ${{steps.shortHash.outputs.shortHash}}
         RELEASE_BRANCHES: ${{inputs.releaseBranches}}
         INITIAL_VERSION: 0.1.0
