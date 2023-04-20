@@ -58,7 +58,7 @@ runs:
       id: composeVersions
       run: |
         BUMPED_VERSION="${{steps.bumpSemver.outputs.new_tag}}"
-        CURRENT_VERSION="${{steps.bumpSemver.outputs.tag}}"
+        CURRENT_VERSION="${{steps.bumpSemver.outputs.old_tag}}"
         #if bumped version is null, use current version without `v` prefix
         BUMPED_VERSION="${BUMPED_VERSION:-${CURRENT_VERSION:1}}"
         #assembly version is the semver part of the full version tag
@@ -83,7 +83,7 @@ runs:
     - name: Print bumpSemver outputs
       if: ${{ inputs.customTag == '' }}
       run: |
-        echo "current tag is ${{steps.bumpSemver.outputs.tag}}"
+        echo "current tag is ${{steps.bumpSemver.outputs.old_tag}}"
         echo "bumping ${{steps.bumpSemver.outputs.part}} level on ${{github.ref}} gives new tag ${{steps.bumpSemver.outputs.new_tag}}"
         echo "assembly version ${{steps.composeVersions.outputs.assemblyVersion}}"
         echo "product version ${{steps.composeVersions.outputs.productVersion}}"
