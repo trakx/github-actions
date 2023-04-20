@@ -32,11 +32,11 @@ runs:
           echo "tag $TAG already exists"
           FOUND="true"
         fi
-        echo '::set-output name=tag_exists::'$FOUND
+        echo "tag_exists=$FOUND" >> $GITHUB_OUTPUT
 
     - name: Push tag
       if: ${{ steps.exists.outputs.tag_exists == 'false' }}
-      uses: anothrNick/github-tag-action@1.39.0
+      uses: anothrNick/github-tag-action@1.62.0
       env:
         GITHUB_TOKEN: ${{inputs.githubToken}}
         DRY_RUN: 'false'
