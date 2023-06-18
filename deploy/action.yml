@@ -25,9 +25,12 @@ inputs:
 
 runs:
 
-  using: "composite"
+  using: composite
 
   steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
     - name: Check inputs
       shell: bash
       run: |
@@ -47,8 +50,8 @@ runs:
       uses: chrnorm/deployment-action@v2
       id: create-deployment
       with:
-        token: '${{ github.token }}'
-        environment: ${{ inputs.environment }}
+        token: '${{ inputs.githubToken }}'
+        environment: ${{ inputs.environment}}
         payload: |
           '{ 
                 "artifactName" : "${{ inputs.artifact-name }}",
@@ -98,7 +101,7 @@ runs:
       if: success()
       uses: chrnorm/deployment-status@v2
       with:
-        token: '${{ github.token }}'
+        token: '${{ inputs.githubToken }}'
         state: 'success'
         deployment-id: ${{ steps.create-deployment.outputs.deployment_id }}
 
@@ -106,6 +109,6 @@ runs:
       if: failure()
       uses: chrnorm/deployment-status@v2
       with:
-        token: '${{ github.token }}'
+        token: '${{ inputs.githubToken }}'
         state: 'failure'
         deployment-id: ${{ steps.create-deployment.outputs.deployment_id }}
