@@ -2,6 +2,9 @@ name: "Deploy"
 description: "Create a GitHub deployments, attempts to deploy and update deployment status."
 
 inputs:
+  githubToken:
+    description: GitHub token
+    required: true
   environment:
     description: "The environment targeted for the deployment"
     required: true
@@ -32,7 +35,7 @@ runs:
       shell: bash
       run: |
         if [[ "${{ inputs.environment }}" != "production" 
-          && "${{ inputs.environment }}" != "stage" 
+          && "${{ inputs.environment }}" != "staging" 
           && "${{ inputs.environment }}" != "development" ]]; then
             echo "Unsupported environment: ${{ inputs.environment }}"
           exit 1
