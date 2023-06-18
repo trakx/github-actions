@@ -51,7 +51,7 @@ runs:
       id: create-deployment
       with:
         token: '${{ github.token }}'
-        environment: ${{inputs.environment}}
+        environment: ${{ inputs.environment }}
         payload: |
           '{ 
                 "artifactName" : "${{ inputs.artifact-name }}",
@@ -64,10 +64,9 @@ runs:
 
     ###### Kubernetes deployments ######
 
-      
     - name: Install Kubernetes & Kustomize
       #Since github runners working in Docker-in-Docker mode we need this workaround
-      if: $ {{ inputs.type == 'kubernetes' }}
+      if: ${{ inputs.type == 'kubernetes' }}
       shell: bash
       run: |
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -76,7 +75,7 @@ runs:
         sudo mv kustomize /usr/local/bin/kustomize
 
     - name: Deploy Image to Kubernetes
-      if: $ {{ inputs.type == 'kubernetes' }}
+      if: ${{ inputs.type == 'kubernetes' }}
       shell: bash
       env:
         DOCKER_REGISTRY: "docker.pkg.github.com"
@@ -89,7 +88,7 @@ runs:
     ###### Nuget deployments ######
 
     - name: Deploy Nuget
-      if: $ {{ inputs.type == 'nuget' }}
+      if: ${{ inputs.type == 'nuget' }}
       shell: bash
       env:
         NUGET_REGISTRY: "nuget.pkg.github.com"
