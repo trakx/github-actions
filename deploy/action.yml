@@ -50,12 +50,12 @@ runs:
         token: '${{ inputs.githubToken }}'
         environment: ${{ inputs.environment}}
         payload: |
-          '{ 
+            { 
                 "artifactName" : "${{ inputs.artifact-name }}",
                 "deploymentType" : "${{ inputs.type }}", 
                 "service" : "${{ inputs.service }}",
                 "tag" : "${{ inputs.tag }}"
-            }'
+            }
 
     ###### Deployment types switch ######
 
