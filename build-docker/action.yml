@@ -1,0 +1,144 @@
+name: "Docker Build & Push"
+description: "Builds a docker image and pushes it to the github registry, Outputs the generated container image version. Requires Microsoft.NET.Build.Containers package installed."
+
+inputs:
+  githubToken:
+    description: "Access token provided by the calling action context, used to publish the packages and push the corresponding tag."
+    required: true
+  packageReadonlyPat:
+    description: "Personal access token used to access the github private nuget source."
+    required: true
+  runnerName:
+    description: "Name of the runner to use."
+    required: true
+    type: string
+  projectFolder:
+    description: "Folder containing the project to build."
+    required: true
+    type: string
+  dockerImageName:
+    description: "Name of the docker image to build."
+    required: true
+    type: string
+  dockerImageTagPrefix:
+    description: "Prefix of the docker image tag."
+    required: true
+    type: string
+  containerPublishType:
+    description: "Type of container publish (api | worker)."
+    required: true
+    type: string
+  dotnetVersion:
+    description: "Version of dotnet to use. Default is v7.x."
+    required: true
+    type: string
+    default: "7.x"
+  actionRef:
+    description: "Run actions from this ref. Default is master."
+    required: false
+    default: "master"
+
+outputs:
+  tag:
+    description: "Docker Image Tag"
+    value: ${{ steps.setImageTag.outputs.tag}}
+
+env:
+  DOCKER_REGISTRY: "docker.pkg.github.com"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout calling repo
+      uses: actions/checkout@v3
+
+    - name: Checkout actions repo
+      uses: actions/checkout@v3
+      with:
+        repository: trakx/github-actions
+        path: github-actions
+        ref: ${{ inputs.actionRef }}
+
+    - name: .NET Install
+      env:
+        DOTNET_INSTALL_DIR: "./.dotnet"  # Required by the runner to install dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ inputs.dotnetVersion }}
+
+    - name: Add Trakx Github Nuget Source
+      shell: bash
+      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
+                  --name "github"
+                  --username "trakx-bot"
+                  --password ${{inputs.packageReadonlyPat}}
+                  --store-password-in-clear-text
+
+    - name: Restore Cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: ${{ runner.os }}-nuget-
+
+    - name: Set Variable WORKDIR
+      run: echo "WORKDIR=${{github.workspace}}/${{inputs.projectFolder}}" >> $GITHUB_ENV
+
+    - name: Set Variable DATE
+      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV 
+
+    - name: Set Variable tag
+      run: echo "tag=${{inputs.dockerImageTagPrefix}}-${{env.DATE}}-${{github.run_number}}" >> $GITHUB_ENV
+
+    - name: Set Variable IMAGEPATH
+      run: echo "IMAGEPATH=$DOCKER_REGISTRY/$GITHUB_REPOSITORY/${{inputs.dockerImageName}}" >> $GITHUB_ENV
+      
+    - name: .NET Restore
+      working-directory: ${{env.WORKDIR}}
+      run: dotnet restore --locked-mode
+
+    - name: Remove Trakx github source
+      shell: bash
+      run: dotnet nuget remove source "github"
+
+    - name: .NET Build
+      working-directory: ${{env.WORKDIR}}
+      run: dotnet build
+
+    # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
+    - name: .NET Publish Container (API)
+      if: ${{inputs.containerPublishType}} == 'api'
+      working-directory: ${{env.WORKDIR}}
+      run: >
+          dotnet publish --os linux --arch x64
+          /t:PublishContainer
+          -p:ContainerImageName=${{inputs.dockerImageName}}
+          -p:ContainerImageTag=${{env.tag}}
+          -c Release
+
+    - name: .NET Publish Container (Worker)
+      if: ${{inputs.containerPublishType}} == 'worker'
+      working-directory: ${{env.WORKDIR}}
+      run: >
+          dotnet publish --os linux --arch x64
+          -p:PublishProfile=DefaultContainer
+          -p:ContainerImageName=${{inputs.dockerImageName}}
+          -p:ContainerImageTag=${{env.tag}}
+          -c Release
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        registry: "${{env.DOCKER_REGISTRY}}"
+        username: "${{github.actor}}"
+        password: "${{inputs.githubToken}}"
+      
+    - name: Tag Image
+      run: docker tag ${{inputs.dockerImageName}}:${{env.tag}} ${{env.IMAGEPATH}}:${{env.tag}}
+
+    - name: Push Image to Registry
+      run: docker push ${{env.IMAGEPATH}}:${{env.tag}}
+
+    -name: Output tag
+      id: setImageTag
+      run: echo "tag=${{env.tag}}" >> $GITHUB_OUTPUT
