@@ -8,10 +8,6 @@ inputs:
   packageReadonlyPat:
     description: "Personal access token used to access the github private nuget source."
     required: true
-  runnerName:
-    description: "Name of the runner to use."
-    required: true
-    type: string
   projectFolder:
     description: "Folder containing the project to build."
     required: true

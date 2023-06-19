@@ -1,0 +1,38 @@
+name: "Deploy container image to Kubernetes"
+description: "Deploy container image to Kubernetes. Requires deployment folder to be present in the repository."
+
+inputs:
+  environment:
+    required: true
+    type: string
+  containerImageTag:
+    required: true
+    type: string
+  serviceName:
+    required: true
+    type: string
+  containerImageName:
+    required: true
+    type: string
+  dockerRegistry:
+    description: "Docker registry to push the image to."
+    required: false
+    type: string
+    default: "docker.pkg.github.com"
+
+runs:
+  using: "composite"
+  steps:
+    #Since github runners working in Docker-in-Docker mode we need this workaround
+    - name: Install Kubernetes & Kustomize
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        sudo mv kustomize /usr/local/bin/kustomize
+
+    - name: Deploy Image
+      run: |
+        cd deployment/${{inputs.serviceName}}/overlays/${{inputs.environment}}/
+        kustomize edit set image ${{inputs.serviceName}}=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.dockerImageName}}:${{inputs.containerImageTag}}
+        kustomize build . | kubectl apply --validate=false -f -
