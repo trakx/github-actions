@@ -138,7 +138,7 @@ runs:
       shell: bash
       run: docker push ${{env.IMAGEPATH}}:${{env.tag}}
 
-    -name: Output tag
+    - name: Output tag
       shell: bash
       id: setImageTag
       run: echo "tag=${{env.tag}}" >> $GITHUB_OUTPUT
