@@ -25,6 +25,7 @@ runs:
   steps:
     #Since github runners working in Docker-in-Docker mode we need this workaround
     - name: Install Kubernetes & Kustomize
+      shell: bash
       run: |
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
@@ -32,6 +33,7 @@ runs:
         sudo mv kustomize /usr/local/bin/kustomize
 
     - name: Deploy Image
+      shell: bash
       run: |
         cd deployment/${{inputs.serviceName}}/overlays/${{inputs.environment}}/
         kustomize edit set image ${{inputs.serviceName}}=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.dockerImageName}}:${{inputs.containerImageTag}}
