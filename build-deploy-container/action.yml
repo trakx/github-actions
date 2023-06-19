@@ -50,9 +50,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout calling repo
-      uses: actions/checkout@v3
-
     - name: Checkout actions repo
       uses: actions/checkout@v3
       with:
@@ -77,6 +74,7 @@ runs:
 
     - name: Build and push container image
       id: build-push-container
+      working-directory: ./github-actions
       uses: ./github-actions/build-push-container
       with:
         githubToken: ${{inputs.githubToken}}
@@ -90,6 +88,7 @@ runs:
 
     - name: Deploy container image to Kubernetes
       id: deploy-container-k8s
+      working-directory: ./github-actions
       uses: ./github-actions/deploy-kubernetes
       with:
         environment: ${{inputs.environment}}
