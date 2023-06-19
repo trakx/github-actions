@@ -30,7 +30,7 @@ inputs:
     type: string
   dotnetVersion:
     description: "Version of dotnet to use. Default is v7.x."
-    required: true
+    required: false
     type: string
     default: "7.x"
   actionRef:
@@ -82,18 +82,23 @@ runs:
         restore-keys: ${{ runner.os }}-nuget-
 
     - name: Set Variable WORKDIR
+      shell: bash
       run: echo "WORKDIR=${{github.workspace}}/${{inputs.projectFolder}}" >> $GITHUB_ENV
 
     - name: Set Variable DATE
+      shell: bash
       run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV 
 
     - name: Set Variable tag
+      shell: bash
       run: echo "tag=${{inputs.dockerImageTagPrefix}}-${{env.DATE}}-${{github.run_number}}" >> $GITHUB_ENV
 
     - name: Set Variable IMAGEPATH
+      shell: bash
       run: echo "IMAGEPATH=$DOCKER_REGISTRY/$GITHUB_REPOSITORY/${{inputs.dockerImageName}}" >> $GITHUB_ENV
       
     - name: .NET Restore
+      shell: bash
       working-directory: ${{env.WORKDIR}}
       run: dotnet restore --locked-mode
 
@@ -102,12 +107,14 @@ runs:
       run: dotnet nuget remove source "github"
 
     - name: .NET Build
+      shell: bash
       working-directory: ${{env.WORKDIR}}
       run: dotnet build
 
     # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     - name: .NET Publish Container (API)
       if: ${{inputs.containerPublishType}} == 'api'
+      shell: bash
       working-directory: ${{env.WORKDIR}}
       run: >
           dotnet publish --os linux --arch x64
@@ -118,6 +125,7 @@ runs:
 
     - name: .NET Publish Container (Worker)
       if: ${{inputs.containerPublishType}} == 'worker'
+      shell: bash
       working-directory: ${{env.WORKDIR}}
       run: >
           dotnet publish --os linux --arch x64
@@ -134,11 +142,14 @@ runs:
         password: "${{inputs.githubToken}}"
       
     - name: Tag Image
+      shell: bash
       run: docker tag ${{inputs.dockerImageName}}:${{env.tag}} ${{env.IMAGEPATH}}:${{env.tag}}
 
     - name: Push Image to Registry
+      shell: bash
       run: docker push ${{env.IMAGEPATH}}:${{env.tag}}
 
     -name: Output tag
+      shell: bash
       id: setImageTag
       run: echo "tag=${{env.tag}}" >> $GITHUB_OUTPUT
