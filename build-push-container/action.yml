@@ -34,6 +34,11 @@ inputs:
     required: false
     type: string
     default: "docker.pkg.github.com"
+  doCheckout:
+    description: "Checkout the repository. Default is true."
+    required: false
+    type: boolean
+    default: true
 
 outputs:
   tag:
@@ -44,6 +49,7 @@ runs:
   using: "composite"
   steps:
     - name: Checkout
+      if: ${{inputs.doCheckout}}
       uses: actions/checkout@v3
 
     - name: .NET Install

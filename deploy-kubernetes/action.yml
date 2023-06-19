@@ -19,11 +19,17 @@ inputs:
     required: false
     type: string
     default: "docker.pkg.github.com"
+  doCheckout:
+    description: "Checkout the repository. Default is true."
+    required: false
+    type: boolean
+    default: true
 
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
+      if: ${{inputs.doCheckout}}
 
     #Since github runners working in Docker-in-Docker mode we need this workaround
     - name: Install Kubernetes & Kustomize
