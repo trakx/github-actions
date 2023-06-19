@@ -33,10 +33,6 @@ inputs:
     required: false
     type: string
     default: "7.x"
-  actionRef:
-    description: "Run actions from this ref. Default is master."
-    required: false
-    default: "master"
 
 outputs:
   tag:
@@ -49,15 +45,8 @@ env:
 runs:
   using: "composite"
   steps:
-    - name: Checkout calling repo
+    - name: Checkout
       uses: actions/checkout@v3
-
-    - name: Checkout actions repo
-      uses: actions/checkout@v3
-      with:
-        repository: trakx/github-actions
-        path: github-actions
-        ref: ${{ inputs.actionRef }}
 
     - name: .NET Install
       env:
