@@ -23,9 +23,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Set Variable WORKDIR
-      shell: bash
-      run: echo "WORKDIR=${{github.workspace}}" >> $GITHUB_ENV
+    - uses: actions/checkout@v3
 
     #Since github runners working in Docker-in-Docker mode we need this workaround
     - name: Install Kubernetes & Kustomize
@@ -38,7 +36,6 @@ runs:
 
     - name: Deploy Image
       shell: bash
-      working-directory: ${{env.WORKDIR}}
       run: |
         cd deployment/${{inputs.serviceName}}/overlays/${{inputs.environment}}/
         kustomize edit set image ${{inputs.serviceName}}=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.dockerImageName}}:${{inputs.containerImageTag}}
