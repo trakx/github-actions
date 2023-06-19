@@ -93,7 +93,7 @@ runs:
       uses: ./github-actions/deploy-kubernetes
       with:
         environment: ${{inputs.environment}}
-        imageTag: ${{needs.build-push-container.outputs.Tag}}
+        imageTag: ${{steps.build-push-container.outputs.tag}}
         serviceName: ${{ inputs.serviceName }}
         imageName: ${{ inputs.imageName }}
         dockerRegistry: ${{ inputs.dockerRegistry }}
