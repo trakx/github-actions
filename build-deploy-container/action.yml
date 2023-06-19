@@ -64,13 +64,13 @@ runs:
       shell: bash
       run: |
         IMAGE_TAG="${{inputs.imageTagPrefix}}"
-        if [[ "${{ inputs.imageTagPrefix }}" == "" ]]; then
-          if [[ "${{ inputs.environment }}" == "production" ]]; then
-            IMAGE_TAG="prod"
-          else if [[ "${{ inputs.environment }}" == "stage" ]]; then
-            IMAGE_TAG="stage"
+        if [[ $IMAGE_TAG == "" ]]; then
+          if [[ ${{inputs.environment == "production"}} ]]; then
+              NEW_IMAGE_TAG="prod"
+          elif [[ ${{inputs.environment == "stage"}} ]]; then
+              NEW_IMAGE_TAG="stage"
           else
-            IMAGE_TAG="dev"
+              NEW_IMAGE_TAG="dev"
           fi
         fi
         echo "CONTAINER_IMAGE_TAG_PREFIX=$IMAGE_TAG" >> $GITHUB_ENV
