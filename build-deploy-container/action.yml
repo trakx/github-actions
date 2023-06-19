@@ -50,9 +50,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout calling repo
-      uses: actions/checkout@v3
-
     - name: Checkout actions repo
       uses: actions/checkout@v3
       with:
@@ -87,7 +84,13 @@ runs:
         containerPublishType: ${{ inputs.containerPublishType }}
         dotnetVersion: ${{ inputs.dotnetVersion }}
         dockerRegistry: ${{ inputs.dockerRegistry }}
-        doCheckout: false
+
+    - name: Checkout actions repo
+      uses: actions/checkout@v3
+      with:
+        repository: trakx/github-actions
+        path: github-actions
+        ref: ${{ inputs.actionRef }}
 
     - name: Deploy container image to Kubernetes
       id: deploy-container-k8s
@@ -98,4 +101,3 @@ runs:
         serviceName: ${{ inputs.serviceName }}
         imageName: ${{ inputs.imageName }}
         dockerRegistry: ${{ inputs.dockerRegistry }}
-        doCheckout: false
