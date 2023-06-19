@@ -39,9 +39,6 @@ outputs:
     description: "Docker Image Tag"
     value: ${{ steps.setImageTag.outputs.tag}}
 
-env:
-  DOCKER_REGISTRY: "docker.pkg.github.com"
-
 runs:
   using: "composite"
   steps:
@@ -102,18 +99,7 @@ runs:
 
     # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     - name: .NET Publish Container (API)
-      if: ${{inputs.containerPublishType}} == 'api'
-      shell: bash
-      working-directory: ${{env.WORKDIR}}
-      run: >
-          dotnet publish --os linux --arch x64
-          /t:PublishContainer
-          -p:ContainerImageName=${{inputs.dockerImageName}}
-          -p:ContainerImageTag=${{env.tag}}
-          -c Release
-
-    - name: .NET Publish Container (Worker)
-      if: ${{inputs.containerPublishType}} == 'worker'
+      if: ${{inputs.containerPublishType == 'api'}}
       shell: bash
       working-directory: ${{env.WORKDIR}}
       run: >
@@ -123,7 +109,20 @@ runs:
           -p:ContainerImageTag=${{env.tag}}
           -c Release
 
+    - name: .NET Publish Container (Worker)
+      if: ${{inputs.containerPublishType == 'worker'}}
+      shell: bash
+      working-directory: ${{env.WORKDIR}}
+      run: >
+          dotnet publish --os linux --arch x64
+          /t:PublishContainer
+          -p:ContainerImageName=${{inputs.dockerImageName}}
+          -p:ContainerImageTag=${{env.tag}}
+          -c Release
+
     - name: Login to Docker Hub
+      env:
+        DOCKER_REGISTRY: "docker.pkg.github.com"
       uses: docker/login-action@v2
       with:
         registry: "${{env.DOCKER_REGISTRY}}"
