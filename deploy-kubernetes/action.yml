@@ -5,13 +5,13 @@ inputs:
   environment:
     required: true
     type: string
-  containerImageTag:
+  imageTag:
     required: true
     type: string
   serviceName:
     required: true
     type: string
-  containerImageName:
+  imageName:
     required: true
     type: string
   dockerRegistry:
@@ -38,5 +38,5 @@ runs:
       shell: bash
       run: |
         cd deployment/${{inputs.serviceName}}/overlays/${{inputs.environment}}/
-        kustomize edit set image ${{inputs.serviceName}}=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.dockerImageName}}:${{inputs.containerImageTag}}
+        kustomize edit set image ${{inputs.serviceName}}=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.dockerImageName}}:${{inputs.imageTag}}
         kustomize build . | kubectl apply --validate=false -f -

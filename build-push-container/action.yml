@@ -1,4 +1,4 @@
-name: "Docker Build & Push"
+name: "Build and push container image"
 description: "Builds a docker image and pushes it to the github registry, Outputs the generated container image version. Requires Microsoft.NET.Build.Containers package installed."
 
 inputs:
@@ -12,11 +12,11 @@ inputs:
     description: "Folder containing the project to build."
     required: true
     type: string
-  dockerImageName:
+  imageName:
     description: "Name of the docker image to build."
     required: true
     type: string
-  dockerImageTagPrefix:
+  imageTagPrefix:
     description: "Prefix of the docker image tag."
     required: true
     type: string
@@ -78,11 +78,11 @@ runs:
 
     - name: Set Variable tag
       shell: bash
-      run: echo "tag=${{inputs.dockerImageTagPrefix}}-${{env.DATE}}-${{github.run_number}}" >> $GITHUB_ENV
+      run: echo "tag=${{inputs.imageTagPrefix}}-${{env.DATE}}-${{github.run_number}}" >> $GITHUB_ENV
 
     - name: Set Variable IMAGEPATH
       shell: bash
-      run: echo "IMAGEPATH=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.dockerImageName}}" >> $GITHUB_ENV
+      run: echo "IMAGEPATH=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.imageName}}" >> $GITHUB_ENV
       
     - name: .NET Restore
       shell: bash
@@ -106,7 +106,7 @@ runs:
       run: >
           dotnet publish --os linux --arch x64
           -p:PublishProfile=DefaultContainer
-          -p:ContainerImageName=${{inputs.dockerImageName}}
+          -p:ContainerImageName=${{inputs.imageName}}
           -p:ContainerImageTag=${{env.tag}}
           -c Release
 
@@ -117,7 +117,7 @@ runs:
       run: >
           dotnet publish --os linux --arch x64
           /t:PublishContainer
-          -p:ContainerImageName=${{inputs.dockerImageName}}
+          -p:ContainerImageName=${{inputs.imageName}}
           -p:ContainerImageTag=${{env.tag}}
           -c Release
 
@@ -130,7 +130,7 @@ runs:
       
     - name: Tag Image
       shell: bash
-      run: docker tag ${{inputs.dockerImageName}}:${{env.tag}} ${{env.IMAGEPATH}}:${{env.tag}}
+      run: docker tag ${{inputs.imageName}}:${{env.tag}} ${{env.IMAGEPATH}}:${{env.tag}}
 
     - name: Push Image to Registry
       shell: bash
