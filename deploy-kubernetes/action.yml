@@ -38,5 +38,5 @@ runs:
       shell: bash
       run: |
         cd deployment/${{inputs.serviceName}}/overlays/${{inputs.environment}}/
-        kustomize edit set image ${{inputs.serviceName}}=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.dockerImageName}}:${{inputs.imageTag}}
+        kustomize edit set image ${{inputs.serviceName}}=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.imageName}}:${{inputs.imageTag}}
         kustomize build . | kubectl apply --validate=false -f -
