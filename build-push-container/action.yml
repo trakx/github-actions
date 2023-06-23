@@ -95,13 +95,13 @@ runs:
       shell: bash
       run: |
         new_tag_suffix="${{inputs.imageTagSuffix}}"
-
+        if [ -z "${{inputs.imageTagSuffix}}" ]; then
+          new_tag_suffix="${{steps.last-commit-sha.outputs.lastCommitSha}}"
+        fi
         if [ -z $new_tag_suffix ]; then
-          if [ -z "${{steps.last-commit-sha.outputs.lastCommitSha}}" ]; then
-            new_tag_suffix="${{github.run_number}}"
-          else
-            new_tag_suffix="${{github.run_number}}-${{steps.last-commit-sha.outputs.lastCommitSha}}"
-          fi
+          new_tag_suffix="${{github.run_number}}"
+        else
+          new_tag_suffix="${{github.run_number}}-$new_tag_suffix"
         fi
         echo "TAG_SUFFIX=$new_tag_suffix" >> $GITHUB_ENV
 
