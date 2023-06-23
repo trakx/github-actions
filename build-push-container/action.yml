@@ -89,7 +89,6 @@ runs:
     - name: Load last commit sha
       uses: ./github-actions/get-last-commit
       id: last-commit-sha
-      if: ${{ inputs.imageTagSuffix == '' }}
 
     - name: Set Variable TAG_SUFFIX
       shell: bash
@@ -104,11 +103,13 @@ runs:
           fi
         fi
         echo "TAG_SUFFIX=${{github.run_number}}-${{inputs.imageTagSuffix}}" >> $GITHUB_ENV
-        echo "The tag suffix is ${{env.TAG_SUFFIX}}"
 
     - name: Set Variable tag
       shell: bash
-      run: echo "tag=${{inputs.imageTagPrefix}}-${{env.DATE}}-${{env.TAG_SUFFIX}}" >> $GITHUB_ENV
+      run: |
+        generated_tag=${{inputs.imageTagPrefix}}-${{env.DATE}}-${{env.TAG_SUFFIX}}
+        echo "Generated container image tag: $generated_tag"
+        echo "tag=$generated_tag" >> $GITHUB_ENV
 
     - name: Set Variable IMAGEPATH
       shell: bash
