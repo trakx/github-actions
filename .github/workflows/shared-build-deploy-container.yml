@@ -91,7 +91,7 @@ jobs:
           echo "CONTAINER_IMAGE_TAG_PREFIX=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Build and push container image
-        id: build-push-container
+        id: build-push-container-step
         uses: ./github-actions/build-push-container
         with:
           githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
@@ -104,6 +104,8 @@ jobs:
           dockerRegistry: ${{ inputs.dockerRegistry }}
           imageTagSuffix: ${{steps.last-commit-sha.outputs.lastCommitSha}}
           doCheckout: false
+    outputs:
+      tag: ${{ steps.build-push-container-step.outputs.tag }}
 
   deploy-kubernetes:
     name: "Deploy container image to Kubernetes"
