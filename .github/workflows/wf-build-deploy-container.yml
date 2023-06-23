@@ -73,6 +73,10 @@ jobs:
       - name: Get last commit of calling repo
         uses: ./github-actions/get-last-commit
 
+      - name: ECHO last commit
+        run: |
+          echo "The last commit sha is >> ${{ env.LAST_COMMIT_SHA }}"
+
       - name: Set variable CONTAINER_IMAGE_TAG_PREFIX
         shell: bash
         run: |
