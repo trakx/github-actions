@@ -8,12 +8,6 @@ on:
         description: "Name of the runner to use."
         required: true
         type: string
-      githubToken:
-        description: "Access token provided by the calling action context, used to publish the packages and push the corresponding tag."
-        required: true
-      packageReadonlyPat:
-        description: "Personal access token used to access the github private nuget source."
-        required: true
       projectFolder:
         description: "Folder containing the project to build."
         required: true
@@ -83,14 +77,15 @@ jobs:
         id: build-push-container
         uses: ./github-actions/build-push-container
         with:
-          githubToken: ${{inputs.githubToken}}
-          packageReadonlyPat: ${{inputs.packageReadonlyPat}}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          packageReadonlyPat: ${{secrets.TRAKX_BOT_READONLY_PAT}}
           projectFolder: ${{ inputs.projectFolder }}
           imageName: ${{ inputs.imageName }}
           imageTagPrefix: ${{ env.CONTAINER_IMAGE_TAG_PREFIX }}
           containerPublishType: ${{ inputs.containerPublishType }}
           dotnetVersion: ${{ inputs.dotnetVersion }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
+        secrets: inherit
 
   deploy-kubernetes:
     runs-on: ${{ inputs.runnerName }}
