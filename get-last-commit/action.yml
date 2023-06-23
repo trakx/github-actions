@@ -25,4 +25,6 @@ runs:
       id: setLastCommitSha
       run: |
         echo "The last commit sha is >> ${{ env.LAST_COMMIT_SHA }}"
+        echo "The last commit sha PR is >> ${{ github.event.pull_request.head.sha }}"
+        echo "The last commit sha PUSH is >> ${{ github.sha }}"
         echo "lastCommitSha=${{env.LAST_COMMIT_SHA}}" >> $GITHUB_OUTPUT
