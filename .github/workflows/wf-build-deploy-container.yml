@@ -4,7 +4,7 @@ name: "Build, Push and Deploy a container image to Kubernetes"
 on:
   workflow_call:
     secrets:
-      GITHUB_TOKEN:
+      TRAKX_GITHUB_TOKEN:
         description: "Access token provided by the calling action context, used to publish the packages and push the corresponding tag."
         required: true
       TRAKX_BOT_READONLY_PAT:
@@ -79,7 +79,7 @@ jobs:
         id: build-push-container
         uses: ./github-actions/build-push-container
         with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
           packageReadonlyPat: ${{secrets.TRAKX_BOT_READONLY_PAT}}
           projectFolder: ${{ inputs.projectFolder }}
           imageName: ${{ inputs.imageName }}
