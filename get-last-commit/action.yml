@@ -17,6 +17,4 @@ runs:
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
           LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
         fi
-
-        echo "The last commit sha is >> $LAST_COMMIT_SHA"
         echo "lastCommitSha=$LAST_COMMIT_SHA" >> $GITHUB_OUTPUT
