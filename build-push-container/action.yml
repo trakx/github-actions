@@ -54,7 +54,7 @@ runs:
   steps:
     - name: Checkout
       uses: actions/checkout@v3
-      if: ${{inputs.doCheckout}}
+      if: ${{inputs.doCheckout == true}}
 
     # - name: .NET Install
     #   env:
