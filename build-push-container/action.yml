@@ -88,6 +88,7 @@ runs:
 
     - name: Load last commit sha
       uses: ./github-actions/get-last-commit
+      id: last-commit-sha
       if: ${{ inputs.imageTagSuffix == '' }}
 
     - name: Set Variable TAG_SUFFIX
@@ -96,10 +97,8 @@ runs:
         new_tag_suffix="${{inputs.imageTagSuffix}}"
 
         if [ -z $new_tag_suffix ]; then
-          last_commit_sha=${{env.LAST_COMMIT_SHA}}
-
-          if [ -z "$last_commit_sha" ]; then
-            echo "TAG_SUFFIX=${{github.run_number}}-$last_commit_sha" >> $GITHUB_ENV
+          if [ -z "${{steps.last-commit-sha.outputs.lastCommitSha}}" ]; then
+            echo "TAG_SUFFIX=${{github.run_number}}-${{steps.last-commit-sha.outputs.lastCommitSha}}" >> $GITHUB_ENV
           else
             echo "TAG_SUFFIX=${{github.run_number}}" >> $GITHUB_ENV
           fi

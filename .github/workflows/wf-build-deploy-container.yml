@@ -71,11 +71,12 @@ jobs:
           ref: ${{ inputs.actionsRepoRef }}
 
       - name: Get last commit of calling repo
+        id: last-commit-sha
         uses: ./github-actions/get-last-commit
 
       - name: ECHO last commit
         run: |
-          echo "The last commit sha is >> ${{ env.LAST_COMMIT_SHA }}"
+          echo "The last commit sha is >> ${{steps.last-commit-sha.outputs.lastCommitSha}}"
 
       - name: Set variable CONTAINER_IMAGE_TAG_PREFIX
         shell: bash
@@ -105,7 +106,7 @@ jobs:
           containerPublishType: ${{ inputs.containerPublishType }}
           dotnetVersion: ${{ inputs.dotnetVersion }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
-          imageTagSuffix: ${{ env.LAST_COMMIT_SHA }}
+          imageTagSuffix: ${{steps.last-commit-sha.outputs.lastCommitSha}}
           doCheckout: false
 
   # deploy-kubernetes:

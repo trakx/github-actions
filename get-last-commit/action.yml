@@ -1,5 +1,10 @@
-name: 'Preparation'
-description: ''
+name: 'Outputs the last commit sha'
+
+outputs:
+  lastCommitSha:
+    description: "Last commit SHA"
+    value: ${{ steps.setLastCommitSha.outputs.lastCommitSha}}
+
 runs:
   using: "composite"
   steps:
@@ -13,3 +18,8 @@ runs:
       shell: bash  
       run: |  
         echo "LAST_COMMIT_SHA=${GITHUB_SHA}" >> ${GITHUB_ENV}
+
+    - name: Output LAST_COMMIT_SHA
+      shell: bash
+      id: setLastCommitSha
+      run: echo "lastCommitSha=${{env.LAST_COMMIT_SHA}}" >> $GITHUB_OUTPUT
