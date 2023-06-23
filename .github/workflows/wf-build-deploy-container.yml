@@ -114,9 +114,9 @@ jobs:
   #   runs-on: ${{ inputs.runnerName }}
   #   needs: build-push-container
   #   if: |
-  #     always() && 
-  #       (needs.build-push-container.result == 'success' || (needs.build-push-container.result == 'skipped' 
-  #           && github.event_name == 'workflow_run' 
+  #     always() &&
+  #       (needs.build-push-container.result == 'success' || (needs.build-push-container.result == 'skipped'
+  #           && github.event_name == 'workflow_run'
   #           && github.event.workflow_run.conclusion == 'success' ))
   #   steps:
   #     - name: Checkout calling repo
