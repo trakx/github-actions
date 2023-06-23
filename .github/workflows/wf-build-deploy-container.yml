@@ -56,10 +56,11 @@ on:
         default: "master"
 
 jobs:
-  where-is-my-commit-hash:
+  build-push-container:
+    name: "Build and push container image"
     runs-on: ${{ inputs.runnerName }}
     steps:
-      - name: Checkout
+      - name: Checkout calling repo
         uses: actions/checkout@v3
 
       - name: Set Variable COMMIT_SHORT_HASH (commit shortened commit hash)
@@ -68,19 +69,18 @@ jobs:
           short_hash="${{ github.sha }}"
           echo "Commit hash: $short_hash"
 
-  # build-push-container:
-  #   name: "Build and push container image"
-  #   runs-on: ${{ inputs.runnerName }}
-  #   steps:
-  #     - name: Checkout calling repo
-  #       uses: actions/checkout@v3
+      - name: Checkout trakx/github-actions repo
+        uses: actions/checkout@v3
+        with:
+          repository: trakx/github-actions
+          path: ./github-actions
+          ref: ${{ inputs.actionsRepoRef }}
 
-  #     - name: Checkout trakx/github-actions repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         repository: trakx/github-actions
-  #         path: ./github-actions
-  #         ref: ${{ inputs.actionsRepoRef }}
+      - name: Set Variable COMMIT_SHORT_HASH (commit shortened commit hash) AGAIN
+        shell: bash
+        run: |
+          short_hash="${{ github.sha }}"
+          echo "Commit hash: $short_hash"
 
   #     - name: Set variable CONTAINER_IMAGE_TAG_PREFIX
   #       shell: bash
