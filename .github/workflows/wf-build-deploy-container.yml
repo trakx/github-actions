@@ -3,6 +3,13 @@ name: "Build, Push and Deploy a container image to Kubernetes"
 
 on:
   workflow_call:
+    secrets:
+      GITHUB_TOKEN:
+        description: "Access token provided by the calling action context, used to publish the packages and push the corresponding tag."
+        required: true
+      TRAKX_BOT_READONLY_PAT:
+        description: "Personal access token used to access the github private nuget source."
+        required: true
     inputs:
       runnerName:
         description: "Name of the runner to use."
