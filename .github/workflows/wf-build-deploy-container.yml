@@ -76,6 +76,7 @@ jobs:
                 IMAGE_TAG="dev"
             fi
           fi
+          echo "Tagging image prefix with: $IMAGE_TAG"
           echo "CONTAINER_IMAGE_TAG_PREFIX=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Build and push container image
