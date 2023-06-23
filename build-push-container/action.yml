@@ -20,6 +20,10 @@ inputs:
     description: "Prefix of the docker image tag."
     required: true
     type: string
+  imageTagSuffix:
+    description: "Suffix of the docker image tag. If not provided, will load the last commit sha."
+    required: false
+    type: string
   containerPublishType:
     description: "Type of container publish (api | worker)."
     required: true
@@ -34,6 +38,11 @@ inputs:
     required: false
     type: string
     default: "docker.pkg.github.com"
+  doCheckout:
+    description: "Whether to checkout the repository or not."
+    required: false
+    type: boolean
+    default: true
 
 outputs:
   tag:
@@ -43,8 +52,9 @@ outputs:
 runs:
   using: "composite"
   steps:
-    # - name: Checkout
-    #   uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
+      if: ${{inputs.doCheckout}}
 
     # - name: .NET Install
     #   env:
@@ -76,28 +86,34 @@ runs:
       shell: bash
       run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
 
-    - name: Setup Environment (PR)  
-      if: ${{ github.event_name == 'pull_request' }}  
-      shell: bash  
-      run: |  
-        echo "LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> ${GITHUB_ENV}  
-    - name: Setup Environment (Push)  
-      if: ${{ github.event_name == 'push' }}  
-      shell: bash  
-      run: |  
-        echo "LAST_COMMIT_SHA=${GITHUB_SHA}" >> ${GITHUB_ENV}
+    - name: Load last commit sha
+      uses: ./github-actions/get-last-commit
+      if: ${{ inputs.imageTagSuffix == '' }}
 
-    - name: ECHO THIS LAST COMMIT SHA
+    - name: Set Variable TAG_SUFFIX
       shell: bash
-      run: echo "The last commit sha is >> ${{env.LAST_COMMIT_SHA}}"
+      run: |
+        new_tag_suffix="${{inputs.imageTagSuffix}}"
+
+        if [ -z $new_tag_suffix ]; then
+          last_commit_sha=${{env.LAST_COMMIT_SHA}}
+
+          if [ -z "$last_commit_sha" ]; then
+            echo "TAG_SUFFIX=${{github.run_number}}-$last_commit_sha" >> $GITHUB_ENV
+          else
+            echo "TAG_SUFFIX=${{github.run_number}}" >> $GITHUB_ENV
+          fi
+        fi
+        echo "TAG_SUFFIX=${{github.run_number}}-${{inputs.imageTagSuffix}}" >> $GITHUB_ENV
+        echo "The tag suffix is ${{env.TAG_SUFFIX}}"
 
     - name: Set Variable tag
       shell: bash
-      run: echo "tag=${{inputs.imageTagPrefix}}-${{env.DATE}}-${{github.run_number}}-${{env.LAST_COMMIT_SHA}}" >> $GITHUB_ENV
+      run: echo "tag=${{inputs.imageTagPrefix}}-${{env.DATE}}-${{env.TAG_SUFFIX}}" >> $GITHUB_ENV
 
-    # - name: Set Variable IMAGEPATH
-    #   shell: bash
-    #   run: echo "IMAGEPATH=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.imageName}}" >> $GITHUB_ENV
+    - name: Set Variable IMAGEPATH
+      shell: bash
+      run: echo "IMAGEPATH=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.imageName}}" >> $GITHUB_ENV
       
     # - name: .NET Restore
     #   shell: bash

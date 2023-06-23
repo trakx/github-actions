@@ -70,6 +70,9 @@ jobs:
           path: ./github-actions
           ref: ${{ inputs.actionsRepoRef }}
 
+      - name: Get last commit of calling repo
+        uses: ./github-actions/get-last-commit
+
       - name: Set variable CONTAINER_IMAGE_TAG_PREFIX
         shell: bash
         run: |
@@ -98,6 +101,8 @@ jobs:
           containerPublishType: ${{ inputs.containerPublishType }}
           dotnetVersion: ${{ inputs.dotnetVersion }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
+          imageTagSuffix: ${{ env.LAST_COMMIT_SHA }}
+          doCheckout: false
 
   # deploy-kubernetes:
   #   name: "Deploy container image to Kubernetes"
@@ -128,3 +133,4 @@ jobs:
   #         serviceName: ${{ inputs.serviceName }}
   #         imageName: ${{ inputs.imageName }}
   #         dockerRegistry: ${{ inputs.dockerRegistry }}
+  #         doCheckout: false
