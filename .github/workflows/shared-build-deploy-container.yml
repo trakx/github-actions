@@ -1,0 +1,140 @@
+name: "Build, Push and Deploy a container image to Kubernetes"
+# Requires Microsoft.NET.Build.Containers package installed and a deployment folder to be present in the repository.
+
+on:
+  workflow_call:
+    secrets:
+      TRAKX_GITHUB_TOKEN:
+        description: "Access token provided by the calling action context, used to publish the packages and push the corresponding tag."
+        required: true
+      TRAKX_BOT_READONLY_PAT:
+        description: "Personal access token used to access the github private nuget source."
+        required: true
+    inputs:
+      runnerName:
+        description: "Name of the runner to use."
+        required: true
+        type: string
+      projectFolder:
+        description: "Folder containing the project to build."
+        required: true
+        type: string
+      imageName:
+        description: "Name of the docker image to build."
+        required: true
+        type: string
+      serviceName:
+        required: true
+        type: string
+      environment:
+        description: "Environment to deploy to (dev | staging | production)."
+        required: true
+        type: string
+      containerPublishType:
+        description: "Type of container publish (api | worker)."
+        required: true
+        type: string
+      imageTagPrefix:
+        description: "Prefix of the docker image tag. If not provided, will be generated based on the environment."
+        required: false
+        type: string
+        default: ""
+      dotnetVersion:
+        description: "Version of dotnet to use. Default is v7.x."
+        required: false
+        type: string
+        default: "7.x"
+      dockerRegistry:
+        description: "Docker registry to push the image to."
+        required: false
+        type: string
+        default: "docker.pkg.github.com"
+      actionsRepoRef:
+        description: "Run actions from this ref. Default is master."
+        type: string
+        required: false
+        default: "master"
+
+jobs:
+  build-push-container:
+    name: "Build and push container image"
+    runs-on: ${{ inputs.runnerName }}
+    steps:
+      - name: Checkout calling repo
+        uses: actions/checkout@v3
+
+      - name: Checkout trakx/github-actions repo
+        uses: actions/checkout@v3
+        with:
+          repository: trakx/github-actions
+          path: ./github-actions
+          ref: ${{ inputs.actionsRepoRef }}
+
+      - name: Get last commit of calling repo
+        id: last-commit-sha
+        uses: ./github-actions/get-last-commit
+
+      - name: Set variable CONTAINER_IMAGE_TAG_PREFIX
+        shell: bash
+        run: |
+          IMAGE_TAG="${{inputs.imageTagPrefix}}"
+          if [[ -z "$IMAGE_TAG" ]]; then
+            if [[ "${{inputs.environment}}" == "production" ]]; then
+                IMAGE_TAG="prod"
+            elif [[ "${{inputs.environment}}" == "staging" ]]; then
+                IMAGE_TAG="stage"
+            else
+                IMAGE_TAG="dev"
+            fi
+          fi
+          echo "Tagging image prefix with: $IMAGE_TAG"
+          echo "CONTAINER_IMAGE_TAG_PREFIX=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Build and push container image
+        id: build-push-container-step
+        uses: ./github-actions/build-push-container
+        with:
+          githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
+          packageReadonlyPat: ${{secrets.TRAKX_BOT_READONLY_PAT}}
+          projectFolder: ${{ inputs.projectFolder }}
+          imageName: ${{ inputs.imageName }}
+          imageTagPrefix: ${{ env.CONTAINER_IMAGE_TAG_PREFIX }}
+          containerPublishType: ${{ inputs.containerPublishType }}
+          dotnetVersion: ${{ inputs.dotnetVersion }}
+          dockerRegistry: ${{ inputs.dockerRegistry }}
+          imageTagSuffix: ${{steps.last-commit-sha.outputs.lastCommitSha}}
+          doCheckout: false
+    outputs:
+      tag: ${{ steps.build-push-container-step.outputs.tag }}
+
+  deploy-kubernetes:
+    name: "Deploy container image to Kubernetes"
+    runs-on: ${{ inputs.runnerName }}
+    needs: build-push-container
+    if: |
+      always() &&
+        (needs.build-push-container.result == 'success' || (needs.build-push-container.result == 'skipped'
+            && github.event_name == 'workflow_run'
+            && github.event.workflow_run.conclusion == 'success' ))
+    steps:
+      - name: Checkout calling repo
+        uses: actions/checkout@v3
+
+      - name: Checkout trakx/github-actions repo
+        uses: actions/checkout@v3
+        with:
+          repository: trakx/github-actions
+          path: ./github-actions
+          ref: ${{ inputs.actionsRepoRef }}
+
+      - name: Deploy container image to Kubernetes
+        id: deploy-container-k8s
+        uses: ./github-actions/deploy
+        with:
+          githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
+          environment: ${{inputs.environment}}
+          tag: ${{needs.build-push-container.outputs.tag}}
+          service: ${{ inputs.serviceName }}
+          artifact-name: ${{ inputs.imageName }}
+          serviceRegistry: ${{ inputs.dockerRegistry }}
+          type: "kubernetes"

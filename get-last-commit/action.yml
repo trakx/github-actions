@@ -1,0 +1,20 @@
+name: 'Outputs the last commit sha'
+
+outputs:
+  lastCommitSha:
+    description: "Last commit SHA"
+    value: ${{ steps.setLastCommitSha.outputs.lastCommitSha}}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Output LAST_COMMIT_SHA
+      shell: bash
+      id: setLastCommitSha
+      run: |
+        LAST_COMMIT_SHA=${{ github.sha }}
+
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        fi
+        echo "lastCommitSha=$LAST_COMMIT_SHA" >> $GITHUB_OUTPUT

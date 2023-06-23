@@ -1,0 +1,116 @@
+name: "Deploy"
+description: "Create a GitHub deployments, attempts to deploy and update deployment status."
+
+inputs:
+  githubToken:
+    description: GitHub token
+    required: true
+  environment:
+    description: "The environment targeted for the deployment"
+    required: true
+  type:
+    description: "The type of the deployment (ex: kubernetes, nuget, amplify, etc.)"
+    required: true
+  tag:
+    description: "The version tag associated with the deployment"
+    required: true
+  artifact-name:
+    description: "Name of the artifact being deployed, it can be a docker image, a nuget package, etc."
+    required: true
+  service:
+    description: "Name of the service being deployed"
+  serviceRegistry:
+    description: "Service registry url to push the artifact to."
+    required: false
+    type: string
+    default: ""
+
+runs:
+  using: composite
+
+  steps:
+    - name: Check inputs
+      shell: bash
+      run: |
+        if [[ "${{ inputs.environment }}" != "production" 
+          && "${{ inputs.environment }}" != "staging" 
+          && "${{ inputs.environment }}" != "development" ]]; then
+            echo "Unsupported environment: ${{ inputs.environment }}"
+          exit 1
+        fi
+        if [[ "${{ inputs.type }}" != "kubernetes" 
+          && "${{ inputs.type }}" != "nuget" ]]; then
+          echo "Unsupported deployment type: ${{ inputs.environment }}"
+          exit 1
+        fi
+
+    - name: Set variable SERVICE_REGISTRY_URL
+      shell: bash
+      run: |
+        registry="${{ inputs.serviceRegistry }}"
+        if [[ -z "$registry" ]]; then
+          if [[ "${{ inputs.type }}" == "kubernetes" ]]; then
+            registry="docker.pkg.github.com"
+          elif [[ "${{ inputs.type }}" == "nuget" ]]; then
+            registry="nuget.pkg.github.com"
+          fi
+        fi
+        echo "SERVICE_REGISTRY_URL=$registry" >> $GITHUB_ENV
+
+    - name: Create GitHub deployment
+      uses: chrnorm/deployment-action@v2
+      id: create-deployment
+      with:
+        token: '${{ inputs.githubToken }}'
+        environment: ${{ inputs.environment}}
+        payload: |
+            { 
+                "artifactName" : "${{ inputs.artifact-name }}",
+                "deploymentType" : "${{ inputs.type }}", 
+                "service" : "${{ inputs.service }}",
+                "tag" : "${{ inputs.tag }}"
+            }
+
+    ###### Deployment types switch ######
+
+    ###### Kubernetes deployments ######
+    #Since github runners working in Docker-in-Docker mode we need this workaround
+    - name: Install Kubernetes & Kustomize
+      shell: bash
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        sudo mv kustomize /usr/local/bin/kustomize
+
+    - name: Deploy Image
+      shell: bash
+      run: |
+        cd deployment/${{inputs.service}}/overlays/${{inputs.environment}}/
+        kustomize edit set image ${{inputs.service}}=${{env.SERVICE_REGISTRY_URL}}/$GITHUB_REPOSITORY/${{inputs.artifact-name}}:${{inputs.tag}}
+        kustomize build . | kubectl apply --validate=false -f -
+
+    ###### Nuget deployments ######
+    - name: Deploy Nuget
+      if: ${{ inputs.type == 'nuget' }}
+      shell: bash
+      run: |
+        echo "pushing ${{ inputs.artifact-name }} to ${{ env.SERVICE_REGISTRY_URL }}"
+
+    ###### End of Deployment types switch ######
+
+    - name: Update GitHub deployment status (success)
+      if: success()
+      uses: chrnorm/deployment-status@v2
+      with:
+        token: '${{ inputs.githubToken }}'
+        state: 'success'
+        deployment-id: ${{ steps.create-deployment.outputs.deployment_id }}
+
+    - name: Update GitHub deployment status (failure)
+      if: failure()
+      uses: chrnorm/deployment-status@v2
+      with:
+        token: '${{ inputs.githubToken }}'
+        state: 'failure'
+        deployment-id: ${{ steps.create-deployment.outputs.deployment_id }}
