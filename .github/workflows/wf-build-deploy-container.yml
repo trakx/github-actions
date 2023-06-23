@@ -51,6 +51,7 @@ on:
 jobs:
   build-push-container:
     runs-on: ${{ inputs.runnerName }}
+    secrets: inherit
     steps:
       - name: Checkout actions repo
         uses: actions/checkout@v3
@@ -86,7 +87,7 @@ jobs:
           containerPublishType: ${{ inputs.containerPublishType }}
           dotnetVersion: ${{ inputs.dotnetVersion }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
-        secrets: inherit
+
 
   deploy-kubernetes:
     runs-on: ${{ inputs.runnerName }}
