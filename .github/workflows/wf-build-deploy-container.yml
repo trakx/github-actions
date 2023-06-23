@@ -42,11 +42,6 @@ on:
         required: false
         type: string
         default: "docker.pkg.github.com"
-      actionRef:
-        description: "Run actions from this ref. Default is master."
-        type: string
-        required: false
-        default: "master"
 
 jobs:
   build-push-container:
@@ -57,7 +52,6 @@ jobs:
         with:
           repository: trakx/github-actions
           path: github-actions
-          ref: ${{ inputs.actionRef }}
 
       - name: Set variable CONTAINER_IMAGE_TAG_PREFIX
         shell: bash
@@ -87,17 +81,20 @@ jobs:
           dotnetVersion: ${{ inputs.dotnetVersion }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
 
-
   deploy-kubernetes:
     runs-on: ${{ inputs.runnerName }}
     needs: build-push-container
+    if: |
+      always() && 
+        (needs.build-push-container.result == 'success' || (needs.build-push-container.result == 'skipped' 
+            && github.event_name == 'workflow_run' 
+            && github.event.workflow_run.conclusion == 'success' ))
     steps:
       - name: Checkout actions repo
         uses: actions/checkout@v3
         with:
           repository: trakx/github-actions
           path: github-actions
-          ref: ${{ inputs.actionRef }}
 
       - name: Deploy container image to Kubernetes
         id: deploy-container-k8s
