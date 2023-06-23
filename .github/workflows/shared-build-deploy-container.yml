@@ -138,14 +138,3 @@ jobs:
           artifact-name: ${{ inputs.imageName }}
           serviceRegistry: ${{ inputs.dockerRegistry }}
           type: "kubernetes"
-
-      # - name: Deploy container image to Kubernetes
-      #   id: deploy-container-k8s
-      #   uses: ./github-actions/deploy-kubernetes
-      #   with:
-      #     environment: ${{inputs.environment}}
-      #     imageTag: ${{needs.build-push-container.outputs.tag}}
-      #     serviceName: ${{ inputs.serviceName }}
-      #     imageName: ${{ inputs.imageName }}
-      #     dockerRegistry: ${{ inputs.dockerRegistry }}
-      #     doCheckout: false
