@@ -8,24 +8,15 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Environment (PR)
-      if: ${{ github.event_name == 'pull_request' }}
-      shell: bash
-      run: |
-        echo "LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> ${GITHUB_ENV}
-
-    - name: Setup Environment (Push)
-      if: ${{ github.event_name == 'push' }}
-      shell: bash
-      run: |
-        echo "LAST_COMMIT_SHA=${{ github.sha }}" >> ${GITHUB_ENV}
-
     - name: Output LAST_COMMIT_SHA
       shell: bash
       id: setLastCommitSha
       run: |
-        echo "The github event name is >> ${{ github.event_name }}"
-        echo "The last commit sha is >> ${{ env.LAST_COMMIT_SHA }}"
-        echo "The last commit sha PR is >> ${{ github.event.pull_request.head.sha }}"
-        echo "The last commit sha PUSH is >> ${{ github.sha }}"
-        echo "lastCommitSha=${{env.LAST_COMMIT_SHA}}" >> $GITHUB_OUTPUT
+        LAST_COMMIT_SHA=${{ github.sha }}
+
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        fi
+
+        echo "The last commit sha is >> $LAST_COMMIT_SHA"
+        echo "lastCommitSha=$LAST_COMMIT_SHA" >> $GITHUB_OUTPUT
