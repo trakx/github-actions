@@ -57,9 +57,10 @@ on:
 
 jobs:
   build-push-container:
+    name: "Build and push container image"
     runs-on: ${{ inputs.runnerName }}
     steps:
-      - name: Checkout actions repo
+      - name: Checkout trakx/github-actions repo
         uses: actions/checkout@v3
         with:
           repository: trakx/github-actions
@@ -96,6 +97,7 @@ jobs:
           dockerRegistry: ${{ inputs.dockerRegistry }}
 
   deploy-kubernetes:
+    name: "Deploy container image to Kubernetes"
     runs-on: ${{ inputs.runnerName }}
     needs: build-push-container
     if: |
@@ -104,7 +106,7 @@ jobs:
             && github.event_name == 'workflow_run' 
             && github.event.workflow_run.conclusion == 'success' ))
     steps:
-      - name: Checkout actions repo
+      - name: Checkout trakx/github-actions repo
         uses: actions/checkout@v3
         with:
           repository: trakx/github-actions
@@ -116,7 +118,7 @@ jobs:
         uses: ./github-actions/deploy-kubernetes
         with:
           environment: ${{inputs.environment}}
-          imageTag: ${{steps.build-push-container.outputs.tag}}
+          imageTag: ${{needs.build-push-container.outputs.tag}}
           serviceName: ${{ inputs.serviceName }}
           imageName: ${{ inputs.imageName }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
