@@ -1,5 +1,5 @@
 name: "Build, Push and Deploy a container image to Kubernetes"
-description: "Build, Push and Deploy a container image to Kubernetes. Requires Microsoft.NET.Build.Containers package installed and a deployment folder to be present in the repository."
+# "Requires Microsoft.NET.Build.Containers package installed and a deployment folder to be present in the repository."
 
 on:
   workflow_call:
@@ -44,6 +44,7 @@ on:
         default: "docker.pkg.github.com"
       actionRef:
         description: "Run actions from this ref. Default is master."
+        type: string
         required: false
         default: "master"
 
