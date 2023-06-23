@@ -24,5 +24,5 @@ runs:
       shell: bash
       id: setLastCommitSha
       run: |
-        The last commit sha is >> ${{ env.LAST_COMMIT_SHA }}
+        echo "The last commit sha is >> ${{ env.LAST_COMMIT_SHA }}"
         echo "lastCommitSha=${{env.LAST_COMMIT_SHA}}" >> $GITHUB_OUTPUT
