@@ -51,6 +51,7 @@ on:
         default: "docker.pkg.github.com"
       actionsRepoRef:
         description: "Run actions from this ref. Default is master."
+        type: string
         required: false
         default: "master"
 
