@@ -60,6 +60,9 @@ jobs:
     name: "Build and push container image"
     runs-on: ${{ inputs.runnerName }}
     steps:
+      - name: Checkout calling repo
+        uses: actions/checkout@v3
+
       - name: Checkout trakx/github-actions repo
         uses: actions/checkout@v3
         with:
@@ -106,6 +109,9 @@ jobs:
             && github.event_name == 'workflow_run' 
             && github.event.workflow_run.conclusion == 'success' ))
     steps:
+      - name: Checkout calling repo
+        uses: actions/checkout@v3
+
       - name: Checkout trakx/github-actions repo
         uses: actions/checkout@v3
         with:

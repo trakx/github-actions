@@ -43,8 +43,8 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    # - name: Checkout
+    #   uses: actions/checkout@v3
 
     - name: .NET Install
       env:
@@ -74,11 +74,17 @@ runs:
 
     - name: Set Variable DATE
       shell: bash
-      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV 
+      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+    - name: Set Variable COMMIT_SHORT_HASH (commit shortened commit hash)
+      shell: bash
+      run: |
+        short_hash=$(git rev-parse --short "$GITHUB_SHA")
+        echo "COMMIT_SHORT_HASH=$short_hash" >> $GITHUB_OUTPUT
 
     - name: Set Variable tag
       shell: bash
-      run: echo "tag=${{inputs.imageTagPrefix}}-${{env.DATE}}-${{github.run_number}}" >> $GITHUB_ENV
+      run: echo "tag=${{inputs.imageTagPrefix}}-${{env.DATE}}-${{github.run_number}}-${{env.COMMIT_SHORT_HASH}}" >> $GITHUB_ENV
 
     - name: Set Variable IMAGEPATH
       shell: bash
