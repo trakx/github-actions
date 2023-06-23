@@ -79,7 +79,7 @@ runs:
     - name: Set Variable COMMIT_SHORT_HASH (commit shortened commit hash)
       shell: bash
       run: |
-        short_hash="$GITHUB_SHA"
+        short_hash="${{ github.sha }}"
         echo "COMMIT_SHORT_HASH=$short_hash" >> $GITHUB_OUTPUT
 
     - name: Set Variable tag
