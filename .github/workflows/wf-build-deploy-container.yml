@@ -76,38 +76,38 @@ jobs:
 
       - name: ECHO last commit
         run: |
-          echo "The last commit sha is >> ${{steps.last-commit-sha.outputs.lastCommitSha}}"
+          echo "The last commit sha OUTPUT is >> ${{steps.last-commit-sha.outputs.lastCommitSha}}"
 
-      - name: Set variable CONTAINER_IMAGE_TAG_PREFIX
-        shell: bash
-        run: |
-          IMAGE_TAG="${{inputs.imageTagPrefix}}"
-          if [[ -z "$IMAGE_TAG" ]]; then
-            if [[ "${{inputs.environment}}" == "production" ]]; then
-                IMAGE_TAG="prod"
-            elif [[ "${{inputs.environment}}" == "stage" ]]; then
-                IMAGE_TAG="stage"
-            else
-                IMAGE_TAG="dev"
-            fi
-          fi
-          echo "Tagging image prefix with: $IMAGE_TAG"
-          echo "CONTAINER_IMAGE_TAG_PREFIX=$IMAGE_TAG" >> $GITHUB_ENV
+      # - name: Set variable CONTAINER_IMAGE_TAG_PREFIX
+      #   shell: bash
+      #   run: |
+      #     IMAGE_TAG="${{inputs.imageTagPrefix}}"
+      #     if [[ -z "$IMAGE_TAG" ]]; then
+      #       if [[ "${{inputs.environment}}" == "production" ]]; then
+      #           IMAGE_TAG="prod"
+      #       elif [[ "${{inputs.environment}}" == "stage" ]]; then
+      #           IMAGE_TAG="stage"
+      #       else
+      #           IMAGE_TAG="dev"
+      #       fi
+      #     fi
+      #     echo "Tagging image prefix with: $IMAGE_TAG"
+      #     echo "CONTAINER_IMAGE_TAG_PREFIX=$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Build and push container image
-        id: build-push-container
-        uses: ./github-actions/build-push-container
-        with:
-          githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
-          packageReadonlyPat: ${{secrets.TRAKX_BOT_READONLY_PAT}}
-          projectFolder: ${{ inputs.projectFolder }}
-          imageName: ${{ inputs.imageName }}
-          imageTagPrefix: ${{ env.CONTAINER_IMAGE_TAG_PREFIX }}
-          containerPublishType: ${{ inputs.containerPublishType }}
-          dotnetVersion: ${{ inputs.dotnetVersion }}
-          dockerRegistry: ${{ inputs.dockerRegistry }}
-          imageTagSuffix: ${{steps.last-commit-sha.outputs.lastCommitSha}}
-          doCheckout: false
+      # - name: Build and push container image
+      #   id: build-push-container
+      #   uses: ./github-actions/build-push-container
+      #   with:
+      #     githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
+      #     packageReadonlyPat: ${{secrets.TRAKX_BOT_READONLY_PAT}}
+      #     projectFolder: ${{ inputs.projectFolder }}
+      #     imageName: ${{ inputs.imageName }}
+      #     imageTagPrefix: ${{ env.CONTAINER_IMAGE_TAG_PREFIX }}
+      #     containerPublishType: ${{ inputs.containerPublishType }}
+      #     dotnetVersion: ${{ inputs.dotnetVersion }}
+      #     dockerRegistry: ${{ inputs.dockerRegistry }}
+      #     imageTagSuffix: ${{steps.last-commit-sha.outputs.lastCommitSha}}
+      #     doCheckout: false
 
   # deploy-kubernetes:
   #   name: "Deploy container image to Kubernetes"
