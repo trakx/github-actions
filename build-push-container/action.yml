@@ -56,27 +56,28 @@ runs:
       uses: actions/checkout@v3
       if: ${{inputs.doCheckout == true}}
 
-    # - name: .NET Install
-    #   env:
-    #     DOTNET_INSTALL_DIR: "./.dotnet"  # Required by the runner to install dotnet
-    #   uses: actions/setup-dotnet@v3
-    #   with:
-    #     dotnet-version: ${{ inputs.dotnetVersion }}
+    - name: .NET Install
+      env:
+        DOTNET_INSTALL_DIR: "./.dotnet" # Required by the runner to install dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ inputs.dotnetVersion }}
 
-    # - name: Add Trakx Github Nuget Source
-    #   shell: bash
-    #   run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
-    #               --name "github"
-    #               --username "trakx-bot"
-    #               --password ${{inputs.packageReadonlyPat}}
-    #               --store-password-in-clear-text
+    - name: Add Trakx Github Nuget Source
+      shell: bash
+      run: >
+        dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
+        --name "github"
+        --username "trakx-bot"
+        --password ${{inputs.packageReadonlyPat}}
+        --store-password-in-clear-text
 
-    # - name: Restore Cache
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: ~/.nuget/packages
-    #     key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-    #     restore-keys: ${{ runner.os }}-nuget-
+    - name: Restore Cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: ${{ runner.os }}-nuget-
 
     - name: Set Variable WORKDIR
       shell: bash
@@ -104,7 +105,7 @@ runs:
         fi
         echo "TAG_SUFFIX=${{github.run_number}}-${{inputs.imageTagSuffix}}" >> $GITHUB_ENV
 
-    - name: Set Variable tag
+    - name: Set Variable tag (will be used in the output)
       shell: bash
       run: |
         generated_tag=${{inputs.imageTagPrefix}}-${{env.DATE}}-${{env.TAG_SUFFIX}}
@@ -114,60 +115,60 @@ runs:
     - name: Set Variable IMAGEPATH
       shell: bash
       run: echo "IMAGEPATH=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.imageName}}" >> $GITHUB_ENV
-      
-    # - name: .NET Restore
-    #   shell: bash
-    #   working-directory: ${{env.WORKDIR}}
-    #   run: dotnet restore --locked-mode
 
-    # - name: Remove Trakx github source
-    #   shell: bash
-    #   run: dotnet nuget remove source "github"
+    - name: .NET Restore
+      shell: bash
+      working-directory: ${{env.WORKDIR}}
+      run: dotnet restore --locked-mode
 
-    # - name: .NET Build
-    #   shell: bash
-    #   working-directory: ${{env.WORKDIR}}
-    #   run: dotnet build
+    - name: Remove Trakx github source
+      shell: bash
+      run: dotnet nuget remove source "github"
 
-    # # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
-    # - name: .NET Publish Container (API)
-    #   if: ${{inputs.containerPublishType == 'api'}}
-    #   shell: bash
-    #   working-directory: ${{env.WORKDIR}}
-    #   run: >
-    #       dotnet publish --os linux --arch x64
-    #       -p:PublishProfile=DefaultContainer
-    #       -p:ContainerImageName=${{inputs.imageName}}
-    #       -p:ContainerImageTag=${{env.tag}}
-    #       -c Release
+    - name: .NET Build
+      shell: bash
+      working-directory: ${{env.WORKDIR}}
+      run: dotnet build
 
-    # - name: .NET Publish Container (Worker)
-    #   if: ${{inputs.containerPublishType == 'worker'}}
-    #   shell: bash
-    #   working-directory: ${{env.WORKDIR}}
-    #   run: >
-    #       dotnet publish --os linux --arch x64
-    #       /t:PublishContainer
-    #       -p:ContainerImageName=${{inputs.imageName}}
-    #       -p:ContainerImageTag=${{env.tag}}
-    #       -c Release
+    # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
+    - name: .NET Publish Container (API)
+      if: ${{inputs.containerPublishType == 'api'}}
+      shell: bash
+      working-directory: ${{env.WORKDIR}}
+      run: >
+        dotnet publish --os linux --arch x64
+        -p:PublishProfile=DefaultContainer
+        -p:ContainerImageName=${{inputs.imageName}}
+        -p:ContainerImageTag=${{env.tag}}
+        -c Release
 
-    # - name: Login to Docker Hub
-    #   uses: docker/login-action@v2
-    #   with:
-    #     registry: "${{inputs.dockerRegistry}}"
-    #     username: "${{github.actor}}"
-    #     password: "${{inputs.githubToken}}"
-      
-    # - name: Tag Image
-    #   shell: bash
-    #   run: docker tag ${{inputs.imageName}}:${{env.tag}} ${{env.IMAGEPATH}}:${{env.tag}}
+    - name: .NET Publish Container (Worker)
+      if: ${{inputs.containerPublishType == 'worker'}}
+      shell: bash
+      working-directory: ${{env.WORKDIR}}
+      run: >
+        dotnet publish --os linux --arch x64
+        /t:PublishContainer
+        -p:ContainerImageName=${{inputs.imageName}}
+        -p:ContainerImageTag=${{env.tag}}
+        -c Release
 
-    # - name: Push Image to Registry
-    #   shell: bash
-    #   run: docker push ${{env.IMAGEPATH}}:${{env.tag}}
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        registry: "${{inputs.dockerRegistry}}"
+        username: "${{github.actor}}"
+        password: "${{inputs.githubToken}}"
 
-    # - name: Output tag
-    #   shell: bash
-    #   id: setImageTag
-    #   run: echo "tag=${{env.tag}}" >> $GITHUB_OUTPUT
+    - name: Tag Image
+      shell: bash
+      run: docker tag ${{inputs.imageName}}:${{env.tag}} ${{env.IMAGEPATH}}:${{env.tag}}
+
+    - name: Push Image to Registry
+      shell: bash
+      run: docker push ${{env.IMAGEPATH}}:${{env.tag}}
+
+    - name: Output container image tag
+      shell: bash
+      id: setImageTag
+      run: echo "tag=${{env.tag}}" >> $GITHUB_OUTPUT

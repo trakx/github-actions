@@ -102,7 +102,7 @@ jobs:
           containerPublishType: ${{ inputs.containerPublishType }}
           dotnetVersion: ${{ inputs.dotnetVersion }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
-          imageTagSuffix: ${{steps.last-commit-sha.outputs.lastCommitSha}}
+          #imageTagSuffix: ${{steps.last-commit-sha.outputs.lastCommitSha}}
           doCheckout: false
 
   # deploy-kubernetes:
