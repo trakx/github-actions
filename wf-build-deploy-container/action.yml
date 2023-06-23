@@ -94,6 +94,7 @@ jobs:
 
   deploy-kubernetes:
     runs-on: ${{ inputs.runnerName }}
+    needs: build-push-container
     steps:
       - name: Checkout actions repo
         uses: actions/checkout@v3
