@@ -74,17 +74,21 @@ runs:
     ###### Deployment types switch ######
 
     ###### Kubernetes deployments ######
-    - name: Deploy container image to Kubernetes
-      id: deploy-container-k8s
-      if: ${{ inputs.type == 'kubernetes' }}
-      uses: ./github-actions/deploy-kubernetes
-      with:
-        environment: ${{inputs.environment}}
-        imageTag: ${{inputs.tag}}
-        serviceName: ${{ inputs.service }}
-        imageName: ${{ inputs.artifact-name }}
-        dockerRegistry: ${{ env.SERVICE_REGISTRY_URL }}
-        doCheckout: false
+    #Since github runners working in Docker-in-Docker mode we need this workaround
+    - name: Install Kubernetes & Kustomize
+      shell: bash
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        sudo mv kustomize /usr/local/bin/kustomize
+
+    - name: Deploy Image
+      shell: bash
+      run: |
+        cd deployment/${{inputs.service}}/overlays/${{inputs.environment}}/
+        kustomize edit set image ${{inputs.service}}=${{env.SERVICE_REGISTRY_URL}}/$GITHUB_REPOSITORY/${{inputs.artifact-name}}:${{inputs.tag}}
+        kustomize build . | kubectl apply --validate=false -f -
 
     ###### Nuget deployments ######
     - name: Deploy Nuget
