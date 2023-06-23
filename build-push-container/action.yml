@@ -98,12 +98,12 @@ runs:
 
         if [ -z $new_tag_suffix ]; then
           if [ -z "${{steps.last-commit-sha.outputs.lastCommitSha}}" ]; then
-            echo "TAG_SUFFIX=${{github.run_number}}-${{steps.last-commit-sha.outputs.lastCommitSha}}" >> $GITHUB_ENV
+            new_tag_suffix="${{github.run_number}}"
           else
-            echo "TAG_SUFFIX=${{github.run_number}}" >> $GITHUB_ENV
+            new_tag_suffix="${{github.run_number}}-${{steps.last-commit-sha.outputs.lastCommitSha}}"
           fi
         fi
-        echo "TAG_SUFFIX=${{github.run_number}}-${{inputs.imageTagSuffix}}" >> $GITHUB_ENV
+        echo "TAG_SUFFIX=$new_tag_suffix" >> $GITHUB_ENV
 
     - name: Set Variable tag (will be used in the output)
       shell: bash
