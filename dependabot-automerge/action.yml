@@ -1,5 +1,6 @@
 name: Dependabot Pull Request Approve and Merge
-description: "Call this on pull_request_target events, give it pull request and contnet write accesses"
+description: "Call this on pull_request_target events, give it pull request and content write accesses"
+
 inputs:
   githubToken:
     description: "Access token provided by the calling action context, used to publish the packages and push the corresponding tag."
