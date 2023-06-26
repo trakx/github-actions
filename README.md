@@ -14,6 +14,8 @@ Call this on `pull_request` target events, give it pull request and content writ
 Create a GitHub deployment, attempts to deploy and update deployment status.
 Accepts both `nuget` and `kubernetes` types. If `kubernetes`, will deploy the container image to kubernetes too.
 
+One thing to keep in mind is that to give the token permissions to use the deploy API we need to do that before calling the reusable action.
+
 ### get-last-commit
 Outputs the last commit SHA. If the target event is `pull_request` outputs the PR commit SHA. Otherwise, will be the last `branch` commit SHA.
 
