@@ -5,7 +5,7 @@ Github action that bumps semver version and adds extended information to it
 
 ### build-push-container
 Builds and push a container image to the registry (Docker by default).
-Requires Microsoft.NET.Build.Containers package installed.
+Requires `csproj` file contains `<EnableSdkContainerSupport>true</EnableSdkContainerSupport>` tag.
 
 ### dependabot-automerge
 Call this on `pull_request` target events, give it pull request and content write privileges.
