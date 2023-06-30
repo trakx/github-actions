@@ -108,9 +108,24 @@ jobs:
           echo "DEPLOYMENT_ENVIRONMENT=$DEPLOYMENT_ENVIRONMENT" >> $GITHUB_ENV
           echo "environment=$DEPLOYMENT_ENVIRONMENT" >> $GITHUB_OUTPUT
 
+  validate-event:
+    name: "Validate if event is allowed for the given environment"
+    needs: [ pick-environment ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Block workflow_dispatch for staging and production
+        shell: bash
+        run: |
+          if [[ "${{ needs.pick-environment.outputs.environment }}" == "production" || "${{ needs.pick-environment.outputs.environment }}" == "staging" ]]; then
+            if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+              echo "Event workflow_dispatch is not allowed for environment ${{ needs.pick-environment.outputs.environment }}."
+              exit 1
+            fi
+          fi
+
   build-push-container:
     name: "Build and push container image"
-    needs: [ pick-runner, pick-environment ]
+    needs: [ pick-runner, pick-environment, validate-event ]
     runs-on: ${{ needs.pick-runner.outputs.runnerName }}
     steps:
       - name: Checkout calling repo
