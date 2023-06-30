@@ -11,10 +11,6 @@ on:
         description: "Personal access token used to access the github private nuget source."
         required: true
     inputs:
-      runnerName:
-        description: "Name of the runner to use."
-        required: true
-        type: string
       projectFolder:
         description: "Folder containing the project to build."
         required: true
@@ -26,19 +22,26 @@ on:
       serviceName:
         required: true
         type: string
+      runnerName:
+        description: "Name of the runner to use."
+        required: false
+        type: string
+        default: ''
       environment:
         description: "Environment to deploy to (dev | staging | production)."
-        required: true
+        required: false
         type: string
+        default: ''
       containerPublishType:
         description: "Type of container publish (api | worker)."
-        required: true
+        required: false
         type: string
+        default: 'api'
       imageTagPrefix:
         description: "Prefix of the docker image tag. If not provided, will be generated based on the environment."
         required: false
         type: string
-        default: ""
+        default: ''
       dotnetVersion:
         description: "Version of dotnet to use. Default is v7.x."
         required: false
@@ -56,9 +59,35 @@ on:
         default: "master"
 
 jobs:
+  pick-runner:
+    name: "Pick the runner to use"
+    runs-on: ubuntu-latest
+    outputs:
+      runnerName: ${{ steps.pick-runner-step.outputs.runnerName }}
+    steps:
+      - name: Set variable RUNNER_NAME and DEPLOYMENT_ENVIRONMENT base on branch name
+        id: pick-runner-step
+        shell: bash
+        run: |
+          RUNNER_NAME="${{ inputs.runnerName }}"
+
+          if [[ -z "$RUNNER_NAME" ]]; then
+            if [[ "${{ github.ref }}" == "refs/heads/prod" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+                RUNNER_NAME="prod-trakx-runner"
+            elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
+                RUNNER_NAME="stage-trakx-runner"
+            else
+                RUNNER_NAME="dev-trakx-runner"
+            fi
+          fi
+
+          echo "RUNNER_NAME=$RUNNER_NAME" >> $GITHUB_ENV
+          echo "runnerName=$RUNNER_NAME" >> $GITHUB_OUTPUT
+
   build-push-container:
     name: "Build and push container image"
-    runs-on: ${{ inputs.runnerName }}
+    needs: pick-runner
+    runs-on: ${{ needs.pick-runner.outputs.runnerName }}
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v3
@@ -74,14 +103,30 @@ jobs:
         id: last-commit-sha
         uses: ./github-actions/get-last-commit
 
+      - name: Set variable DEPLOYMENT_ENVIRONMENT
+        shell: bash
+        run: |
+          DEPLOYMENT_ENVIRONMENT="${{ inputs.environment }}"
+          if [[ -z "$DEPLOYMENT_ENVIRONMENT" ]]; then
+            if [[ "${{ github.ref }}" == "refs/heads/prod" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+                DEPLOYMENT_ENVIRONMENT="production"
+            elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
+                DEPLOYMENT_ENVIRONMENT="staging"
+            else
+                DEPLOYMENT_ENVIRONMENT="development"
+            fi
+          fi
+          echo "Deploying to environment: $DEPLOYMENT_ENVIRONMENT"
+          echo "DEPLOYMENT_ENVIRONMENT=$DEPLOYMENT_ENVIRONMENT" >> $GITHUB_ENV
+
       - name: Set variable CONTAINER_IMAGE_TAG_PREFIX
         shell: bash
         run: |
-          IMAGE_TAG="${{inputs.imageTagPrefix}}"
+          IMAGE_TAG="${{ inputs.imageTagPrefix }}"
           if [[ -z "$IMAGE_TAG" ]]; then
-            if [[ "${{inputs.environment}}" == "production" ]]; then
+            if [[ "${{ env.DEPLOYMENT_ENVIRONMENT }}" == "production" ]]; then
                 IMAGE_TAG="prod"
-            elif [[ "${{inputs.environment}}" == "staging" ]]; then
+            elif [[ "${{ env.DEPLOYMENT_ENVIRONMENT }}" == "staging" ]]; then
                 IMAGE_TAG="stage"
             else
                 IMAGE_TAG="dev"
@@ -95,22 +140,22 @@ jobs:
         uses: ./github-actions/build-push-container
         with:
           githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
-          packageReadonlyPat: ${{secrets.TRAKX_BOT_READONLY_PAT}}
+          packageReadonlyPat: ${{ secrets.TRAKX_BOT_READONLY_PAT }}
           projectFolder: ${{ inputs.projectFolder }}
           imageName: ${{ inputs.imageName }}
           imageTagPrefix: ${{ env.CONTAINER_IMAGE_TAG_PREFIX }}
           containerPublishType: ${{ inputs.containerPublishType }}
           dotnetVersion: ${{ inputs.dotnetVersion }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
-          imageTagSuffix: ${{steps.last-commit-sha.outputs.lastCommitSha}}
+          imageTagSuffix: ${{ steps.last-commit-sha.outputs.lastCommitSha }}
           doCheckout: false
     outputs:
       tag: ${{ steps.build-push-container-step.outputs.tag }}
 
   deploy-kubernetes:
     name: "Deploy container image to Kubernetes"
-    runs-on: ${{ inputs.runnerName }}
-    needs: build-push-container
+    needs: [ pick-runner, build-push-container ]
+    runs-on: ${{ needs.pick-runner.outputs.runnerName }}
     if: |
       always() &&
         (needs.build-push-container.result == 'success' || (needs.build-push-container.result == 'skipped'
@@ -132,8 +177,8 @@ jobs:
         uses: ./github-actions/deploy
         with:
           githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
-          environment: ${{inputs.environment}}
-          tag: ${{needs.build-push-container.outputs.tag}}
+          environment: ${{ env.DEPLOYMENT_ENVIRONMENT }}
+          tag: ${{ needs.build-push-container.outputs.tag }}
           service: ${{ inputs.serviceName }}
           artifact-name: ${{ inputs.imageName }}
           serviceRegistry: ${{ inputs.dockerRegistry }}
