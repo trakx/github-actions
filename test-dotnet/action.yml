@@ -18,6 +18,11 @@ inputs:
     description: "Region on which to access the AWS environment."
     required: false
     default: "eu-west-3"
+  dotnetVersion:
+    description: "Version of dotnet to use. Default is v7.x."
+    required: false
+    type: string
+    default: "7.x"
 
 runs:
   using: "composite"
@@ -30,7 +35,7 @@ runs:
         DOTNET_INSTALL_DIR: "./.dotnet"  # Required by the runner to install dotnet
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.x
+        dotnet-version: ${{ inputs.dotnetVersion }}
 
     - name: Add Trakx github nuget source
       shell: bash
