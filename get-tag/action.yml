@@ -1,5 +1,6 @@
 name: "Get Tag"
 description: "Github action computes the next semver and produces a release tag."
+
 inputs:
   semverIncrementLevel:
     description: "Level of the semver (major.minor.patch) to be increased to get the new package version."

@@ -20,7 +20,12 @@ inputs:
     description: "Run actions from this ref. Default is master."
     required: false
     default: "master"
-    
+  dotnetVersion:
+    description: "Version of dotnet to use. Default is v7.x."
+    required: false
+    type: string
+    default: "7.x"
+
 runs:
   using: "composite"
   steps:
@@ -53,10 +58,10 @@ runs:
         semverIncrementLevel: ${{ inputs.semverIncrementLevel }}
         preRelease: ${{ inputs.debuggable }}
 
-    - name: Setup .NET Core
+    - name: .NET Install
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.x
+        dotnet-version: ${{ inputs.dotnetVersion }}
 
     - name: Add github nuget source
       shell: bash
