@@ -142,6 +142,13 @@ runs:
         -p:ContainerImageTag=${{env.tag}}
         -c Release
 
+    - name: Install Microsoft.NET.Build.Containers (Worker)
+      if: ${{inputs.containerPublishType == 'worker'}}
+      shell: bash
+      working-directory: ${{env.WORKDIR}}
+      run: >
+        dotnet add package Microsoft.NET.Build.Container
+
     - name: .NET Publish Container (Worker)
       if: ${{inputs.containerPublishType == 'worker'}}
       shell: bash
