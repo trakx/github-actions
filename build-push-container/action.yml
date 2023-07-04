@@ -147,7 +147,7 @@ runs:
       shell: bash
       working-directory: ${{env.WORKDIR}}
       run: >
-        dotnet add package Microsoft.NET.Build.Container
+        dotnet add package Microsoft.NET.Build.Containers
 
     - name: .NET Publish Container (Worker)
       if: ${{inputs.containerPublishType == 'worker'}}
