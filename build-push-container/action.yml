@@ -116,6 +116,13 @@ runs:
       shell: bash
       run: echo "IMAGEPATH=${{inputs.dockerRegistry}}/$GITHUB_REPOSITORY/${{inputs.imageName}}" >> $GITHUB_ENV
 
+    - name: Install Microsoft.NET.Build.Containers (Worker)
+      if: ${{inputs.containerPublishType == 'worker'}}
+      shell: bash
+      working-directory: ${{env.WORKDIR}}
+      run: >
+        dotnet add package Microsoft.NET.Build.Containers --no-restore
+
     - name: .NET Restore
       shell: bash
       working-directory: ${{env.WORKDIR}}
@@ -125,10 +132,10 @@ runs:
       shell: bash
       run: dotnet nuget remove source "github"
 
-    - name: .NET Build
-      shell: bash
-      working-directory: ${{env.WORKDIR}}
-      run: dotnet build
+    # - name: .NET Build
+    #   shell: bash
+    #   working-directory: ${{env.WORKDIR}}
+    #   run: dotnet build
 
     # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     - name: .NET Publish Container (API)
@@ -141,13 +148,6 @@ runs:
         -p:ContainerImageName=${{inputs.imageName}}
         -p:ContainerImageTag=${{env.tag}}
         -c Release
-
-    - name: Install Microsoft.NET.Build.Containers (Worker)
-      if: ${{inputs.containerPublishType == 'worker'}}
-      shell: bash
-      working-directory: ${{env.WORKDIR}}
-      run: >
-        dotnet add package Microsoft.NET.Build.Containers
 
     - name: .NET Publish Container (Worker)
       if: ${{inputs.containerPublishType == 'worker'}}
