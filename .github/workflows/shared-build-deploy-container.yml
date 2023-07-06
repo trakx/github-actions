@@ -15,12 +15,13 @@ on:
         description: "Folder containing the project to build."
         required: true
         type: string
-      imageName:
-        description: "Name of the docker image to build."
+      serviceName:
+        description: "Name of service being deployed."
         required: true
         type: string
-      serviceName:
-        required: true
+      imageName:
+        description: "Name of the docker image to build. If not provided, will be the same as 'serviceName'."
+        required: false
         type: string
       runnerName:
         description: "Name of the runner to use. If not provided, will be generated based on the branch name."
@@ -57,6 +58,9 @@ on:
         type: string
         required: false
         default: "master"
+
+env:
+  IMAGE_OR_SERVICE_NAME: ${{ inputs.imageName || inputs.serviceName }}
 
 jobs:
   pick-runner:
@@ -165,7 +169,7 @@ jobs:
           githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
           packageReadonlyPat: ${{ secrets.TRAKX_BOT_READONLY_PAT }}
           projectFolder: ${{ inputs.projectFolder }}
-          imageName: ${{ inputs.imageName }}
+          imageName: ${{ env.IMAGE_OR_SERVICE_NAME }}
           imageTagPrefix: ${{ env.CONTAINER_IMAGE_TAG_PREFIX }}
           containerPublishType: ${{ inputs.containerPublishType }}
           dotnetVersion: ${{ inputs.dotnetVersion }}
@@ -203,6 +207,6 @@ jobs:
           environment: ${{ needs.pick-environment.outputs.environment }}
           tag: ${{ needs.build-push-container.outputs.tag }}
           service: ${{ inputs.serviceName }}
-          artifact-name: ${{ inputs.imageName }}
+          artifact-name: ${{ env.IMAGE_OR_SERVICE_NAME }}
           serviceRegistry: ${{ inputs.dockerRegistry }}
           type: "kubernetes"
