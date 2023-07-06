@@ -10,9 +10,6 @@ on:
       TRAKX_BOT_READONLY_PAT:
         description: "Personal access token used to access the github private nuget source."
         required: true
-      GITHUB_TOKEN:
-        description: "Classic name for TRAKX_GITHUB_TOKEN."
-        required: false
     inputs:
       projectFolder:
         description: "Folder containing the project to build."
