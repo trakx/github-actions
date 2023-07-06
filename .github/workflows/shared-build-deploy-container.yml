@@ -65,7 +65,7 @@ env:
 
 jobs:
   pick-runner:
-    name: "Pick the runner to use"
+    name: "Pick runner"
     runs-on: ubuntu-latest
     outputs:
       runnerName: ${{ steps.pick-runner-step.outputs.runnerName }}
@@ -90,7 +90,7 @@ jobs:
           echo "runnerName=$RUNNER_NAME" >> $GITHUB_OUTPUT
 
   pick-environment:
-    name: "Pick the environment to deploy"
+    name: "Pick environment"
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.pick-environment-step.outputs.environment }}
@@ -114,7 +114,7 @@ jobs:
           echo "environment=$DEPLOYMENT_ENVIRONMENT" >> $GITHUB_OUTPUT
 
   validate-event:
-    name: "Validate if event is allowed for the given environment"
+    name: "Block manual releases to staging and production"
     needs: [ pick-environment ]
     runs-on: ubuntu-latest
     steps:
@@ -128,8 +128,8 @@ jobs:
             fi
           fi
 
-  build-push-container:
-    name: "Build and push container image"
+  publish-image:
+    name: "Publish container image"
     needs: [ pick-runner, pick-environment, validate-event ]
     runs-on: ${{ needs.pick-runner.outputs.runnerName }}
     steps:
@@ -163,9 +163,9 @@ jobs:
           echo "Tagging image prefix with: $IMAGE_TAG"
           echo "CONTAINER_IMAGE_TAG_PREFIX=$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Build and push container image
-        id: build-push-container-step
-        uses: ./github-actions/build-push-container
+      - name: Publish container image
+        id: publish-image-step
+        uses: ./github-actions/publish-container-image
         with:
           githubToken: ${{ env.GITHUB_TOKEN }}
           packageReadonlyPat: ${{ secrets.TRAKX_BOT_READONLY_PAT }}
@@ -178,15 +178,15 @@ jobs:
           imageTagSuffix: ${{ steps.last-commit-sha.outputs.lastCommitSha }}
           doCheckout: false
     outputs:
-      tag: ${{ steps.build-push-container-step.outputs.tag }}
+      tag: ${{ steps.publish-image-step.outputs.tag }}
 
   deploy-kubernetes:
-    name: "Deploy container image to Kubernetes"
-    needs: [ pick-runner, pick-environment, build-push-container ]
+    name: "Deploy image to Kubernetes"
+    needs: [ pick-runner, pick-environment, publish-image ]
     runs-on: ${{ needs.pick-runner.outputs.runnerName }}
     if: |
       always() &&
-        (needs.build-push-container.result == 'success' || (needs.build-push-container.result == 'skipped'
+        (needs.publish-image.result == 'success' || (needs.publish-image.result == 'skipped'
             && github.event_name == 'workflow_run'
             && github.event.workflow_run.conclusion == 'success' ))
     steps:
@@ -206,7 +206,7 @@ jobs:
         with:
           githubToken: ${{ env.GITHUB_TOKEN }}
           environment: ${{ needs.pick-environment.outputs.environment }}
-          tag: ${{ needs.build-push-container.outputs.tag }}
+          tag: ${{ needs.publish-image.outputs.tag }}
           service: ${{ inputs.serviceName }}
           artifact-name: ${{ env.IMAGE_NAME }}
           serviceRegistry: ${{ inputs.dockerRegistry }}
