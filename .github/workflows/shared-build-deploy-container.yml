@@ -6,10 +6,13 @@ on:
     secrets:
       TRAKX_GITHUB_TOKEN:
         description: "Access token provided by the calling action context, used to publish the packages and push the corresponding tag."
-        required: true
+        required: false
       TRAKX_BOT_READONLY_PAT:
         description: "Personal access token used to access the github private nuget source."
         required: true
+      GITHUB_TOKEN:
+        description: "Classic name for TRAKX_GITHUB_TOKEN."
+        required: false
     inputs:
       projectFolder:
         description: "Folder containing the project to build."
@@ -60,7 +63,8 @@ on:
         default: "master"
 
 env:
-  IMAGE_OR_SERVICE_NAME: ${{ inputs.imageName || inputs.serviceName }}
+  IMAGE_NAME: ${{ inputs.imageName || inputs.serviceName }}
+  GITHUB_TOKEN: ${{ secrets.TRAKX_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
 
 jobs:
   pick-runner:
@@ -166,10 +170,10 @@ jobs:
         id: build-push-container-step
         uses: ./github-actions/build-push-container
         with:
-          githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
+          githubToken: ${{ env.GITHUB_TOKEN }}
           packageReadonlyPat: ${{ secrets.TRAKX_BOT_READONLY_PAT }}
           projectFolder: ${{ inputs.projectFolder }}
-          imageName: ${{ env.IMAGE_OR_SERVICE_NAME }}
+          imageName: ${{ env.IMAGE_NAME }}
           imageTagPrefix: ${{ env.CONTAINER_IMAGE_TAG_PREFIX }}
           containerPublishType: ${{ inputs.containerPublishType }}
           dotnetVersion: ${{ inputs.dotnetVersion }}
@@ -203,10 +207,10 @@ jobs:
         id: deploy-container-k8s
         uses: ./github-actions/deploy
         with:
-          githubToken: ${{ secrets.TRAKX_GITHUB_TOKEN }}
+          githubToken: ${{ env.GITHUB_TOKEN }}
           environment: ${{ needs.pick-environment.outputs.environment }}
           tag: ${{ needs.build-push-container.outputs.tag }}
           service: ${{ inputs.serviceName }}
-          artifact-name: ${{ env.IMAGE_OR_SERVICE_NAME }}
+          artifact-name: ${{ env.IMAGE_NAME }}
           serviceRegistry: ${{ inputs.dockerRegistry }}
           type: "kubernetes"
