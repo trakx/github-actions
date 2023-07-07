@@ -1,5 +1,5 @@
 # github-actions
-Github action that bumps semver version and adds extended information to it
+Shared Github actions to run tests, manage semver version information, publish container images, deploy containers and release nuget packages.
 
 ## Actions
 
@@ -41,3 +41,15 @@ All shared workflows are available in `.github/workflows/` path.
 ### shared-build-deploy-container
 Builds, pushes and deploys a container image to Kubernetes.
 Uses both `build-push-container-image` and `deploy` actions.
+Sample usage with the default behaviour and options:
+```yml
+deploy-api:
+  name: "Deploy API"
+  uses: "trakx/github-actions/.github/workflows/shared-build-deploy-container.yml@master"
+  with:
+    projectFolder: "src/Trakx.SampleService.Api"
+    serviceName: "sampleservice-api"
+  secrets: inherit
+```
+More details here:
+<https://trakx.atlassian.net/wiki/spaces/development/pages/33390593/Deployment+and+Github+Actions>
