@@ -165,7 +165,7 @@ jobs:
 
       - name: Publish container image
         id: publish-image-step
-        uses: ./github-actions/publish-container-image
+        uses: ./github-actions/build-publish-container-image
         with:
           githubToken: ${{ env.GITHUB_TOKEN }}
           packageReadonlyPat: ${{ secrets.TRAKX_BOT_READONLY_PAT }}

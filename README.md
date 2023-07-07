@@ -3,8 +3,8 @@ Github action that bumps semver version and adds extended information to it
 
 ## Actions
 
-### publish-container-image
-Build and publishes a container image to the registry (Docker by default).
+### build-publish-container-image
+Builds and publishes a container image to the registry (Docker by default).
 The `.csproj` file must contain the `<EnableSdkContainerSupport>true</EnableSdkContainerSupport>` tag.
 
 ### dependabot-automerge
@@ -33,11 +33,11 @@ Used to publish nuget packages to the private github nuget repository.
 Used to try to retrieve tag as artifact and push it.
 
 ### test-dotnet
-Build and test a dotnet solution, posting code coverage results to Codacy.
+Builds and tests a dotnet solution, posting code coverage results to Codacy.
 
 ## Shared workflows
 All shared workflows are available in `.github/workflows/` path.
 
 ### shared-build-deploy-container
-Build, push and deploy a container image to Kubernetes.
-Uses both `publish-container-image` and `deploy` actions.
+Builds, publishes and deploys a container image to Kubernetes.
+Uses both `build-publish-container-image` and `deploy` actions.
