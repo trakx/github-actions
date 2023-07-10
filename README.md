@@ -1,11 +1,11 @@
 # github-actions
-Github action that bumps semver version and adds extended information to it
+Shared Github actions to run tests, manage semver version information, publish container images, deploy containers and release nuget packages.
 
 ## Actions
 
-### build-push-container
-Builds and push a container image to the registry (Docker by default).
-Requires `csproj` file contains `<EnableSdkContainerSupport>true</EnableSdkContainerSupport>` tag.
+### build-push-container-image
+Builds and pushes a container image to the registry (Docker by default).
+The `.csproj` file must contain the `<EnableSdkContainerSupport>true</EnableSdkContainerSupport>` tag.
 
 ### dependabot-automerge
 Call this on `pull_request` target events, give it pull request and content write privileges.
@@ -33,11 +33,23 @@ Used to publish nuget packages to the private github nuget repository.
 Used to try to retrieve tag as artifact and push it.
 
 ### test-dotnet
-Build and test a dotnet solution, posting code coverage results to Codacy.
+Builds and tests a dotnet solution, posting code coverage results to Codacy.
 
 ## Shared workflows
 All shared workflows are available in `.github/workflows/` path.
 
 ### shared-build-deploy-container
-Build, Push and Deploy a container image to Kubernetes.
-Use both `build-push-container` and `deploy` actions.
+Builds, pushes and deploys a container image to Kubernetes.
+Uses both `build-push-container-image` and `deploy` actions.
+Sample usage with the default behaviour and options:
+```yml
+deploy-api:
+  name: "Deploy API"
+  uses: "trakx/github-actions/.github/workflows/shared-build-deploy-container.yml@master"
+  with:
+    projectFolder: "src/Trakx.SampleService.Api"
+    serviceName: "sampleservice-api"
+  secrets: inherit
+```
+More details here:
+<https://trakx.atlassian.net/wiki/spaces/development/pages/33390593/Deployment+and+Github+Actions>
