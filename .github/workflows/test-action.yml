@@ -1,4 +1,5 @@
 # a demo action use to test/show how this bump version action should be used
+# TODO: Name of this action is very confusing and mixes up with test workflow
 name: Demo Action
 
 on:

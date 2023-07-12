@@ -1,3 +1,6 @@
+# As we are keeping actions and deployment templates in the same repository:
+# TODO: Suggestion add template in this file name ex: deploy-template.yml
+# TODO: Suggestion add action in action names build-push-container-action.yml 
 name: "Build, Push and Deploy a container image to Kubernetes"
 # Requires `csproj` file contains `<EnableSdkContainerSupport>true</EnableSdkContainerSupport>` tag and a deployment folder to be present in the repository.
 
@@ -88,10 +91,12 @@ jobs:
           echo "Using runner: $RUNNER_NAME"
           echo "RUNNER_NAME=$RUNNER_NAME" >> $GITHUB_ENV
           echo "runnerName=$RUNNER_NAME" >> $GITHUB_OUTPUT
-
+  
+  # TODO: We use the same name for the workflow step and the step inside the workflow step which creates confusion
   pick-environment:
     name: "Pick environment"
     runs-on: ubuntu-latest
+    # TODO : pick-environment-step is not used anywhere
     outputs:
       environment: ${{ steps.pick-environment-step.outputs.environment }}
     steps:
@@ -114,7 +119,7 @@ jobs:
           echo "environment=$DEPLOYMENT_ENVIRONMENT" >> $GITHUB_OUTPUT
 
   validate-event:
-    name: "Block manual releases to staging and production"
+    name: "Block workflow_dispatch for staging and production"
     needs: [ pick-environment ]
     runs-on: ubuntu-latest
     steps:
@@ -128,9 +133,25 @@ jobs:
             fi
           fi
 
+  build-test-cover-solution:
+    - name: "Build Test Cover Solution"
+      needs: [ pick-runner, pick-environment ]
+      runs-on: ${{ needs.pick-runner.outputs.runnerName }}
+      steps:
+        - name: Build Test and Cover Solution
+          id: build-test-cover
+          uses: trakx/github-actions/test-dotnet@v10.0.18
+          with:
+            packageReadonlyPat: ${{secrets.TRAKX_BOT_READONLY_PAT}}
+            codacyToken: ${{secrets.CODACY_TOKEN}}
+            awsAccessKeyId: ${{secrets.AWS_ACCESS_KEY_ID}}
+            awsAccessKeySecret: ${{secrets.AWS_ACCESS_KEY_SECRET}}
+
+  # TODO: We should use steps. instead of needs. 
   build-push-container-image:
     name: "Build and push container image"
-    needs: [ pick-runner, pick-environment, validate-event ]
+    # TODO: when we switch to steps. > we can remove  pick-runner, pick-environment, it's already in build-test-cover-solution
+    needs: [ pick-runner, pick-environment, build-test-cover-solution, validate-event ]
     runs-on: ${{ needs.pick-runner.outputs.runnerName }}
     steps:
       - name: Checkout calling repo

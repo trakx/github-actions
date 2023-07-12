@@ -1,3 +1,5 @@
+# TODO: name of this file is very confusing, we have in the project repos deploy.yml which calls the shared-build-deploy-container.yml
+
 name: Tag new commit
 
 on: 
