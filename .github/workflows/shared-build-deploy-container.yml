@@ -1,6 +1,4 @@
 # As we are keeping actions and deployment templates in the same repository:
-# TODO: Suggestion add template in this file name ex: deploy-template.yml
-# TODO: Suggestion add action in action names build-push-container-action.yml 
 name: "Build, Push and Deploy a container image to Kubernetes"
 # Requires `csproj` file contains `<EnableSdkContainerSupport>true</EnableSdkContainerSupport>` tag and a deployment folder to be present in the repository.
 
