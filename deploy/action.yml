@@ -24,6 +24,11 @@ inputs:
     required: false
     type: string
     default: ""
+  actionsRepoRef:
+    description: "Run actions from this ref. Default is master."
+    type: string
+    required: false
+    default: "master"
 
 runs:
   using: composite
@@ -74,15 +79,25 @@ runs:
     ### Deployment types switch ###
 
     ###### Kubernetes deployments ######
+    - name: Checkout trakx/github-actions repo
+      id: checkout-trakx-k8s-github-actions
+      if: ${{ inputs.type == 'kubernetes' }}
+      uses: actions/checkout@v3
+      with:
+        repository: trakx/github-actions
+        path: ./k8s-github-actions
+        ref: ${{ inputs.actionsRepoRef }}
+
     - name: Deploy to Kubernetes
-      uses: ./github-actions/deploy-kubernetes
+      if: ${{ inputs.type == 'kubernetes' }}
+      needs: [ checkout-trakx-k8s-github-actions ]
+      uses: ./k8s-github-actions/deploy-kubernetes
       with:
         environment: ${{ inputs.environment }}
         tag: ${{ inputs.tag }}
         artifact-name: ${{ inputs.artifact-name }}
         service: ${{ inputs.service }}
         serviceRegistry: ${{ env.SERVICE_REGISTRY_URL }}
-        containerImageUrl: "docker.pkg.github.com/trakx/user-management/user-management-api:dev-XYZ"
 
     ###### Nuget deployments ######
     - name: Deploy Nuget
