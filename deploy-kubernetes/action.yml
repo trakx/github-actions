@@ -44,6 +44,8 @@ runs:
         imageUrl="${{ inputs.containerImageUrl }}"
         if [[ -z "$imageUrl" ]]; then
             imageUrl="${{inputs.service}}=${{inputs.serviceRegistry}}/$GITHUB_REPOSITORY/${{inputs.artifact-name}}:${{inputs.tag}}"
+        else
+            imageUrl="${{inputs.service}}=$imageUrl"
         fi
         echo "CONTAINER_IMAGE_URL=$imageUrl" >> $GITHUB_ENV
 
