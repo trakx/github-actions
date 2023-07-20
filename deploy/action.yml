@@ -82,6 +82,7 @@ runs:
         artifact-name: ${{ inputs.artifact-name }}
         service: ${{ inputs.service }}
         serviceRegistry: ${{ env.SERVICE_REGISTRY_URL }}
+        containerImageUrl: "docker.pkg.github.com/trakx/user-management/user-management-api:dev-XYZ"
 
     ###### Nuget deployments ######
     - name: Deploy Nuget
