@@ -211,3 +211,4 @@ jobs:
           artifact-name: ${{ env.IMAGE_NAME }}
           serviceRegistry: ${{ inputs.dockerRegistry }}
           type: "kubernetes"
+          actionsRepoRef: ${{ inputs.actionsRepoRef }}
