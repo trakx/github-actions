@@ -1,0 +1,48 @@
+name: "Deploy a Docker Image to Kubernetes"
+description: "Deploy a container image to Kubernetes."
+
+inputs:
+  serviceName:
+    description: "Name of the service being deployed (ex: automatedhedging-monitor)"
+  containerImage:
+    description: "Container image url to deploy. (ex: docker.pkg.github.com/scaletone/durablefunctionsmonitor)"
+    required: true
+  tag:
+    description: "The version tag associated with the deployment (ex: 6.3)"
+    required: true
+  actionsRepoRef:
+    description: "Run actions from branch (Default is master)"
+    required: false
+    default: "master"
+    
+runs:
+  using: composite
+
+  steps:
+    - name: Checkout trakx/github-actions
+      uses: actions/checkout@v3
+      with:
+        repository: trakx/github-actions
+        path: ./deploy-docker-image
+        ref: ${{ inputs.actionsRepoRef }}     
+        
+    # Pick Environment Action
+    - name: Pick Environment and RunnerName
+      id: pick-environment-runner
+      uses: ./deploy-docker-image/pick-environment-runner
+    
+    #Since github runners working in Docker-in-Docker mode we need this workaround
+    - name: Install Kubernetes & Kustomize
+      shell: bash
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        sudo mv kustomize /usr/local/bin/kustomize
+
+    - name: Deploy Image
+      shell: bash
+      run: |
+        cd deployment/${{inputs.serviceName}}/overlays/${{steps.pick-environment-runner.outputs.environment}}/
+        kustomize edit set image ${{inputs.serviceName}}=${{inputs.containerImage}}:${{inputs.tag}}
+        kustomize build . | kubectl apply --validate=false -f -
