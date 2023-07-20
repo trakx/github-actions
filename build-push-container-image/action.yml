@@ -38,6 +38,11 @@ inputs:
     required: false
     type: string
     default: "docker.pkg.github.com"
+  actionsRepoRef:
+    description: "Run actions from this ref. Default is master."
+    type: string
+    required: false
+    default: "master"
   doCheckout:
     description: "Whether to checkout the repository or not."
     required: false
@@ -55,6 +60,13 @@ runs:
     - name: Checkout
       uses: actions/checkout@v3
       if: ${{inputs.doCheckout == true}}
+
+    - name: Checkout trakx/github-actions repo
+      uses: actions/checkout@v3
+      with:
+        repository: trakx/github-actions
+        path: ./github-actions-build-push-container-image
+        ref: ${{ inputs.actionsRepoRef }}
 
     - name: .NET Install
       env:
@@ -88,7 +100,7 @@ runs:
       run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
 
     - name: Load last commit sha
-      uses: ./github-actions/get-last-commit
+      uses: ./github-actions-build-push-container-image/get-last-commit
       id: last-commit-sha
 
     - name: Set Variable TAG_SUFFIX

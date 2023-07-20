@@ -5,9 +5,6 @@ inputs:
   githubToken:
     description: GitHub token
     required: true
-  environment:
-    description: "The environment targeted for the deployment"
-    required: true
   type:
     description: "The type of the deployment (ex: kubernetes, nuget, amplify, etc.)"
     required: true
@@ -24,6 +21,11 @@ inputs:
     required: false
     type: string
     default: ""
+  actionsRepoRef:
+    description: "Run actions from this ref. Default is master."
+    type: string
+    required: false
+    default: "master"
 
 runs:
   using: composite
@@ -32,17 +34,22 @@ runs:
     - name: Check inputs
       shell: bash
       run: |
-        if [[ "${{ inputs.environment }}" != "production" 
-          && "${{ inputs.environment }}" != "staging" 
-          && "${{ inputs.environment }}" != "development" ]]; then
-            echo "Unsupported environment: ${{ inputs.environment }}"
-          exit 1
-        fi
         if [[ "${{ inputs.type }}" != "kubernetes" 
           && "${{ inputs.type }}" != "nuget" ]]; then
-          echo "Unsupported deployment type: ${{ inputs.environment }}"
+          echo "Unsupported deployment type: ${{ inputs.type }}"
           exit 1
         fi
+
+    - name: Checkout trakx/github-actions repo
+      uses: actions/checkout@v3
+      with:
+        repository: trakx/github-actions
+        path: ./trakx-github-actions-deploy
+        ref: ${{ inputs.actionsRepoRef }}
+
+    - name: Pick Environment and RunnerName
+      id: load-environment
+      uses: ./trakx-github-actions-deploy/load-environment
 
     - name: Set variable SERVICE_REGISTRY_URL
       shell: bash
@@ -62,7 +69,7 @@ runs:
       id: create-deployment
       with:
         token: '${{ inputs.githubToken }}'
-        environment: ${{ inputs.environment}}
+        environment: ${{steps.load-environment.outputs.environment}}
         payload: |
             { 
                 "artifactName" : "${{ inputs.artifact-name }}",
@@ -71,24 +78,17 @@ runs:
                 "tag" : "${{ inputs.tag }}"
             }
 
-    ###### Deployment types switch ######
+    ### Deployment types switch ###
 
     ###### Kubernetes deployments ######
-    #Since github runners working in Docker-in-Docker mode we need this workaround
-    - name: Install Kubernetes & Kustomize
-      shell: bash
-      run: |
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-        sudo mv kustomize /usr/local/bin/kustomize
-
-    - name: Deploy Image
-      shell: bash
-      run: |
-        cd deployment/${{inputs.service}}/overlays/${{inputs.environment}}/
-        kustomize edit set image ${{inputs.service}}=${{env.SERVICE_REGISTRY_URL}}/$GITHUB_REPOSITORY/${{inputs.artifact-name}}:${{inputs.tag}}
-        kustomize build . | kubectl apply --validate=false -f -
+    - name: Deploy to Kubernetes
+      if: ${{ inputs.type == 'kubernetes' }}
+      uses: ./trakx-github-actions-deploy/deploy-docker-image
+      with:
+        serviceName: ${{ inputs.service }}
+        containerImage: "${{env.SERVICE_REGISTRY_URL}}/$GITHUB_REPOSITORY/${{inputs.artifact-name}}"
+        tag: ${{ inputs.tag }}
+        actionsRepoRef: ${{ inputs.actionsRepoRef }}
 
     ###### Nuget deployments ######
     - name: Deploy Nuget
@@ -97,7 +97,7 @@ runs:
       run: |
         echo "pushing ${{ inputs.artifact-name }} to ${{ env.SERVICE_REGISTRY_URL }}"
 
-    ###### End of Deployment types switch ######
+    ### End of Deployment types switch ###
 
     - name: Update GitHub deployment status (success)
       if: success()
