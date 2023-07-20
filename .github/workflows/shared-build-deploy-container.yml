@@ -100,7 +100,7 @@ jobs:
   build-push-container-image:
     name: "Build and push container image"
     needs: [ prepare-and-validate ]
-    runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
+    runs-on: ${{ jobs.prepare-and-validate.outputs.runnerName }}
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v3
@@ -124,7 +124,7 @@ jobs:
           packageReadonlyPat: ${{ secrets.TRAKX_BOT_READONLY_PAT }}
           projectFolder: ${{ inputs.projectFolder }}
           imageName: ${{ env.IMAGE_NAME }}
-          imageTagPrefix: ${{ needs.prepare-and-validate.outputs.tagPrefix }}
+          imageTagPrefix: ${{ jobs.prepare-and-validate.outputs.tagPrefix }}
           containerPublishType: ${{ inputs.containerPublishType }}
           dotnetVersion: ${{ inputs.dotnetVersion }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
@@ -137,10 +137,10 @@ jobs:
   deploy-kubernetes:
     name: "Deploy image to Kubernetes"
     needs: [ prepare-and-validate, build-push-container-image ]
-    runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
+    runs-on: ${{ jobs.prepare-and-validate.outputs.runnerName }}
     if: |
       always() &&
-        (needs.build-push-container-image.result == 'success' || (needs.build-push-container-image.result == 'skipped'
+        (jobs.build-push-container-image.result == 'success' || (jobs.build-push-container-image.result == 'skipped'
             && github.event_name == 'workflow_run'
             && github.event.workflow_run.conclusion == 'success' ))
     steps:
@@ -159,7 +159,7 @@ jobs:
         uses: ./github-actions-shared-build-deploy-container/deploy
         with:
           githubToken: ${{ env.GITHUB_TOKEN }}
-          tag: ${{ needs.build-push-container-image.outputs.tag }}
+          tag: ${{ jobs.build-push-container-image.outputs.tag }}
           service: ${{ inputs.serviceName }}
           artifact-name: ${{ env.IMAGE_NAME }}
           serviceRegistry: ${{ inputs.dockerRegistry }}
