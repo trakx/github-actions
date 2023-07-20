@@ -58,9 +58,9 @@ jobs:
     name: "Prepare the environment to run the jobs"
     runs-on: ubuntu-latest
     outputs:
-      environment: ${{ steps.pick-environment-setup.outputs.environment }}
-      runnerName: ${{ steps.pick-runner.outputs.runnerName }}
-      tagPrefix: ${{ steps.pick-environment-setup.outputs.tagPrefix }}
+      environment: ${{ steps.load-environment.outputs.environment }}
+      runnerName: ${{ steps.load-environment.outputs.runnerName }}
+      tagPrefix: ${{ steps.load-environment.outputs.tagPrefix }}
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v3
@@ -73,26 +73,15 @@ jobs:
           ref: ${{ inputs.actionsRepoRef }}
 
       - name: Pick environment and runner
-        id: pick-environment-setup
-        uses: ./github-actions-shared-build-deploy-container/pick-environment-setup
-
-      - name: Pick runner
-        id: pick-runner
-        shell: bash
-        run: |
-          RUNNER_NAME="${{ inputs.runnerName }}"
-          if [[ -z "$RUNNER_NAME" ]]; then
-            RUNNER_NAME="${{ steps.pick-environment-setup.outputs.runnerName }}"
-          fi
-          echo "Picked runner for the workflow: $RUNNER_NAME"
-          echo "runnerName=$RUNNER_NAME" >> $GITHUB_OUTPUT
+        id: load-environment
+        uses: ./github-actions-shared-build-deploy-container/load-environment
 
       - name: Block workflow_dispatch for staging and production
         shell: bash
         run: |
-          if [[ "${{ steps.pick-environment-setup.outputs.environment }}" == "production" || "${{ steps.pick-environment-setup.outputs.environment }}" == "staging" ]]; then
+          if [[ "${{ steps.load-environment.outputs.environment }}" == "production" || "${{ steps.load-environment.outputs.environment }}" == "staging" ]]; then
             if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-              echo "Event workflow_dispatch is not allowed for environment ${{ steps.pick-environment-setup.outputs.environment }}."
+              echo "Event workflow_dispatch is not allowed for environment ${{ steps.load-environment.outputs.environment }}."
               exit 1
             fi
           fi

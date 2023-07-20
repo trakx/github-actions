@@ -1,4 +1,4 @@
-name: "Pick Environment setup"
+name: "Loads Environment setup"
 description: "Picks the right environment, runner and container image tag prefix based on the branch name"
 
 outputs:

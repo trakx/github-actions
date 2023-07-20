@@ -28,8 +28,8 @@ runs:
         
     # Pick Environment Action
     - name: Pick Environment and RunnerName
-      id: pick-environment-setup
-      uses: ./deploy-docker-image/pick-environment-setup
+      id: load-environment
+      uses: ./deploy-docker-image/load-environment
     
     #Since github runners working in Docker-in-Docker mode we need this workaround
     - name: Install Kubernetes & Kustomize
@@ -43,6 +43,6 @@ runs:
     - name: Deploy Image
       shell: bash
       run: |
-        cd deployment/${{inputs.serviceName}}/overlays/${{steps.pick-environment-setup.outputs.environment}}/
+        cd deployment/${{inputs.serviceName}}/overlays/${{steps.load-environment.outputs.environment}}/
         kustomize edit set image ${{inputs.serviceName}}=${{inputs.containerImage}}:${{inputs.tag}}
         kustomize build . | kubectl apply --validate=false -f -
