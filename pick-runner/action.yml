@@ -1,0 +1,35 @@
+name: "Pick runner"
+description: "Picks a runner depending on the branch, if not set."
+
+inputs:
+  runnerName:
+    description: "Name of the runner to use. If not provided, will be generated based on the branch name."
+    required: false
+    type: string
+    default: ''
+
+outputs:
+  runnerName:
+    description: "Runner name"
+    value: ${{ steps.setRunnerName.outputs.pickedRunnerName}}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Output RUNNER_NAME
+      shell: bash
+      id: setRunnerName
+      run: |
+        RUNNER_NAME="${{ inputs.runnerName }}"
+
+        if [[ -z "$RUNNER_NAME" ]]; then
+          if [[ "${{ github.ref }}" == "refs/heads/prod" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+              RUNNER_NAME="prod-trakx-runner"
+          elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
+              RUNNER_NAME="stage-trakx-runner"
+          else
+              RUNNER_NAME="dev-trakx-runner"
+          fi
+        fi
+        echo "Picked runner: $RUNNER_NAME"
+        echo "pickedRunnerName=$RUNNER_NAME" >> $GITHUB_OUTPUT

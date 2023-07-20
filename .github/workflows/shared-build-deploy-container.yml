@@ -64,74 +64,54 @@ env:
   GITHUB_TOKEN: ${{ secrets.TRAKX_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
 
 jobs:
-  pick-runner:
-    name: "Pick runner"
+  prepare:
+    name: "Prepare the environment to run the jobs"
     runs-on: ubuntu-latest
     outputs:
-      runnerName: ${{ steps.pick-runner-step.outputs.runnerName }}
+      runnerName: ${{ steps.pick-runner.outputs.runnerName }}
+      environment: ${{ steps.pick-environment.outputs.environment }}
     steps:
-      - name: Set variable RUNNER_NAME based on branch name
-        id: pick-runner-step
-        shell: bash
-        run: |
-          RUNNER_NAME="${{ inputs.runnerName }}"
+      - name: Checkout calling repo
+        uses: actions/checkout@v3
 
-          if [[ -z "$RUNNER_NAME" ]]; then
-            if [[ "${{ github.ref }}" == "refs/heads/prod" || "${{ github.ref }}" == "refs/heads/master" ]]; then
-                RUNNER_NAME="prod-trakx-runner"
-            elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
-                RUNNER_NAME="stage-trakx-runner"
-            else
-                RUNNER_NAME="dev-trakx-runner"
-            fi
-          fi
-          echo "Using runner: $RUNNER_NAME"
-          echo "RUNNER_NAME=$RUNNER_NAME" >> $GITHUB_ENV
-          echo "runnerName=$RUNNER_NAME" >> $GITHUB_OUTPUT
+      - name: Checkout trakx/github-actions repo
+        uses: actions/checkout@v3
+        with:
+          repository: trakx/github-actions
+          path: ./github-actions
+          ref: ${{ inputs.actionsRepoRef }}
 
-  pick-environment:
-    name: "Pick environment"
-    runs-on: ubuntu-latest
-    outputs:
-      environment: ${{ steps.pick-environment-step.outputs.environment }}
-    steps:
-      - name: Set variable DEPLOYMENT_ENVIRONMENT based on branch name
-        id: pick-environment-step
-        shell: bash
-        run: |
-          DEPLOYMENT_ENVIRONMENT="${{ inputs.environment }}"
-          if [[ -z "$DEPLOYMENT_ENVIRONMENT" ]]; then
-            if [[ "${{ github.ref }}" == "refs/heads/prod" || "${{ github.ref }}" == "refs/heads/master" ]]; then
-                DEPLOYMENT_ENVIRONMENT="production"
-            elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
-                DEPLOYMENT_ENVIRONMENT="staging"
-            else
-                DEPLOYMENT_ENVIRONMENT="development"
-            fi
-          fi
-          echo "Deploying to environment: $DEPLOYMENT_ENVIRONMENT"
-          echo "DEPLOYMENT_ENVIRONMENT=$DEPLOYMENT_ENVIRONMENT" >> $GITHUB_ENV
-          echo "environment=$DEPLOYMENT_ENVIRONMENT" >> $GITHUB_OUTPUT
+      - name: Pick environment
+        id: pick-environment
+        uses: ./github-actions/pick-environment
+        with:
+          environment: ${{ inputs.environment }}
+
+      - name: Pick runner
+        id: pick-runner
+        uses: ./github-actions/pick-runner
+        with:
+          runnerName: ${{ inputs.runnerName }}
 
   validate-event:
     name: "Block manual releases to staging and production"
-    needs: [ pick-environment, pick-runner ]
+    needs: [ prepare ]
     runs-on: ubuntu-latest
     steps:
       - name: Block workflow_dispatch for staging and production
         shell: bash
         run: |
-          if [[ "${{ needs.pick-environment.outputs.environment }}" == "production" || "${{ needs.pick-environment.outputs.environment }}" == "staging" ]]; then
+          if [[ "${{ needs.prepare.outputs.environment }}" == "production" || "${{ needs.prepare.outputs.environment }}" == "staging" ]]; then
             if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-              echo "Event workflow_dispatch is not allowed for environment ${{ needs.pick-environment.outputs.environment }}."
+              echo "Event workflow_dispatch is not allowed for environment ${{ needs.prepare.outputs.environment }}."
               exit 1
             fi
           fi
 
   build-push-container-image:
     name: "Build and push container image"
-    needs: [ pick-runner, pick-environment, validate-event ]
-    runs-on: ${{ needs.pick-runner.outputs.runnerName }}
+    needs: [ prepare, validate-event ]
+    runs-on: ${{ needs.prepare.outputs.runnerName }}
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v3
@@ -152,9 +132,9 @@ jobs:
         run: |
           IMAGE_TAG="${{ inputs.imageTagPrefix }}"
           if [[ -z "$IMAGE_TAG" ]]; then
-            if [[ "${{ needs.pick-environment.outputs.environment }}" == "production" ]]; then
+            if [[ "${{ needs.prepare.outputs.environment }}" == "production" ]]; then
                 IMAGE_TAG="prod"
-            elif [[ "${{ needs.pick-environment.outputs.environment }}" == "staging" ]]; then
+            elif [[ "${{ needs.prepare.outputs.environment }}" == "staging" ]]; then
                 IMAGE_TAG="stage"
             else
                 IMAGE_TAG="dev"
@@ -182,8 +162,8 @@ jobs:
 
   deploy-kubernetes:
     name: "Deploy image to Kubernetes"
-    needs: [ pick-runner, pick-environment, build-push-container-image ]
-    runs-on: ${{ needs.pick-runner.outputs.runnerName }}
+    needs: [ prepare, build-push-container-image ]
+    runs-on: ${{ needs.prepare.outputs.runnerName }}
     if: |
       always() &&
         (needs.build-push-container-image.result == 'success' || (needs.build-push-container-image.result == 'skipped'
@@ -205,7 +185,7 @@ jobs:
         uses: ./github-actions/deploy
         with:
           githubToken: ${{ env.GITHUB_TOKEN }}
-          environment: ${{ needs.pick-environment.outputs.environment }}
+          environment: ${{ needs.prepare.outputs.environment }}
           tag: ${{ needs.build-push-container-image.outputs.tag }}
           service: ${{ inputs.serviceName }}
           artifact-name: ${{ env.IMAGE_NAME }}

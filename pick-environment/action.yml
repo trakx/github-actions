@@ -1,0 +1,35 @@
+name: "Pick environment"
+description: "Picks an environment, if not set."
+
+inputs:
+  environment:
+    description: "Environment to deploy to (dev | staging | production). If not provided, will be generated based on the branch name."
+    required: false
+    type: string
+    default: ''
+
+outputs:
+  environment:
+    description: "Environment"
+    value: ${{ steps.setEnvironment.outputs.pickedEnvironment}}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Output DEPLOYMENT_ENVIRONMENT
+      shell: bash
+      id: setEnvironment
+      run: |
+        DEPLOYMENT_ENVIRONMENT="${{ inputs.environment }}"
+
+        if [[ -z "$DEPLOYMENT_ENVIRONMENT" ]]; then
+          if [[ "${{ github.ref }}" == "refs/heads/prod" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+              DEPLOYMENT_ENVIRONMENT="production"
+          elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
+              DEPLOYMENT_ENVIRONMENT="staging"
+          else
+              DEPLOYMENT_ENVIRONMENT="development"
+          fi
+        fi
+        echo "Deploying to environment: $DEPLOYMENT_ENVIRONMENT"
+        echo "pickedEnvironment=$DEPLOYMENT_ENVIRONMENT" >> $GITHUB_OUTPUT
