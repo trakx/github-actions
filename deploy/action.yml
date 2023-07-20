@@ -75,7 +75,7 @@ runs:
 
     ###### Kubernetes deployments ######
     - name: Deploy to Kubernetes
-      uses: ./deploy-kubernetes
+      uses: ./github-actions/deploy-kubernetes
       with:
         environment: ${{ inputs.environment }}
         tag: ${{ inputs.tag }}
