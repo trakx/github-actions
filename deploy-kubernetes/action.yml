@@ -38,7 +38,7 @@ runs:
           exit 1
         fi
 
-    - name: Set CONTAINER_IMAGE_URL
+    - name: Set CONTAINER_IMAGE_URL to publish
       shell: bash
       run: |
         imageUrl="${{ inputs.containerImageUrl }}"
