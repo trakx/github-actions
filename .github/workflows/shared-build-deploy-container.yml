@@ -115,7 +115,7 @@ jobs:
 
   validate-event:
     name: "Block manual releases to staging and production"
-    needs: [ pick-environment ]
+    needs: [ pick-environment, pick-runner ]
     runs-on: ubuntu-latest
     steps:
       - name: Block workflow_dispatch for staging and production

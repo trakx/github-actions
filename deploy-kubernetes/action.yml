@@ -43,9 +43,7 @@ runs:
       run: |
         imageUrl="${{ inputs.containerImageUrl }}"
         if [[ -z "$imageUrl" ]]; then
-            imageUrl="${{inputs.service}}=${{inputs.serviceRegistry}}/$GITHUB_REPOSITORY/${{inputs.artifact-name}}:${{inputs.tag}}"
-        else
-            imageUrl="${{inputs.service}}=$imageUrl"
+            imageUrl="${{inputs.serviceRegistry}}/$GITHUB_REPOSITORY/${{inputs.artifact-name}}:${{inputs.tag}}"
         fi
         echo "CONTAINER_IMAGE_URL=$imageUrl" >> $GITHUB_ENV
 
@@ -62,5 +60,5 @@ runs:
       shell: bash
       run: |
         cd deployment/${{inputs.service}}/overlays/${{inputs.environment}}/
-        kustomize edit set image ${{env.CONTAINER_IMAGE_URL}}
+        kustomize edit set image ${{inputs.service}}=${{env.CONTAINER_IMAGE_URL}}
         kustomize build . | kubectl apply --validate=false -f -
