@@ -80,7 +80,6 @@ runs:
 
     ###### Kubernetes deployments ######
     - name: Checkout trakx/github-actions repo
-      id: checkout-trakx-k8s-github-actions
       if: ${{ inputs.type == 'kubernetes' }}
       uses: actions/checkout@v3
       with:
@@ -90,7 +89,6 @@ runs:
 
     - name: Deploy to Kubernetes
       if: ${{ inputs.type == 'kubernetes' }}
-      needs: [ checkout-trakx-k8s-github-actions ]
       uses: ./k8s-github-actions/deploy-kubernetes
       with:
         environment: ${{ inputs.environment }}
