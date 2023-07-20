@@ -35,11 +35,11 @@ Used to try to retrieve tag as artifact and push it.
 ### test-dotnet
 Builds and tests a dotnet solution, posting code coverage results to Codacy.
 
-### pick-environment
-Outputs the environment. If the input is not provided, will be generated based on the branch name.
+### load-environment
+Outputs the environment, runner name and container image tag prefix based on the branch name.
 
-### pick-runner
-Outputs the runner name. If the input is not provided, will be generated based on the branch name.
+### deploy-docker-image
+Deploy a container image to Kubernetes.
 
 ## Shared workflows
 All shared workflows are available in `.github/workflows/` path.
