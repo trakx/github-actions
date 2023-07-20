@@ -60,6 +60,7 @@ jobs:
     outputs:
       environment: ${{ steps.pick-environment-setup.outputs.environment }}
       runnerName: ${{ steps.pick-runner.outputs.runnerName }}
+      tagPrefix: ${{ steps.pick-environment-setup.outputs.tagPrefix }}
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v3
