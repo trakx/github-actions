@@ -1,5 +1,5 @@
-name: "Pick Environment and RunnerName"
-description: "Picks the right environment and runner based on the branch name"
+name: "Pick Environment setup"
+description: "Picks the right environment, runner and container image tag prefix based on the branch name"
 
 outputs:
   environment:
@@ -8,6 +8,9 @@ outputs:
   runnerName:
     description: "Detected RunnerName"
     value: ${{ steps.detectStep.outputs.runnerName}}
+  tagPrefix:
+    description: "Container image tag prefix"
+    value: ${{ steps.detectStep.outputs.tagPrefix}}
 
 runs:
   using: "composite"
@@ -20,16 +23,21 @@ runs:
         if [[ "${{ github.ref }}" == "refs/heads/prod" || "${{ github.ref }}" == "refs/heads/master" ]]; then
             DETECTED_ENVIRONMENT="production"
             RUNNER_NAME="prod-trakx-runner"
+            IMAGE_TAG="prod"
         elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
             DETECTED_ENVIRONMENT="staging"
             RUNNER_NAME="stage-trakx-runner"
+            IMAGE_TAG="stage"
         else
             DETECTED_ENVIRONMENT="development"
             RUNNER_NAME="dev-trakx-runner"
+            IMAGE_TAG="dev"
         fi
         
         echo "Detected Environment is: $DETECTED_ENVIRONMENT"
         echo "Detected Runner is: $RUNNER_NAME"
+        echo "Detected Tag Prefix is: $IMAGE_TAG"
         
         echo "environment=$DETECTED_ENVIRONMENT" >> $GITHUB_OUTPUT
         echo "runnerName=$RUNNER_NAME" >> $GITHUB_OUTPUT
+        echo "tagPrefix=$IMAGE_TAG" >> $GITHUB_OUTPUT

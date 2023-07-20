@@ -5,9 +5,6 @@ inputs:
   githubToken:
     description: GitHub token
     required: true
-  environment:
-    description: "The environment targeted for the deployment"
-    required: true
   type:
     description: "The type of the deployment (ex: kubernetes, nuget, amplify, etc.)"
     required: true
@@ -37,17 +34,22 @@ runs:
     - name: Check inputs
       shell: bash
       run: |
-        if [[ "${{ inputs.environment }}" != "production" 
-          && "${{ inputs.environment }}" != "staging" 
-          && "${{ inputs.environment }}" != "development" ]]; then
-            echo "Unsupported environment: ${{ inputs.environment }}"
-          exit 1
-        fi
         if [[ "${{ inputs.type }}" != "kubernetes" 
           && "${{ inputs.type }}" != "nuget" ]]; then
-          echo "Unsupported deployment type: ${{ inputs.environment }}"
+          echo "Unsupported deployment type: ${{ inputs.type }}"
           exit 1
         fi
+
+    - name: Checkout trakx/github-actions repo
+      uses: actions/checkout@v3
+      with:
+        repository: trakx/github-actions
+        path: ./trakx-github-actions-deploy
+        ref: ${{ inputs.actionsRepoRef }}
+
+    - name: Pick Environment and RunnerName
+      id: pick-environment-setup
+      uses: ./trakx-github-actions-deploy/pick-environment-setup
 
     - name: Set variable SERVICE_REGISTRY_URL
       shell: bash
@@ -67,7 +69,7 @@ runs:
       id: create-deployment
       with:
         token: '${{ inputs.githubToken }}'
-        environment: ${{ inputs.environment}}
+        environment: ${{steps.pick-environment-setup.outputs.environment}}
         payload: |
             { 
                 "artifactName" : "${{ inputs.artifact-name }}",
@@ -79,23 +81,13 @@ runs:
     ### Deployment types switch ###
 
     ###### Kubernetes deployments ######
-    - name: Checkout trakx/github-actions repo
-      if: ${{ inputs.type == 'kubernetes' }}
-      uses: actions/checkout@v3
-      with:
-        repository: trakx/github-actions
-        path: ./k8s-github-actions
-        ref: ${{ inputs.actionsRepoRef }}
-
     - name: Deploy to Kubernetes
       if: ${{ inputs.type == 'kubernetes' }}
-      uses: ./k8s-github-actions/deploy-kubernetes
+      uses: ./trakx-github-actions-deploy/deploy-docker-image
       with:
-        environment: ${{ inputs.environment }}
+        serviceName: ${{ inputs.service }}
+        containerImage: "${{env.SERVICE_REGISTRY_URL}}/$GITHUB_REPOSITORY/${{inputs.artifact-name}}"
         tag: ${{ inputs.tag }}
-        artifact-name: ${{ inputs.artifact-name }}
-        service: ${{ inputs.service }}
-        serviceRegistry: ${{ env.SERVICE_REGISTRY_URL }}
 
     ###### Nuget deployments ######
     - name: Deploy Nuget
