@@ -1,5 +1,5 @@
 name: "Loads Environment setup"
-description: "Picks the right environment, runner and container image tag prefix based on the branch name"
+description: "Loads the right environment, runner and container image tag prefix based on the branch name"
 
 outputs:
   environment:
