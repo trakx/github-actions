@@ -72,7 +72,7 @@ jobs:
           path: ./github-actions-shared-build-deploy-container
           ref: ${{ inputs.actionsRepoRef }}
 
-      - name: Pick environment and runner
+      - name: Load environment and runner
         id: load-environment
         uses: ./github-actions-shared-build-deploy-container/load-environment
 

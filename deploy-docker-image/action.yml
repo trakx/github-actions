@@ -26,8 +26,8 @@ runs:
         path: ./deploy-docker-image
         ref: ${{ inputs.actionsRepoRef }}
         
-    # Pick Environment Action
-    - name: Pick Environment and RunnerName
+    # Load Environment Action
+    - name: Load Environment and RunnerName
       id: load-environment
       uses: ./deploy-docker-image/load-environment
     
