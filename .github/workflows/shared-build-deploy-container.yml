@@ -55,7 +55,7 @@ env:
 
 jobs:
   prepare-and-validate:
-    name: "Prepare the environment to run the jobs"
+    name: "Prepare environment to run jobs"
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.load-environment.outputs.environment }}
