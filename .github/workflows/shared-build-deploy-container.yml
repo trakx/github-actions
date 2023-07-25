@@ -86,9 +86,6 @@ jobs:
       tagPrefix: ${{ steps.load-environment.outputs.tagPrefix }}
       actionsRepoReference: ${{ steps.get-ref-name.outputs.actionsRepoReference }}
     steps:
-      - name: Checkout calling repo
-        uses: actions/checkout@v3
-
       - name: Get ref_name
         id: get-ref-name
         run: |
@@ -104,6 +101,9 @@ jobs:
           
           echo "actionsRepoReference=$REF_NAME" >> $GITHUB_OUTPUT
           exit 1
+
+      - name: Checkout calling repo
+        uses: actions/checkout@v3
 
       - name: Checkout trakx/github-actions repo
         uses: actions/checkout@v3
