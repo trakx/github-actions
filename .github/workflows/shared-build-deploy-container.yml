@@ -43,11 +43,6 @@ on:
         required: false
         type: string
         default: "docker.pkg.github.com"
-      actionsRepoRef:
-        description: "Run actions from this ref. Default is master."
-        type: string
-        required: false
-        default: "master"
 
 env:
   IMAGE_NAME: ${{ inputs.imageName || inputs.serviceName }}
@@ -61,16 +56,30 @@ jobs:
       environment: ${{ steps.load-environment.outputs.environment }}
       runnerName: ${{ steps.load-environment.outputs.runnerName }}
       tagPrefix: ${{ steps.load-environment.outputs.tagPrefix }}
+      actionsRepoReference: ${{ steps.get_ref_name.outputs.actionsRepoReference }}
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v3
+
+      - name: Get ref_name
+        id: get_ref_name
+        run: |
+          REF_NAME="${{ github.ref_name }}"
+          
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            REF_NAME="${{ github.base_ref }}"
+          else
+            REF_NAME="${{ github.ref_name }}"
+          fi
+          echo "Detected RefName: $REF_NAME"
+          echo "actionsRepoReference=$REF_NAME" >> $GITHUB_OUTPUT
 
       - name: Checkout trakx/github-actions repo
         uses: actions/checkout@v3
         with:
           repository: trakx/github-actions
           path: ./github-actions-shared-build-deploy-container
-          ref: ${{ inputs.actionsRepoRef }}
+          ref: ${{ steps.get_ref_name.outputs.actionsRepoReference }}
 
       - name: Load environment and runner
         id: load-environment
@@ -99,7 +108,7 @@ jobs:
         with:
           repository: trakx/github-actions
           path: ./github-actions-shared-build-deploy-container
-          ref: ${{ inputs.actionsRepoRef }}
+          ref: ${{ needs.prepare-and-validate.outputs.actionsRepoReference }}
 
       - name: Get last commit of calling repo
         id: last-commit-sha
@@ -118,7 +127,7 @@ jobs:
           dotnetVersion: ${{ inputs.dotnetVersion }}
           dockerRegistry: ${{ inputs.dockerRegistry }}
           imageTagSuffix: ${{ steps.last-commit-sha.outputs.lastCommitSha }}
-          actionsRepoRef: ${{ inputs.actionsRepoRef }}
+          actionsRepoRef: ${{ needs.prepare-and-validate.outputs.actionsRepoReference }}
           doCheckout: false
     outputs:
       tag: ${{ steps.build-push-container-image-step.outputs.tag }}
@@ -141,7 +150,7 @@ jobs:
         with:
           repository: trakx/github-actions
           path: ./github-actions-shared-build-deploy-container
-          ref: ${{ inputs.actionsRepoRef }}
+          ref: ${{ needs.prepare-and-validate.outputs.actionsRepoReference }}
 
       - name: Deploy container image to Kubernetes
         id: deploy-container-k8s
@@ -153,4 +162,4 @@ jobs:
           artifact-name: ${{ env.IMAGE_NAME }}
           serviceRegistry: ${{ inputs.dockerRegistry }}
           type: "kubernetes"
-          actionsRepoRef: ${{ inputs.actionsRepoRef }}
+          actionsRepoRef: ${{ needs.prepare-and-validate.outputs.actionsRepoReference }}
