@@ -64,8 +64,6 @@ jobs:
       - name: Get ref_name
         id: get_ref_name
         run: |
-          REF_NAME="${{ github.ref_name }}"
-          
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             REF_NAME="${{ github.base_ref }}"
           else
