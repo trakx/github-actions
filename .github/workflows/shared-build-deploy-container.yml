@@ -70,7 +70,9 @@ jobs:
             REF_NAME="${{ github.ref_name }}"
           fi
           echo "Detected actionsRepoReference: $REF_NAME"
+          echo "Workflow ref ??: ${{ github.workflow_ref }}"
           echo "actionsRepoReference=$REF_NAME" >> $GITHUB_OUTPUT
+          exit 1
 
       - name: Checkout trakx/github-actions repo
         uses: actions/checkout@v3
