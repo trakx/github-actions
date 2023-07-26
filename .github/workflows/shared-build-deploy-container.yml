@@ -53,9 +53,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dump GitHub context
+        env:
+          actionPath: ${{env.GITHUB_ACTION_PATH}}
         run: |
-          echo "$GITHUB_ACTION_PATH"
-          echo "${{ github.action_path }}"
+          echo "${{env.actionPath}}"
+          echo "${{github.action_path}}"
   #    - name: Dump GitHub context
   #       env:
   #         GITHUB_CONTEXT: ${{ toJson(github) }}
