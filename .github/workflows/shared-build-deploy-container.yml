@@ -49,10 +49,14 @@ env:
   GITHUB_TOKEN: ${{ secrets.TRAKX_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
 
 jobs:
-  # dump_contexts_to_log:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Dump GitHub context
+  dump_contexts_to_log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        run: |
+          echo "$GITHUB_ACTION_PATH"
+          echo "${{ github.action_path }}"
+  #    - name: Dump GitHub context
   #       env:
   #         GITHUB_CONTEXT: ${{ toJson(github) }}
   #       run: echo "$GITHUB_CONTEXT"
