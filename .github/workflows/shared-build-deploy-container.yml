@@ -100,71 +100,80 @@ jobs:
           userReaderAppId: ${{ secrets.TRAKX_USER_READER_APP_ID }}
           userReaderAppPrivateKey: ${{ secrets.TRAKX_USER_READER_APP_PRIVATE_KEY }}
 
-  build-push-container-image:
-    name: "Build and push container image"
+  echo-something:
+    name: "Echo something"
     needs: [ prepare-and-validate ]
     runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
     steps:
-      - name: Checkout calling repo
-        uses: actions/checkout@v3
+      - name: Echo something
+        run: |
+          echo "Hello world"
 
-      - name: Checkout trakx/github-actions repo
-        uses: actions/checkout@v3
-        with:
-          repository: trakx/github-actions
-          path: ./github-actions-shared-build-deploy-container
-          ref: ${{ inputs.actionsRepoRef }}
+  # build-push-container-image:
+  #   name: "Build and push container image"
+  #   needs: [ prepare-and-validate ]
+  #   runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
+  #   steps:
+  #     - name: Checkout calling repo
+  #       uses: actions/checkout@v3
 
-      - name: Get last commit of calling repo
-        id: last-commit-sha
-        uses: ./github-actions-shared-build-deploy-container/get-last-commit
+  #     - name: Checkout trakx/github-actions repo
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: trakx/github-actions
+  #         path: ./github-actions-shared-build-deploy-container
+  #         ref: ${{ inputs.actionsRepoRef }}
 
-      - name: Build and push container image
-        id: build-push-container-image-step
-        uses: ./github-actions-shared-build-deploy-container/build-push-container-image
-        with:
-          githubToken: ${{ env.GITHUB_TOKEN }}
-          packageReadonlyPat: ${{ secrets.TRAKX_BOT_READONLY_PAT }}
-          projectFolder: ${{ inputs.projectFolder }}
-          imageName: ${{ env.IMAGE_NAME }}
-          imageTagPrefix: ${{ needs.prepare-and-validate.outputs.tagPrefix }}
-          containerPublishType: ${{ inputs.containerPublishType }}
-          dotnetVersion: ${{ inputs.dotnetVersion }}
-          dockerRegistry: ${{ inputs.dockerRegistry }}
-          imageTagSuffix: ${{ steps.last-commit-sha.outputs.lastCommitSha }}
-          actionsRepoRef: ${{ inputs.actionsRepoRef }}
-          doCheckout: false
-    outputs:
-      tag: ${{ steps.build-push-container-image-step.outputs.tag }}
+  #     - name: Get last commit of calling repo
+  #       id: last-commit-sha
+  #       uses: ./github-actions-shared-build-deploy-container/get-last-commit
 
-  deploy-kubernetes:
-    name: "Deploy image to Kubernetes"
-    needs: [ prepare-and-validate, build-push-container-image ]
-    runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
-    if: |
-      always() &&
-        (needs.build-push-container-image.result == 'success' || (needs.build-push-container-image.result == 'skipped'
-            && github.event_name == 'workflow_run'
-            && github.event.workflow_run.conclusion == 'success' ))
-    steps:
-      - name: Checkout calling repo
-        uses: actions/checkout@v3
+  #     - name: Build and push container image
+  #       id: build-push-container-image-step
+  #       uses: ./github-actions-shared-build-deploy-container/build-push-container-image
+  #       with:
+  #         githubToken: ${{ env.GITHUB_TOKEN }}
+  #         packageReadonlyPat: ${{ secrets.TRAKX_BOT_READONLY_PAT }}
+  #         projectFolder: ${{ inputs.projectFolder }}
+  #         imageName: ${{ env.IMAGE_NAME }}
+  #         imageTagPrefix: ${{ needs.prepare-and-validate.outputs.tagPrefix }}
+  #         containerPublishType: ${{ inputs.containerPublishType }}
+  #         dotnetVersion: ${{ inputs.dotnetVersion }}
+  #         dockerRegistry: ${{ inputs.dockerRegistry }}
+  #         imageTagSuffix: ${{ steps.last-commit-sha.outputs.lastCommitSha }}
+  #         actionsRepoRef: ${{ inputs.actionsRepoRef }}
+  #         doCheckout: false
+  #   outputs:
+  #     tag: ${{ steps.build-push-container-image-step.outputs.tag }}
 
-      - name: Checkout trakx/github-actions repo
-        uses: actions/checkout@v3
-        with:
-          repository: trakx/github-actions
-          path: ./github-actions-shared-build-deploy-container
-          ref: ${{ inputs.actionsRepoRef }}
+  # deploy-kubernetes:
+  #   name: "Deploy image to Kubernetes"
+  #   needs: [ prepare-and-validate, build-push-container-image ]
+  #   runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
+  #   if: |
+  #     always() &&
+  #       (needs.build-push-container-image.result == 'success' || (needs.build-push-container-image.result == 'skipped'
+  #           && github.event_name == 'workflow_run'
+  #           && github.event.workflow_run.conclusion == 'success' ))
+  #   steps:
+  #     - name: Checkout calling repo
+  #       uses: actions/checkout@v3
 
-      - name: Deploy container image to Kubernetes
-        id: deploy-container-k8s
-        uses: ./github-actions-shared-build-deploy-container/deploy
-        with:
-          githubToken: ${{ env.GITHUB_TOKEN }}
-          tag: ${{ needs.build-push-container-image.outputs.tag }}
-          service: ${{ inputs.serviceName }}
-          artifact-name: ${{ env.IMAGE_NAME }}
-          serviceRegistry: ${{ inputs.dockerRegistry }}
-          type: "kubernetes"
-          actionsRepoRef: ${{ inputs.actionsRepoRef }}
+  #     - name: Checkout trakx/github-actions repo
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: trakx/github-actions
+  #         path: ./github-actions-shared-build-deploy-container
+  #         ref: ${{ inputs.actionsRepoRef }}
+
+  #     - name: Deploy container image to Kubernetes
+  #       id: deploy-container-k8s
+  #       uses: ./github-actions-shared-build-deploy-container/deploy
+  #       with:
+  #         githubToken: ${{ env.GITHUB_TOKEN }}
+  #         tag: ${{ needs.build-push-container-image.outputs.tag }}
+  #         service: ${{ inputs.serviceName }}
+  #         artifact-name: ${{ env.IMAGE_NAME }}
+  #         serviceRegistry: ${{ inputs.dockerRegistry }}
+  #         type: "kubernetes"
+  #         actionsRepoRef: ${{ inputs.actionsRepoRef }}
