@@ -80,7 +80,7 @@ jobs:
         shell: bash
         id: check-manual-deploy
         run: |
-          IS_MANUAL_DEPLOY_RESTRICTED="N"
+          IS_MANUAL_DEPLOY_RESTRICTED="Y"
           if [[ "${{ steps.load-environment.outputs.environment }}" == "production" || "${{ steps.load-environment.outputs.environment }}" == "staging" ]]; then
             if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
               echo "Event workflow_dispatch detected for environment ${{ steps.load-environment.outputs.environment }}."
