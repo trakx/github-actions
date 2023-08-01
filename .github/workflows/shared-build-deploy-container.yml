@@ -93,7 +93,7 @@ jobs:
         uses: ./github-actions-shared-build-deploy-container/manual-approval
         if: ${{ steps.check-manual-deploy.outputs.isManualDeployRestricted == 'Y' }}
         with:
-          approvers: "joaofbvieira" #deploy-approvers >> need to create this group
+          approvers: "joaofbvieira,monsieurleberre" #deploy-approvers >> need to create this group
           minimumApprovals: 1
           issueTitle: "Manual deploy to ${{ steps.load-environment.outputs.environment }}"
           issuerCanApprove: true
