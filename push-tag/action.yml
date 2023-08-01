@@ -10,7 +10,7 @@ inputs:
   releaseBranches:
     description: branches for which productVersion should be empty
     required: false
-    default: "master,main,prod"
+    default: "master,prod"
   preRelease:
     description: "If tag is for a pre-release version. Default is true."
     required: false

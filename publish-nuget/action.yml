@@ -49,7 +49,7 @@ runs:
           COMP_MODE=Debug
         fi
         echo "compilationMode=$COMP_MODE" >> $GITHUB_OUTPUT
-        echo "compilation mode set to ${{steps.comp-mode.outputs.compilationMode}}"
+        echo "compilation mode set to $COMP_MODE"
 
     - name: Bump version
       id: bumpVersion

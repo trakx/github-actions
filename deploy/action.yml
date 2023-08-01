@@ -47,7 +47,7 @@ runs:
         path: ./trakx-github-actions-deploy
         ref: ${{ inputs.actionsRepoRef }}
 
-    - name: Pick Environment and RunnerName
+    - name: Load Environment and RunnerName
       id: load-environment
       uses: ./trakx-github-actions-deploy/load-environment
 
