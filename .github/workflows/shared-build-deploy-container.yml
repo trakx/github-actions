@@ -23,11 +23,6 @@ on:
         description: "Name of the docker image to build. If not provided, will be the same as 'serviceName'."
         required: false
         type: string
-      runnerName:
-        description: "Name of the runner to use. If not provided, will be generated based on the branch name."
-        required: false
-        type: string
-        default: ''
       containerPublishType:
         description: "Type of container publish (api | worker). Default is api."
         required: false
