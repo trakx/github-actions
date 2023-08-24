@@ -163,7 +163,7 @@ runs:
       run: >
         dotnet publish --os linux --arch x64
         /t:PublishContainer
-        -p:ContainerImageName=${{inputs.imageName}}
+        -p:ContainerRepository=${{inputs.imageName}}
         -p:ContainerImageTag=${{env.tag}}
         -c Release
 
