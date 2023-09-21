@@ -23,22 +23,11 @@ inputs:
   dotnetVersion:
     description: "Version of dotnet to use. Default is v7.x."
     required: false
-    type: string
     default: "7.x"
 
 runs:
   using: "composite"
   steps:
-    - name: Checkout calling repo
-      uses: actions/checkout@v3
-
-    - name: Checkout actions repo
-      uses: actions/checkout@v3
-      with:
-        repository: trakx/github-actions
-        path: github-actions
-        ref: ${{ inputs.actionRef }}
-
     - name: Set compilation mode
       shell: bash
       id: comp-mode
@@ -51,36 +40,26 @@ runs:
         echo "compilationMode=$COMP_MODE" >> $GITHUB_OUTPUT
         echo "compilation mode set to $COMP_MODE"
 
+    - name: Checkout actions repo
+      uses: actions/checkout@v4
+      with:
+        repository: trakx/github-actions
+        path: github-actions
+        ref: ${{ inputs.actionRef }}
+
+    - name: Restore and cache private nuget packages
+      if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
+      uses: ./github-actions/restore-dotnet
+      with:
+        dotnetVersion: ${{inputs.dotnetVersion}}
+        packageReadonlyPat: ${{packageReadonlyPat}}
+
     - name: Bump version
       id: bumpVersion
       uses: ./github-actions/get-tag
       with:
         semverIncrementLevel: ${{ inputs.semverIncrementLevel }}
         preRelease: ${{ inputs.debuggable }}
-
-    - name: .NET Install
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ inputs.dotnetVersion }}
-
-    - name: Add github nuget source
-      shell: bash
-      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
-                  --name "github"
-                  --username "trakx-bot"
-                  --password ${{inputs.packageReadonlyPat}}
-                  --store-password-in-clear-text
-
-    - name: Install dependencies
-      shell: bash
-      run: |
-        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
-        dotnet restore $f
-        done
-
-    - name: Remove github source
-      shell: bash
-      run: dotnet nuget remove source "github"
 
     - name: Build
       shell: bash

@@ -21,47 +21,29 @@ inputs:
   dotnetVersion:
     description: "Version of dotnet to use. Default is v7.x."
     required: false
-    type: string
     default: "7.x"
+  actionsRepoRef:
+    description: "Run actions from this ref. Default is master."
+    required: false
+    default: "master"
 
 runs:
   using: "composite"
   steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: .NET Install
-      env:
-        DOTNET_INSTALL_DIR: "./.dotnet"  # Required by the runner to install dotnet
-      uses: actions/setup-dotnet@v3
+  
+    - name: Checkout trakx/github-actions repo
+      uses: actions/checkout@v4
       with:
-        dotnet-version: ${{ inputs.dotnetVersion }}
+        repository: trakx/github-actions
+        path: ./github-actions-build-push-container-image
+        ref: ${{ inputs.actionsRepoRef }}
 
-    - name: Add Trakx github nuget source
-      shell: bash
-      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
-                  --name "github"
-                  --username "trakx-bot"
-                  --password ${{inputs.packageReadonlyPat}}
-                  --store-password-in-clear-text
-
-    - name: Restore Cache
-      uses: actions/cache@v3
+    - name: Restore and cache private nuget packages
+      if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
+      uses: ./github-actions/restore-dotnet
       with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-        restore-keys: ${{ runner.os }}-nuget-
-
-    - name: .NET Restore packages
-      shell: bash
-      run: |
-        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
-          dotnet restore $f --locked-mode
-        done
-
-    - name: Remove Trakx github source
-      shell: bash
-      run: dotnet nuget remove source "github"
+        dotnetVersion: ${{inputs.dotnetVersion}}
+        packageReadonlyPat: ${{packageReadonlyPat}}
 
     - name: .NET Build
       shell: bash

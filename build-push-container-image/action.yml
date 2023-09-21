@@ -11,43 +11,34 @@ inputs:
   projectFolder:
     description: "Folder containing the project to build."
     required: true
-    type: string
   imageName:
     description: "Name of the docker image to build."
     required: true
-    type: string
   imageTagPrefix:
     description: "Prefix of the docker image tag."
     required: true
-    type: string
   imageTagSuffix:
     description: "Suffix of the docker image tag. If not provided, will load the last commit sha."
     required: false
-    type: string
   containerPublishType:
     description: "Type of container publish (api | worker)."
     required: true
-    type: string
   dotnetVersion:
     description: "Version of dotnet to use. Default is v7.x."
     required: false
-    type: string
     default: "7.x"
   dockerRegistry:
     description: "Docker registry to push the image to."
     required: false
-    type: string
     default: "docker.pkg.github.com"
   actionsRepoRef:
     description: "Run actions from this ref. Default is master."
-    type: string
     required: false
     default: "master"
   doCheckout:
     description: "Whether to checkout the repository or not."
     required: false
-    type: boolean
-    default: true
+    default: "true"
 
 outputs:
   tag:
@@ -57,39 +48,20 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      if: ${{inputs.doCheckout == true}}
-
+  
     - name: Checkout trakx/github-actions repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: trakx/github-actions
         path: ./github-actions-build-push-container-image
         ref: ${{ inputs.actionsRepoRef }}
 
-    - name: .NET Install
-      env:
-        DOTNET_INSTALL_DIR: "./.dotnet" # Required by the runner to install dotnet
-      uses: actions/setup-dotnet@v3
+    - name: Restore and cache private nuget packages
+      if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
+      uses: ./github-actions/restore-dotnet
       with:
-        dotnet-version: ${{ inputs.dotnetVersion }}
-
-    - name: Add Trakx Github Nuget Source
-      shell: bash
-      run: >
-        dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
-        --name "github"
-        --username "trakx-bot"
-        --password ${{inputs.packageReadonlyPat}}
-        --store-password-in-clear-text
-
-    - name: Restore Cache
-      uses: actions/cache@v3
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-        restore-keys: ${{ runner.os }}-nuget-
+        dotnetVersion: ${{inputs.dotnetVersion}}
+        packageReadonlyPat: ${{packageReadonlyPat}}
 
     - name: Set Variable WORKDIR
       shell: bash
@@ -133,16 +105,7 @@ runs:
       shell: bash
       working-directory: ${{env.WORKDIR}}
       run: >
-        dotnet add package Microsoft.NET.Build.Containers --no-restore
-
-    - name: .NET Restore
-      shell: bash
-      working-directory: ${{env.WORKDIR}}
-      run: dotnet restore --locked-mode
-
-    - name: Remove Trakx github source
-      shell: bash
-      run: dotnet nuget remove source "github"
+        dotnet add package Microsoft.NET.Build.Containers
 
     # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     - name: .NET Publish Container (API)
