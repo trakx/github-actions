@@ -52,7 +52,7 @@ runs:
       uses: ./github-actions/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
-        packageReadonlyPat: ${{packageReadonlyPat}}
+        packageReadonlyPat: ${{inputs.packageReadonlyPat}}
 
     - name: Bump version
       id: bumpVersion
