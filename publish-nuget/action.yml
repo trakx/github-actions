@@ -44,7 +44,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: trakx/github-actions
-        path: github-actions
+        path: ./github-actions-publish-nuget
         ref: ${{ inputs.actionRef }}
 
     - name: Restore and cache private nuget packages
