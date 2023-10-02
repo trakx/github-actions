@@ -38,7 +38,14 @@ runs:
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
         fetchDepth: 0
 
+    - name: Copy private packages for Qodana
+      shell: bash
+      run: |
+        cp -R ~/.nuget/packages/Trakx.* ${{ runner.temp }}/qodana/caches/nuget
+
     - name: 'Qodana Scan'
       uses: JetBrains/qodana-action@v2023.2
+      with:
+        cache-dir: '~/.nuget/packages'
       env:
           QODANA_TOKEN: ${{ inputs.qodanaToken }}
