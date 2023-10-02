@@ -27,12 +27,12 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: trakx/github-actions
-        path: ./github-actions-test-dotnet
+        path: ./github-actions-code-quality
         ref: ${{ inputs.actionsRepoRef }}
 
     - name: Restore and cache private nuget packages
       if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
-      uses: ./github-actions/restore-dotnet
+      uses: ./github-actions-code-quality/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}

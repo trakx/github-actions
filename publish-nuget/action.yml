@@ -49,14 +49,14 @@ runs:
 
     - name: Restore and cache private nuget packages
       if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
-      uses: ./github-actions/restore-dotnet
+      uses: ./github-actions-publish-nuget/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
 
     - name: Bump version
       id: bumpVersion
-      uses: ./github-actions/get-tag
+      uses: ./github-actions-publish-nuget/get-tag
       with:
         semverIncrementLevel: ${{ inputs.semverIncrementLevel }}
         preRelease: ${{ inputs.debuggable }}
@@ -91,7 +91,7 @@ runs:
 
     - name: Push version tag
       id: pushTag
-      uses: ./github-actions/push-tag
+      uses: ./github-actions-publish-nuget/push-tag
       with:
         tag: v${{steps.bumpVersion.outputs.fullVersion}}
         githubToken: ${{inputs.githubToken}}

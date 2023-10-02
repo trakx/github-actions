@@ -39,7 +39,7 @@ runs:
         ref: ${{ inputs.actionsRepoRef }}
 
     - name: Restore and cache private nuget packages
-      uses: ./github-actions/restore-dotnet
+      uses: ./github-actions-test-dotnet/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
