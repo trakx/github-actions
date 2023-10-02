@@ -41,6 +41,7 @@ runs:
     - name: Copy private packages for Qodana
       shell: bash
       run: |
+        mkdir ${{ runner.temp }}/qodana/caches/nuget
         cp -R ~/.nuget/packages/trakx.* ${{ runner.temp }}/qodana/caches/nuget
 
     - name: 'Qodana Scan'
