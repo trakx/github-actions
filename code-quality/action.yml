@@ -38,8 +38,7 @@ runs:
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
         fetchDepth: 0
 
-    # this is supposed to resolve the issue of analysing private
-    # package sources, but so far it doesn't seem to work
+    # this is to resolve the issue of analysing private package sources
     # https://www.jetbrains.com/help/qodana/qodana-dotnet-docker-readme.html#Inspect+using+private+nuget+repositories
     - name: Copy private packages for Qodana
       shell: bash
