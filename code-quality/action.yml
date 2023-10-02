@@ -47,6 +47,6 @@ runs:
     - name: 'Qodana Scan'
       uses: JetBrains/qodana-action@v2023.2
       with:
-        cache-dir: '~/.nuget/packages'
+        cache-dir: ${{ runner.temp }}/qodana/caches
       env:
           QODANA_TOKEN: ${{ inputs.qodanaToken }}
