@@ -20,7 +20,7 @@ runs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        fetch-depth: ${{fetchDepth}}
+        fetch-depth: ${{inputs.fetchDepth}}
 
     - name: .NET Install
       env:
