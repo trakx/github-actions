@@ -41,7 +41,7 @@ runs:
     - name: Copy private packages for Qodana
       shell: bash
       run: |
-        cp -R ~/.nuget/packages/Trakx.* ${{ runner.temp }}/qodana/caches/nuget
+        cp -R ~/.nuget/packages/trakx.* ${{ runner.temp }}/qodana/caches/nuget
 
     - name: 'Qodana Scan'
       uses: JetBrains/qodana-action@v2023.2
