@@ -58,10 +58,10 @@ runs:
 
     - name: Restore and cache private nuget packages
       if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
-      uses: ./github-actions/restore-dotnet
+      uses: ./github-actions-build-push-container-image/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
-        packageReadonlyPat: ${{packageReadonlyPat}}
+        packageReadonlyPat: ${{inputs.packageReadonlyPat}}
 
     - name: Set Variable WORKDIR
       shell: bash
