@@ -27,7 +27,7 @@ runs:
       uses: ./github-actions/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
-        packageReadonlyPat: ${{packageReadonlyPat}}
+        packageReadonlyPat: ${{inputs.packageReadonlyPat}}
         fetchDepth: 0
 
     - name: 'Qodana Scan'
