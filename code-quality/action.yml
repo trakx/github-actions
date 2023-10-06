@@ -1,0 +1,54 @@
+name: Code quality gate
+description: "Runs a Qodana scan to asses code quality"
+
+inputs:
+  privateRepoTypes:
+    description: "Types of private repos to add to the Qodana cache before running"
+    required: true
+    default: "['nuget']"
+  packageReadonlyPat:
+    description: "Personal access token used to access the github private nuget source."
+    required: true
+  dotnetVersion:
+    description: "Version of dotnet to use. Default is v7.x."
+    required: false
+    default: "7.x"
+  qodanaToken:
+    description:  "Token used by Qodana to identify the project being analysed."
+    required: true
+  
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Checkout trakx/github-actions repo
+      uses: actions/checkout@v4
+      with:
+        repository: trakx/github-actions
+        path: ./github-actions-code-quality
+        ref: ${{ inputs.actionsRepoRef }}
+
+    - name: Restore and cache private nuget packages
+      if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
+      uses: ./github-actions-code-quality/restore-dotnet
+      with:
+        dotnetVersion: ${{inputs.dotnetVersion}}
+        packageReadonlyPat: ${{inputs.packageReadonlyPat}}
+        fetchDepth: 0
+
+    # this is to resolve the issue of analysing private package sources
+    # https://www.jetbrains.com/help/qodana/qodana-dotnet-docker-readme.html#Inspect+using+private+nuget+repositories
+    - name: Copy private packages for Qodana
+      shell: bash
+      run: |
+        mkdir -p ${{ runner.temp }}/qodana/caches/nuget
+        cp -R ~/.nuget/packages/trakx.* ${{ runner.temp }}/qodana/caches/nuget
+
+    - name: 'Qodana Scan'
+      uses: JetBrains/qodana-action@v2023.2
+      with:
+        cache-dir: ${{ runner.temp }}/qodana/caches
+      env:
+          QODANA_TOKEN: ${{ inputs.qodanaToken }}
