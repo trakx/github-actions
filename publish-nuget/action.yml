@@ -56,12 +56,6 @@ runs:
         dotnetVersion: ${{inputs.dotnetVersion}}
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
 
-      #temp debug help
-    - name: Show content of local folders
-      shell: bash
-      run: |
-        find ./.. | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-
     - name: Bump version
       id: bumpVersion
       uses: ./github-actions-publish-nuget/get-tag
