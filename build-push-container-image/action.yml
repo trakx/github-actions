@@ -1,4 +1,4 @@
-name: "Build and push container image"
+name: "Build and push dotnet container image"
 description: "Builds a docker image and pushes it to the github registry. Outputs the generated container image version."
 
 inputs:
@@ -57,7 +57,6 @@ runs:
         ref: ${{ inputs.actionsRepoRef }}
 
     - name: Restore and cache private nuget packages
-      if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
       uses: ./github-actions-build-push-container-image/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}

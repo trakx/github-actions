@@ -48,7 +48,6 @@ runs:
         ref: ${{ inputs.actionRef }}
 
     - name: Restore and cache private nuget packages
-      if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
       uses: ./github-actions-publish-nuget/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
