@@ -22,6 +22,10 @@ runs:
   using: composite
 
   steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Checkout trakx/github-actions repo
       uses: actions/checkout@v4
@@ -36,7 +40,6 @@ runs:
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
-        fetchDepth: 0
 
     # this is to resolve the issue of analysing private package sources
     # https://www.jetbrains.com/help/qodana/qodana-dotnet-docker-readme.html#Inspect+using+private+nuget+repositories

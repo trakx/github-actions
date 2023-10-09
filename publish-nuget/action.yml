@@ -40,6 +40,9 @@ runs:
         echo "compilationMode=$COMP_MODE" >> $GITHUB_OUTPUT
         echo "compilation mode set to $COMP_MODE"
 
+    - name: Checkout
+      uses: actions/checkout@v4
+        
     - name: Checkout actions repo
       uses: actions/checkout@v4
       with:
