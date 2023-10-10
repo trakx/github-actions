@@ -1,0 +1,48 @@
+name: Restore dotnet packages
+description: Restores dotnet packages including privates ones
+
+inputs:
+  packageReadonlyPat:
+    description: "Personal access token used to access the github private nuget source."
+    required: true
+  dotnetVersion:
+    description: "Version of dotnet to use. Default is v7.x."
+    required: false
+    default: "7.x"
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: .NET Install
+      env:
+        DOTNET_INSTALL_DIR: "./.dotnet"  # Required by the runner to install dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ inputs.dotnetVersion }}
+
+    - name: Add Trakx github nuget source
+      shell: bash
+      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
+                  --name "github"
+                  --username "trakx-bot"
+                  --password ${{inputs.packageReadonlyPat}}
+                  --store-password-in-clear-text
+
+    - name: Restore Cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: ${{ runner.os }}-nuget-
+
+    - name: .NET Restore packages
+      shell: bash
+      run: |
+        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
+          dotnet restore $f --locked-mode
+        done
+
+    - name: Remove Trakx github source
+      shell: bash
+      run: dotnet nuget remove source "github"
