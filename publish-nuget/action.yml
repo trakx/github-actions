@@ -16,7 +16,7 @@ inputs:
     description: "Level of the semver (major.minor.patch) to be increased to get the new package version."
     required: false
     default: "patch"
-  actionRef:
+  actionsRepoRef:
     description: "Run actions from this ref. Default is master."
     required: false
     default: "master"
@@ -40,15 +40,17 @@ runs:
         echo "compilationMode=$COMP_MODE" >> $GITHUB_OUTPUT
         echo "compilation mode set to $COMP_MODE"
 
+    - name: Checkout
+      uses: actions/checkout@v4
+        
     - name: Checkout actions repo
       uses: actions/checkout@v4
       with:
         repository: trakx/github-actions
         path: ./github-actions-publish-nuget
-        ref: ${{ inputs.actionRef }}
+        ref: ${{ inputs.actionsRepoRef }}
 
     - name: Restore and cache private nuget packages
-      if: ${{ contains(fromJson(inputs.privateRepoTypes), 'nuget') }}
       uses: ./github-actions-publish-nuget/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
