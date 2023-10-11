@@ -58,10 +58,10 @@ jobs:
       tagPrefix: ${{ steps.load-environment.outputs.tagPrefix }}
     steps:
       - name: Checkout calling repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Checkout trakx/github-actions repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: trakx/github-actions
           path: ./github-actions-shared-build-deploy-container
@@ -101,10 +101,10 @@ jobs:
     runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
     steps:
       - name: Checkout calling repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Checkout trakx/github-actions repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: trakx/github-actions
           path: ./github-actions-shared-build-deploy-container
@@ -143,10 +143,10 @@ jobs:
             && github.event.workflow_run.conclusion == 'success' ))
     steps:
       - name: Checkout calling repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Checkout trakx/github-actions repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: trakx/github-actions
           path: ./github-actions-shared-build-deploy-container
