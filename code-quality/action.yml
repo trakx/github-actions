@@ -20,7 +20,10 @@ inputs:
   qodanaToken:
     description:  "Token used by Qodana to identify the project being analysed."
     required: true
-  
+  actionsRepoRef:
+    description: "Run actions from this ref. Default is master."
+    required: false
+    default: "master"
 
 runs:
   using: composite
