@@ -106,7 +106,8 @@ runs:
       run: >
         DOT_NET_VERSION="${{inputs.dotNetVersion}}"
         CONTAINER_LIB_VERSION="${DOT_NET_VERSION/x/\*}"
-        dotnet add package Microsoft.NET.Build.Containers -v "${CONTAINER_LIB_VERSION}"
+        echo $CONTAINER_LIB_VERSION
+        dotnet add package Microsoft.NET.Build.Containers --version $CONTAINER_LIB_VERSION
 
     # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     - name: .NET Publish Container (API)
