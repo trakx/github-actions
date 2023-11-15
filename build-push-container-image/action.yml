@@ -48,7 +48,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: Checkout trakx/github-actions repo
       uses: actions/checkout@v4
       with:
@@ -104,7 +104,9 @@ runs:
       shell: bash
       working-directory: ${{env.WORKDIR}}
       run: >
-        dotnet add package Microsoft.NET.Build.Containers
+        DOT_NET_VERSION="${{inputs.dotNetVersion}}"
+        CONTAINER_LIB_VERSION="${DOT_NET_VERSION/x/\*}"
+        dotnet add package Microsoft.NET.Build.Containers -v "${CONTAINER_LIB_VERSION}"
 
     # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     - name: .NET Publish Container (API)
