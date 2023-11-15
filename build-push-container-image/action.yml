@@ -104,10 +104,10 @@ runs:
       shell: bash
       working-directory: ${{env.WORKDIR}}
       run: >
-        DOT_NET_VERSION="${{inputs.dotNetVersion}}"
-        CONTAINER_LIB_VERSION="${DOT_NET_VERSION/x/\*}"
-        echo $CONTAINER_LIB_VERSION
-        dotnet add package Microsoft.NET.Build.Containers --version $CONTAINER_LIB_VERSION
+        DOTNET_VERSION="${{inputs.dotNetVersion}}"
+        CONTAINERS_LIB_VERSION="${DOTNET_VERSION/x/\*}"
+        echo "containersLibVersion=$CONTAINERS_LIB_VERSION" >> $GITHUB_ENV
+        dotnet add package Microsoft.NET.Build.Containers --version "${{env.containersLibVersion}}"
 
     # https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     - name: .NET Publish Container (API)
