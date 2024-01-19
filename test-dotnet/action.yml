@@ -70,7 +70,7 @@ runs:
         for f in $(find . -name "*.Tests.csproj"); do echo "testing project $f" && \
           csprojName=${f##*/} && \
           projectName="${csprojName/.csproj/}" && \
-          dotnet test $f --configuration Debug --no-restore --logger GitHubActions --collect "XPlat Code Coverage" --results-directory "TestResults/$projectName"
+          dotnet test $f --configuration Debug --no-build --logger GitHubActions --collect "XPlat Code Coverage" --results-directory "TestResults/$projectName"
         done
     
     # .NET Test puts the coverage file under a random directory [Guid]/coverage.cobertura.xml
