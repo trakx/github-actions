@@ -36,13 +36,13 @@ runs:
       env:
         APP_ID: ${{ inputs.userReaderAppId }}
         PRIVATE_KEY: ${{ inputs.userReaderAppPrivateKey }}
-      uses: tibdex/github-app-token@v1
+      uses: tibdex/github-app-token@v2.1.0
       with:
         app_id: ${{ env.APP_ID }}
         private_key: ${{ env.PRIVATE_KEY }}
 
     - name: Waiting for Approval
-      uses: trstringer/manual-approval@v1.8.0
+      uses: trstringer/manual-approval@v1.9.0
       env:
         GITHUB_READ_USERS_APP_TOKEN: ${{ steps.generate_token.outputs.token }}
         APPROVERS: ${{ inputs.approvers }}

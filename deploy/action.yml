@@ -41,7 +41,7 @@ runs:
         fi
 
     - name: Checkout trakx/github-actions repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: trakx/github-actions
         path: ./trakx-github-actions-deploy
@@ -65,7 +65,7 @@ runs:
         echo "SERVICE_REGISTRY_URL=$registry" >> $GITHUB_ENV
 
     - name: Create GitHub deployment
-      uses: chrnorm/deployment-action@v2
+      uses: chrnorm/deployment-action@v2.0.1
       id: create-deployment
       with:
         token: '${{ inputs.githubToken }}'
@@ -101,7 +101,7 @@ runs:
 
     - name: Update GitHub deployment status (success)
       if: success()
-      uses: chrnorm/deployment-status@v2
+      uses: chrnorm/deployment-status@v2.0.1
       with:
         token: '${{ inputs.githubToken }}'
         state: 'success'
@@ -109,7 +109,7 @@ runs:
 
     - name: Update GitHub deployment status (failure)
       if: failure()
-      uses: chrnorm/deployment-status@v2
+      uses: chrnorm/deployment-status@v2.0.1
       with:
         token: '${{ inputs.githubToken }}'
         state: 'failure'
