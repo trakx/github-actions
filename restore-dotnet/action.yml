@@ -33,7 +33,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        key: ${{ runner.os }}-nuget-${{ hashFiles('packages.lock.json', '*/packages.lock.json') }}
         restore-keys: ${{ runner.os }}-nuget-
 
     - name: .NET Restore packages
