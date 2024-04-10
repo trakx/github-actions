@@ -34,7 +34,7 @@ runs:
     - name: Check inputs
       shell: bash
       run: |
-        if [[ "${{ inputs.type }}" != "kubernetes" 
+        if [[ "${{ inputs.type }}" != "kubernetes"
           && "${{ inputs.type }}" != "nuget" ]]; then
           echo "Unsupported deployment type: ${{ inputs.type }}"
           exit 1
@@ -65,15 +65,15 @@ runs:
         echo "SERVICE_REGISTRY_URL=$registry" >> $GITHUB_ENV
 
     - name: Create GitHub deployment
-      uses: chrnorm/deployment-action@v2.0.5
+      uses: chrnorm/deployment-action@v2.0.7
       id: create-deployment
       with:
         token: '${{ inputs.githubToken }}'
         environment: ${{steps.load-environment.outputs.environment}}
         payload: |
-            { 
+            {
                 "artifactName" : "${{ inputs.artifact-name }}",
-                "deploymentType" : "${{ inputs.type }}", 
+                "deploymentType" : "${{ inputs.type }}",
                 "service" : "${{ inputs.service }}",
                 "tag" : "${{ inputs.tag }}"
             }
@@ -101,7 +101,7 @@ runs:
 
     - name: Update GitHub deployment status (success)
       if: success()
-      uses: chrnorm/deployment-status@v2.0.1
+      uses: chrnorm/deployment-status@v2.0.3
       with:
         token: '${{ inputs.githubToken }}'
         state: 'success'
@@ -109,7 +109,7 @@ runs:
 
     - name: Update GitHub deployment status (failure)
       if: failure()
-      uses: chrnorm/deployment-status@v2.0.1
+      uses: chrnorm/deployment-status@v2.0.3
       with:
         token: '${{ inputs.githubToken }}'
         state: 'failure'
