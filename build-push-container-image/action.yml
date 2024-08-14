@@ -119,7 +119,6 @@ runs:
         -p:ContainerRepository=${{inputs.imageName}}
         -p:ContainerImageTag=${{env.tag}}
         -c Release
-        -nodeReuse:false
 
     - name: .NET Publish Container (Worker)
       if: ${{inputs.containerPublishType == 'worker'}}
@@ -131,7 +130,6 @@ runs:
         -p:ContainerRepository=${{inputs.imageName}}
         -p:ContainerImageTag=${{env.tag}}
         -c Release
-        -nodeReuse:false
 
     - name: Login to Docker Hub
       uses: docker/login-action@v3
