@@ -47,6 +47,7 @@ on:
 env:
   IMAGE_NAME: ${{ inputs.imageName || inputs.serviceName }}
   GITHUB_TOKEN: ${{ secrets.TRAKX_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
 jobs:
   prepare-and-validate:
