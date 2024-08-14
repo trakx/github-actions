@@ -61,7 +61,6 @@ runs:
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
-        extraRestoreArgs: "--os linux --arch x64"
 
     - name: Set Variable WORKDIR
       shell: bash

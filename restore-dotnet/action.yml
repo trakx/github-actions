@@ -9,9 +9,6 @@ inputs:
     description: "Version of dotnet to use. Default is v7.x."
     required: false
     default: "7.x"
-  extraRestoreArgs:
-    description: "Extra arguments to pass to dotnet restore."
-    required: false
 
 runs:
   using: "composite"
@@ -43,7 +40,7 @@ runs:
       shell: bash
       run: |
         for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
-          dotnet restore $f --locked-mode ${{ inputs.extraRestoreArgs }};
+          dotnet restore $f --locked-mode
         done
 
     - name: Remove Trakx github source
