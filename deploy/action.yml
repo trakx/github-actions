@@ -57,7 +57,7 @@ runs:
         registry="${{ inputs.serviceRegistry }}"
         if [[ -z "$registry" ]]; then
           if [[ "${{ inputs.type }}" == "kubernetes" ]]; then
-            registry="docker.pkg.github.com"
+            registry="ghcr.io"
           elif [[ "${{ inputs.type }}" == "nuget" ]]; then
             registry="nuget.pkg.github.com"
           fi

@@ -21,10 +21,10 @@ on:
         type: string
         default: 'dev'
       dockerRegistry:
-        description: "Docker registry to push the image to. Default is docker.pkg.github.com."
+        description: "Docker registry to push the image to. Default is ghcr.io."
         required: false
         type: string
-        default: "docker.pkg.github.com"
+        default: "ghcr.io"
       actionsRepoRef:
         description: "Run actions from this ref. Default is master."
         type: string
