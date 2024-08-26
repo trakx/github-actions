@@ -6,7 +6,7 @@ inputs:
     description: "Name of the service being deployed (ex: automatedhedging-monitor)"
     required: true
   containerImage:
-    description: "Container image url to deploy. (ex: docker.pkg.github.com/scaletone/durablefunctionsmonitor)"
+    description: "Container image url to deploy. (ex: ghcr.io/scaletone/durablefunctionsmonitor)"
     required: true
   tag:
     description: "The version tag associated with the deployment (ex: 6.3)"
