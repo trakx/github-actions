@@ -30,7 +30,7 @@ inputs:
   dockerRegistry:
     description: "Docker registry to push the image to."
     required: false
-    default: "docker.pkg.github.com"
+    default: "ghcr.io"
   actionsRepoRef:
     description: "Run actions from this ref. Default is master."
     required: false
