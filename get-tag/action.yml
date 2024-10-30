@@ -79,7 +79,7 @@ runs:
         else
             BRANCH_NAME=${GITHUB_REF##*/}
             BRANCH_NAME=${BRANCH_NAME//[^0-9a-zA-Z]/-}
-            PRODUCT_VERSION=${BRANCH_NAME}-${{github.run_number}}-${{steps.shortHash.outputs.shortHash}}
+            PRODUCT_VERSION=${{github.run_number}}-${BRANCH_NAME}-${{steps.shortHash.outputs.shortHash}}
             FULL_VERSION=${SUBSTRING_LEFT_OF_DASH}-${PRODUCT_VERSION}
         fi
         echo "assemblyVersion=$SUBSTRING_LEFT_OF_DASH" >> $GITHUB_OUTPUT
