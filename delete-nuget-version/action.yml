@@ -23,5 +23,5 @@ runs:
       with:
         package-name: ${{inputs.package-name}}
         package-type: "nuget"
-        num-old-pre-release-versions-to-keep: ${{inputs.num-old-pre-release-versions-to-keep}}
+        min-versions-to-keep: ${{inputs.num-old-pre-release-versions-to-keep}}
         delete-only-pre-release-versions: "true"
