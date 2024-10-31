@@ -21,7 +21,7 @@ runs:
     - name: Delete package version
       uses: actions/delete-package-versions@v5
       with:
-        package-name: ${{inputs.githubToken}}
+        package-name: ${{inputs.package-name}}
         package-type: "nuget"
-        min-versions-to-keep: ${{inputs.num-old-pre-release-versions-to-keep}}
+        num-old-pre-release-versions-to-keep: ${{inputs.num-old-pre-release-versions-to-keep}}
         delete-only-pre-release-versions: "true"
