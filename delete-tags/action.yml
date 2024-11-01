@@ -1,0 +1,49 @@
+name: "Delete tags"
+description: "Delete pre-release tags of a repository (process 100 at a time)"
+
+inputs:
+  num-tags-to-keep:
+    description: 'The number of pre-release tags to keep starting from the newest one'
+    default: '5'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Get Tags
+      uses: octokit/request-action@v2.1.7
+      id: get_tags
+      with:
+        route: GET /repos/${{ github.repository }}/tags?per_page=100
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Delete pre-release Tags (validating with regex and keeping the newest ${{ inputs.num-tags-to-keep }} tags)
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      shell: bash
+      run: |
+        tags=$(jq -c -r .[].name <<< '${{ steps.get_tags.outputs.data }}')
+        echo "VALUES<<EOF"$'\n'"$tags"$'\n'EOF >> $GITHUB_OUTPUT
+        regex='^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$'
+        count=0
+        echo "$tags" | while read -r tag;
+        do 
+          if [[ "$tag" =~ $regex ]]; then
+            echo "Keeping tag (final version): $tag"
+          else
+            if [[ $count -ge ${{ inputs.num-tags-to-keep }} ]]; then
+              echo "Deleting tag: $tag"
+              gh api --method DELETE -H "Accept: application/vnd.github+json" "/repos/${{ github.repository }}/git/refs/tags/$tag"
+            else
+              echo "Keeping tag (pre-release version): $tag"
+              count=$((count+1))
+            fi
+          fi
+        done
+      
