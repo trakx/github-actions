@@ -18,6 +18,7 @@ runs:
       run: sleep 5s
       shell: bash
 
+    # Delete package version using the delete-package-versions external action
     - name: Delete package version
       uses: actions/delete-package-versions@v5
       with:
