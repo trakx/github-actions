@@ -1,5 +1,5 @@
 name: "Delete tags"
-description: "Delete pre-release tags of a repository"
+description: "Delete pre-release tags of a repository (process 100 at a time)"
 
 inputs:
   num-tags-to-keep:
@@ -19,7 +19,7 @@ runs:
       uses: octokit/request-action@v2.1.7
       id: get_tags
       with:
-        route: GET /repos/${{ github.repository }}/tags
+        route: GET /repos/${{ github.repository }}/tags?per-page=100
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
