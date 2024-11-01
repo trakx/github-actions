@@ -32,14 +32,13 @@ runs:
         echo "$tags" | while read -r tag; 
         do 
           if [[ "$tag" =~ $regex ]]; then
-            echo "Valid tag: $tag"
+            echo "Keeping tag: $tag"
+          else
             if [[ $(echo "$tags" | grep -c "$tag") -gt ${{ inputs.num-tags-to-keep }} ]]; then
               echo "Deleting tag: $tag"
             else
               echo "Keeping tag: $tag"
             fi
-          else
-            echo "Invalid tag: $tag"
           fi
         done
 
