@@ -23,9 +23,25 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Print Tags
-      run: echo "${{ steps.get_tags.outputs.data }}"
+    - name: Delete pre-release Tags (validating with regex)
       shell: bash
+      run: |
+        count=0
+        jq -c -r .[].name  <<< '${{ steps.get_tags.outputs.data }}' | while read -r tag; 
+        do 
+          if [[ $tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+-.*$ ]]; then
+            ((count++))
+          fi
+
+          if [[ $count -lt ${{ inputs.num-tags-to-keep }} ]]; then
+            echo "$tag will be kept"
+          else
+            echo "$tag will be deleted"
+          fi
+        done
+
+    # gh api --method DELETE -H "Accept: application/vnd.github+json" "/repos/${{ github.repository }}/git/refs/tags/$tag"
+
 
     # - name: Find Tags with Releases
     #   id: find_tags_with_release
