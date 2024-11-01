@@ -32,12 +32,12 @@ runs:
         echo "$tags" | while read -r tag; 
         do 
           if [[ "$tag" =~ $regex ]]; then
-            echo "Keeping tag: $tag"
+            echo "Keeping tag (final version): $tag"
           else
             if [[ $(echo "$tags" | grep -c "$tag") -gt ${{ inputs.num-tags-to-keep }} ]]; then
               echo "Deleting tag: $tag"
             else
-              echo "Keeping tag: $tag"
+              echo "Keeping tag (pre-release version): $tag"
             fi
           fi
         done
