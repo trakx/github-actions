@@ -29,15 +29,17 @@ runs:
         tags=$(jq -c -r .[].name <<< '${{ steps.get_tags.outputs.data }}')
         echo "VALUES<<EOF"$'\n'"$tags"$'\n'EOF >> $GITHUB_OUTPUT
         regex='^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$'
-        echo "$tags" | while read -r tag; 
+        count=0
+        echo "$tags" | while read -r tag;
         do 
           if [[ "$tag" =~ $regex ]]; then
             echo "Keeping tag (final version): $tag"
           else
-            if [[ $(echo "$tags" | grep -c "$tag") -gt ${{ inputs.num-tags-to-keep }} ]]; then
+            if [[ $count -gt ${{ inputs.num-tags-to-keep }} ]]; then
               echo "Deleting tag: $tag"
             else
               echo "Keeping tag (pre-release version): $tag"
+              count=$((count+1))
             fi
           fi
         done
