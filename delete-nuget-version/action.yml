@@ -1,0 +1,28 @@
+name: "Delete pre-release versions from a nuget package"
+description: "Delete pre-release versions from a nuget package."
+
+inputs:
+  package-name:
+    description: "The package name"
+    required: true
+
+  num-old-pre-release-versions-to-keep:
+    description: 'The number of old pre-release versions to keep starting from the newest version'
+    default: '5'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Wait to start (try to avoid rate limiting)
+      run: sleep 5s
+      shell: bash
+
+    # Delete package version using the delete-package-versions external action
+    - name: Delete package version
+      uses: actions/delete-package-versions@v5
+      with:
+        package-name: ${{inputs.package-name}}
+        package-type: "nuget"
+        min-versions-to-keep: ${{inputs.num-old-pre-release-versions-to-keep}}
+        delete-only-pre-release-versions: "true"
