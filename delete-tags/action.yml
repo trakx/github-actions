@@ -25,6 +25,7 @@ runs:
 
     - name: Print Tags
       run: echo "${{ steps.get_tags.outputs.data }}"
+      shell: bash
 
     # - name: Find Tags with Releases
     #   id: find_tags_with_release
