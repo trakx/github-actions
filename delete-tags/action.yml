@@ -1,0 +1,47 @@
+name: "Delete tags"
+description: "Delete pre-release tags of a repository"
+
+inputs:
+  num-tags-to-keep:
+    description: 'The number of pre-release tags to keep starting from the newest one'
+    default: '5'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Get Tags
+      uses: octokit/request-action@v2.1.7
+      id: get_tags
+      with:
+        route: GET /repos/${{ github.repository }}/tags
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Print Tags
+      run: echo "${{ steps.get_tags.outputs.data }}"
+
+    # - name: Find Tags with Releases
+    #   id: find_tags_with_release
+    #   shell: bash
+    #   run: |
+    #     TAGS_WITH_RELEASES=$(jq -c -r .[].tag_name  <<< '${{ steps.get_releases.outputs.data }}')
+    #     echo "VALUES<<EOF"$'\n'"$TAGS_WITH_RELEASES"$'\n'EOF >> $GITHUB_OUTPUT
+    # - name: Delete free Tags
+    #   shell: bash
+    #   run: |
+    #     tags_with_release=$(jq -c -r .[].tag_name  <<< '${{ steps.get_releases.outputs.data }}')
+    #     jq -c -r .[].name  <<< '${{ steps.get_tags.outputs.data }}' | while read -r tag; 
+    #     do 
+    #       if [[ "$tags_with_release" == *"$tag"* ]]; then
+    #         echo "$tag has a release"
+    #       else
+    #         echo "$tag is free"
+    #         gh api --method DELETE -H "Accept: application/vnd.github+json" "/repos/${{ github.repository }}/git/refs/tags/$tag"
+    #       fi
+    #     done
