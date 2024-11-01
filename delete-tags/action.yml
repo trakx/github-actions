@@ -24,6 +24,8 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
 
     - name: Delete pre-release Tags (validating with regex and keeping the newest ${{ inputs.num-tags-to-keep }} tags)
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       shell: bash
       run: |
         tags=$(jq -c -r .[].name <<< '${{ steps.get_tags.outputs.data }}')
@@ -44,3 +46,4 @@ runs:
             fi
           fi
         done
+      
