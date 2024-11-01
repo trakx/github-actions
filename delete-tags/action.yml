@@ -23,20 +23,23 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Delete pre-release Tags (validating with regex)
+    - name: Delete pre-release Tags (validating with regex and keeping the newest ${{ inputs.num-tags-to-keep }} tags)
       shell: bash
       run: |
-        count=0
-        jq -c -r .[].name  <<< '${{ steps.get_tags.outputs.data }}' | while read -r tag; 
+        tags=$(jq -c -r .[].name <<< '${{ steps.get_tags.outputs.data }}')
+        echo "VALUES<<EOF"$'\n'"$tags"$'\n'EOF >> $GITHUB_OUTPUT
+        regex='^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$'
+        echo "$tags" | while read -r tag; 
         do 
-          if [[ $tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+-.*$ ]]; then
-            ((count++))
-          fi
-
-          if [[ $count -lt ${{ inputs.num-tags-to-keep }} ]]; then
-            echo "$tag will be kept"
+          if [[ "$tag" =~ $regex ]]; then
+            echo "Valid tag: $tag"
+            if [[ $(echo "$tags" | grep -c "$tag") -gt ${{ inputs.num-tags-to-keep }} ]]; then
+              echo "Deleting tag: $tag"
+            else
+              echo "Keeping tag: $tag"
+            fi
           else
-            echo "$tag will be deleted"
+            echo "Invalid tag: $tag"
           fi
         done
 
