@@ -37,7 +37,7 @@ runs:
           if [[ "$tag" =~ $regex ]]; then
             echo "Keeping tag (final version): $tag"
           else
-            if [[ $count -gt ${{ inputs.num-tags-to-keep }} ]]; then
+            if [[ $count -gte ${{ inputs.num-tags-to-keep }} ]]; then
               echo "Deleting tag: $tag"
               gh api --method DELETE -H "Accept: application/vnd.github+json" "/repos/${{ github.repository }}/git/refs/tags/$tag"
             else
