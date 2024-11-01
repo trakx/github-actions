@@ -37,32 +37,10 @@ runs:
           else
             if [[ $count -gt ${{ inputs.num-tags-to-keep }} ]]; then
               echo "Deleting tag: $tag"
+              gh api --method DELETE -H "Accept: application/vnd.github+json" "/repos/${{ github.repository }}/git/refs/tags/$tag"
             else
               echo "Keeping tag (pre-release version): $tag"
               count=$((count+1))
             fi
           fi
         done
-
-    # gh api --method DELETE -H "Accept: application/vnd.github+json" "/repos/${{ github.repository }}/git/refs/tags/$tag"
-
-
-    # - name: Find Tags with Releases
-    #   id: find_tags_with_release
-    #   shell: bash
-    #   run: |
-    #     TAGS_WITH_RELEASES=$(jq -c -r .[].tag_name  <<< '${{ steps.get_releases.outputs.data }}')
-    #     echo "VALUES<<EOF"$'\n'"$TAGS_WITH_RELEASES"$'\n'EOF >> $GITHUB_OUTPUT
-    # - name: Delete free Tags
-    #   shell: bash
-    #   run: |
-    #     tags_with_release=$(jq -c -r .[].tag_name  <<< '${{ steps.get_releases.outputs.data }}')
-    #     jq -c -r .[].name  <<< '${{ steps.get_tags.outputs.data }}' | while read -r tag; 
-    #     do 
-    #       if [[ "$tags_with_release" == *"$tag"* ]]; then
-    #         echo "$tag has a release"
-    #       else
-    #         echo "$tag is free"
-    #         gh api --method DELETE -H "Accept: application/vnd.github+json" "/repos/${{ github.repository }}/git/refs/tags/$tag"
-    #       fi
-    #     done
