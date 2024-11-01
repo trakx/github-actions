@@ -32,13 +32,12 @@ runs:
         echo "VALUES<<EOF"$'\n'"$tags"$'\n'EOF >> $GITHUB_OUTPUT
         regex='^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$'
         count=0
-        num_tags_to_keep=${{ inputs.num-tags-to-keep }} - 1
         echo "$tags" | while read -r tag;
         do 
           if [[ "$tag" =~ $regex ]]; then
             echo "Keeping tag (final version): $tag"
           else
-            if [[ $count -gt $num_tags_to_keep ]]; then
+            if [[ $count -ge ${{ inputs.num-tags-to-keep }} ]]; then
               echo "Deleting tag: $tag"
               gh api --method DELETE -H "Accept: application/vnd.github+json" "/repos/${{ github.repository }}/git/refs/tags/$tag"
             else
