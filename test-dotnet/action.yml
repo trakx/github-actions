@@ -74,7 +74,6 @@ runs:
       shell: bash
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
-      run: >
-        bash <(curl -Ls https://coverage.codacy.com/get.sh)
-          report -l csharp
-          $(find ./TestResults -name 'coverage.cobertura.xml' | sed 's,^, -r ,' | xargs echo)
+      run: |
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp \
+        $(find ./TestResults -name 'coverage.cobertura.xml' | sed 's,^, -r ,' | xargs echo)
