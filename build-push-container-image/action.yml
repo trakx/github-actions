@@ -24,9 +24,9 @@ inputs:
     description: "Type of container publish (api | worker)."
     required: true
   dotnetVersion:
-    description: "Version of dotnet to use. Default is v7.x."
+    description: "Version of dotnet to use. Default is v8.x."
     required: false
-    default: "7.x"
+    default: "8.x"
   dockerRegistry:
     description: "Docker registry to push the image to."
     required: false
