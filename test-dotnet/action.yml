@@ -44,6 +44,8 @@ runs:
 
     - name: Restore and cache private nuget packages
       uses: ./github-actions-test-dotnet/restore-dotnet
+      env:
+        DOTNET_NOLOGO: true
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
@@ -72,10 +74,7 @@ runs:
       shell: bash
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
-      run: |
-        for f in $(find ./TestResults -name "coverage.cobertura.xml");
-        do
-          echo "sending coverage report $f";
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f --partial;
-        done
-        bash <(curl -Ls https://coverage.codacy.com/get.sh) final
+      run: >
+        bash <(curl -Ls https://coverage.codacy.com/get.sh)
+          report -l csharp
+          $(find ./TestResults -name 'coverage.cobertura.xml' | sed 's,^, -r ,' | xargs echo)
