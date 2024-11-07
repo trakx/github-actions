@@ -6,9 +6,8 @@ inputs:
     description: "Personal access token used to access the github private nuget source."
     required: true
   dotnetVersion:
-    description: "Version of dotnet to use. Default is v8.x."
-    required: false
-    default: "8.x"
+    description: "Version of dotnet to use."
+    required: true
 
 runs:
   using: "composite"
