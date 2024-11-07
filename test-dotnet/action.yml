@@ -59,11 +59,11 @@ runs:
     # coverlet.msbuild nuget package should be installed to generate coverage report
     - name: .NET Test
       shell: bash
-      run: dotnet test \
-        --no-restore \
-        --configuration Debug \
-        --logger GitHubActions \
-        --collect "XPlat Code Coverage" \
+      run: dotnet test
+        --no-restore
+        --configuration Debug
+        --logger GitHubActions
+        --collect "XPlat Code Coverage"
         --results-directory "TestResults/"
 
     # .NET Test puts the coverage file under a random directory [Guid]/coverage.cobertura.xml
@@ -73,8 +73,9 @@ runs:
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
       run: |
-        for f in $(find ./TestResults -name "coverage.cobertura.xml"); do echo "sending coverage report $f" && \
-            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
-                --partial; \
+        for f in $(find ./TestResults -name "coverage.cobertura.xml");
+        do
+          echo "sending coverage report $f";
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f --partial;
         done
         bash <(curl -Ls https://coverage.codacy.com/get.sh) final
