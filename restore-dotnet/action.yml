@@ -38,10 +38,7 @@ runs:
 
     - name: .NET Restore packages
       shell: bash
-      run: |
-        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
-          dotnet restore $f --locked-mode
-        done
+      run: dotnet restore --locked-mode
 
     - name: Remove Trakx github source
       shell: bash

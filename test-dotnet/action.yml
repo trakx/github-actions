@@ -54,13 +54,18 @@ runs:
         aws-access-key-id: ${{inputs.awsAccessKeyId}}
         aws-secret-access-key: ${{inputs.awsAccessKeySecret}}
         aws-region: ${{inputs.awsRegion}}
-    
-    # GitHubActionsTestLogger nuget package should be installed in the test project 
+
+    # GitHubActionsTestLogger nuget package should be installed in the test project
     # coverlet.msbuild nuget package should be installed to generate coverage report
     - name: .NET Test
       shell: bash
-      run: dotnet test --configuration Debug --logger GitHubActions --collect "XPlat Code Coverage" --results-directory "TestResults/"
-    
+      run: dotnet test \
+        --no-restore \
+        --configuration Debug \
+        --logger GitHubActions \
+        --collect "XPlat Code Coverage" \
+        --results-directory "TestResults/"
+
     # .NET Test puts the coverage file under a random directory [Guid]/coverage.cobertura.xml
     # That's why we locate the coverage file first and pass it to the upload script
     - name: Publish Coverage
