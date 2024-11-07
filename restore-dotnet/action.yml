@@ -23,10 +23,10 @@ runs:
     - name: Add Trakx github nuget source
       shell: bash
       run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
-                  --name "github"
-                  --username "trakx-bot"
-                  --password ${{inputs.packageReadonlyPat}}
-                  --store-password-in-clear-text
+        --name "github"
+        --username "trakx-bot"
+        --password ${{inputs.packageReadonlyPat}}
+        --store-password-in-clear-text
 
     - name: Restore Cache
       uses: actions/cache@v4
@@ -37,10 +37,9 @@ runs:
 
     - name: .NET Restore packages
       shell: bash
-      run: |
-        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
-          dotnet restore $f --locked-mode
-        done
+      env:
+        DOTNET_NUGET_SIGNATURE_VERIFICATION: false
+      run: dotnet restore --locked-mode
 
     - name: Remove Trakx github source
       shell: bash
