@@ -83,8 +83,9 @@ runs:
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
       run: |
-        for f in $(find ./TestResults -name "coverage.cobertura.xml"); do echo "sending coverage report $f" && \
-            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
-                --partial; \
+        for f in $(find ./TestResults -name "coverage.cobertura.xml");
+        do
+          echo "sending coverage report $f"
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f --partial
         done
         bash <(curl -Ls https://coverage.codacy.com/get.sh) final
