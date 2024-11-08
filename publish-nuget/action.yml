@@ -21,9 +21,8 @@ inputs:
     required: false
     default: "master"
   dotnetVersion:
-    description: "Version of dotnet to use. Default is v7.x."
-    required: false
-    default: "7.x"
+    description: "Version of dotnet to use."
+    required: true
 
 runs:
   using: "composite"
@@ -42,7 +41,7 @@ runs:
 
     - name: Checkout
       uses: actions/checkout@v4
-        
+
     - name: Checkout actions repo
       uses: actions/checkout@v4
       with:
@@ -88,7 +87,7 @@ runs:
         ls ./nuget/*.nupkg
         for f in ./nuget/*.symbols.nupkg; \
           do echo "pushing $f file.." \
-          && dotnet nuget push $f --api-key ${{inputs.githubToken}} --source "https://nuget.pkg.github.com/trakx/index.json"; 
+          && dotnet nuget push $f --api-key ${{inputs.githubToken}} --source "https://nuget.pkg.github.com/trakx/index.json";
         done
 
     - name: Push version tag

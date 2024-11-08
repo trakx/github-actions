@@ -19,9 +19,8 @@ inputs:
     required: false
     default: "eu-west-3"
   dotnetVersion:
-    description: "Version of dotnet to use. Default is v7.x."
-    required: false
-    default: "7.x"
+    description: "Version of dotnet to use."
+    required: true
   actionsRepoRef:
     description: "Run actions from this ref. Default is master."
     required: false
@@ -44,16 +43,11 @@ runs:
 
     - name: Restore and cache private nuget packages
       uses: ./github-actions-test-dotnet/restore-dotnet
+      env:
+        DOTNET_NOLOGO: true
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
-
-    - name: .NET Build
-      shell: bash
-      run: |
-        for f in $(find . -name "*.sln"); do echo "restoring solution $f" && \
-          dotnet build $f --configuration Debug --no-restore
-        done
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4.0.1
@@ -61,18 +55,18 @@ runs:
         aws-access-key-id: ${{inputs.awsAccessKeyId}}
         aws-secret-access-key: ${{inputs.awsAccessKeySecret}}
         aws-region: ${{inputs.awsRegion}}
-    
-    # GitHubActionsTestLogger nuget package should be installed in the test project 
+
+    # GitHubActionsTestLogger nuget package should be installed in the test project
     # coverlet.msbuild nuget package should be installed to generate coverage report
     - name: .NET Test
       shell: bash
-      run: |
-        for f in $(find . -name "*.Tests.csproj"); do echo "testing project $f" && \
-          csprojName=${f##*/} && \
-          projectName="${csprojName/.csproj/}" && \
-          dotnet test $f --configuration Debug --no-build --logger GitHubActions --collect "XPlat Code Coverage" --results-directory "TestResults/$projectName"
-        done
-    
+      run: dotnet test
+        --no-restore
+        --configuration Debug
+        --logger GitHubActions
+        --collect "XPlat Code Coverage"
+        --results-directory "TestResults/"
+
     # .NET Test puts the coverage file under a random directory [Guid]/coverage.cobertura.xml
     # That's why we locate the coverage file first and pass it to the upload script
     - name: Publish Coverage
@@ -80,8 +74,5 @@ runs:
       env:
         CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
       run: |
-        for f in $(find ./TestResults -name "coverage.cobertura.xml"); do echo "sending coverage report $f" && \
-            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp -r $f \
-                --partial; \
-        done
-        bash <(curl -Ls https://coverage.codacy.com/get.sh) final
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp \
+        $(find ./TestResults -name 'coverage.cobertura.xml' | sed 's,^, -r ,' | xargs echo)
