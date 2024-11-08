@@ -69,7 +69,7 @@ runs:
           csprojName=${f##*/} && \
           projectName="${csprojName/.csproj/}" && \
           dotnet test $f \
-            --no-restore
+            --no-restore \
             --configuration Debug \
             --logger GitHubActions \
             --collect "XPlat Code Coverage" \
