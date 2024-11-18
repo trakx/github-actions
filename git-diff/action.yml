@@ -1,0 +1,32 @@
+name: Evaluate Git Diff from a PR
+description: "Evaluates the git diff from a PR and outputs the files that have been modified, added or deleted"
+
+inputs:
+  # array of paths to be verified
+  paths:
+    description: "Paths to be verified"
+    required: true
+    default: "."
+
+outputs:
+  hasChanges:
+    description: "Has changes"
+    value: ${{ steps.detectStep.outputs.hasChanges}}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Detect Changes"
+      shell: bash
+      id: detectStep
+      run: |
+        echo "Checking for changes in the following paths: ${{ inputs.paths }}"
+        CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} ${{ inputs.paths }})
+        if [[ -z "$CHANGED_FILES" ]]; then
+            echo "No changes detected"
+            echo "hasChanges=false" >> $GITHUB_ENV
+        else
+            echo "Changes detected in the following files:"
+            echo "$CHANGED_FILES"
+            echo "hasChanges=true" >> $GITHUB_ENV
+        fi
