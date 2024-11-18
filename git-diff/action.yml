@@ -47,3 +47,9 @@ runs:
         done
         # set the output using the new way
         echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
+
+    - name: "Echo if there are changes"
+      id: echoChanges
+      shell: bash
+      run: |
+        echo "Has changes: ${{ steps.evaluateStep.outputs.hasChanges }}"
