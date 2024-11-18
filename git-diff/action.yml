@@ -25,5 +25,6 @@ runs:
 
     - name: Echo all files
       id: detectStep
+      shell: bash
       run: |
         echo "Files changed: ${{ steps.files.outputs.all }}"
