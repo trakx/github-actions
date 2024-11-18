@@ -24,7 +24,25 @@ runs:
         format: 'json'
 
     - name: Echo all files
-      id: detectStep
+      id: echoFiles
       shell: bash
       run: |
         echo "Files changed: ${{ steps.files.outputs.all }}"
+
+    - name: "Evaluate Changes that are under the inputs.paths (split by comma) using bash"
+      id: evaluateStep
+      shell: bash
+      run: |
+        IFS=',' read -ra paths <<< "${{ inputs.paths }}"
+        hasChanges=false
+        for path in "${paths[@]}"; do
+          # ensure path ends with /
+          path="${path%/}/"
+
+          # check if any file starts with the path
+          if [[ ${{ steps.files.outputs.all }} == *"$path"* ]]; then
+            hasChanges=true
+            break
+          fi
+        done
+        echo "::set-output name=hasChanges::$hasChanges"
