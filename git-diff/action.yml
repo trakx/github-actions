@@ -45,4 +45,5 @@ runs:
             break
           fi
         done
-        echo "::set-output name=hasChanges::$hasChanges"
+        # set the output using the new way
+        echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
