@@ -4,7 +4,7 @@ description: "Evaluates the git diff from a PR and outputs the files that have b
 inputs:
   # array of paths to be verified
   paths:
-    description: "Paths to be verified"
+    description: "Paths to be verified, separated by comma"
     required: true
     default: "."
 
@@ -16,17 +16,14 @@ outputs:
 runs:
   using: "composite"
   steps:
+
     - name: "Detect Changes"
-      shell: bash
+      id: files
+      uses: jitterbit/get-changed-files@v1
+      with:
+        format: 'json'
+
+    - name: Echo all files
       id: detectStep
       run: |
-        echo "Checking for changes in the following paths: ${{ inputs.paths }}"
-        CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} ${{ inputs.paths }})
-        if [[ -z "$CHANGED_FILES" ]]; then
-            echo "No changes detected"
-            echo "hasChanges=false" >> $GITHUB_ENV
-        else
-            echo "Changes detected in the following files:"
-            echo "$CHANGED_FILES"
-            echo "hasChanges=true" >> $GITHUB_ENV
-        fi
+        echo "Files changed: ${{ steps.files.outputs.all }}"
