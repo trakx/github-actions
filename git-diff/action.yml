@@ -11,7 +11,7 @@ inputs:
 outputs:
   hasChanges:
     description: "Has changes"
-    value: ${{ steps.detectStep.outputs.hasChanges}}
+    value: ${{ steps.evaluateStep.outputs.hasChanges }}
 
 runs:
   using: "composite"
