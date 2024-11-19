@@ -1,0 +1,56 @@
+name: "NEW - Publish nuget packages"
+description: "Github action used to publish nuget packages to the private github nuget repository."
+
+inputs:
+  githubToken:
+    description: "Access token provided by the calling action context, used to publish the packages and push the corresponding tag."
+    required: true
+  packageReadonlyPat:
+    description: "Personal access token used to access the github private nuget source."
+    required: true
+  debuggable:
+    description: "If true (default), publish a pre-release version. If false, publish a release version."
+    required: false
+    default: "true"
+  semverIncrementLevel:
+    description: "Level of the semver (major.minor.patch) to be increased to get the new package version."
+    required: false
+    default: "patch"
+  actionsRepoRef:
+    description: "Run actions from this ref. Default is master."
+    required: false
+    default: "master"
+  dotnetVersion:
+    description: "Version of dotnet to use."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set compilation mode
+      shell: bash
+      id: comp-mode
+      run: |
+        if [ [${{ inputs.debuggable }} == f*] -o [${{ inputs.debuggable }} == F*] ]; then
+          COMP_MODE=Release
+        else
+          COMP_MODE=Debug
+        fi
+        echo "compilationMode=$COMP_MODE" >> $GITHUB_OUTPUT
+        echo "compilation mode set to $COMP_MODE"
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Load packable projects (and add them split by comma to an output)
+      id: project-paths
+      shell: bash
+      run: |
+        for project in $(find ./src -name "*.csproj" -exec grep -rl "Packable.Projects.props" {} \;); do echo "packaging project $project" && \
+          echo -n "$project," >> $GITHUB_OUTPUT
+        done
+
+    - name: Echo loaded projects
+      shell: bash
+      run: |
+        echo "loaded projects: ${{ steps.project-paths.outputs.all }}"
