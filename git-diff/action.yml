@@ -2,7 +2,6 @@ name: Evaluate Git Diff from a PR
 description: "Evaluates the git diff from a PR and outputs the files that have been modified, added or deleted"
 
 inputs:
-  # array of paths to be verified
   paths:
     description: "Paths to be verified, separated by comma"
     required: true
@@ -23,13 +22,7 @@ runs:
       with:
         format: 'json'
 
-    - name: Echo all files
-      id: echoFiles
-      shell: bash
-      run: |
-        echo "Files changed: ${{ steps.files.outputs.all }}"
-
-    - name: "Evaluate Changes that are under the inputs.paths (split by comma) using bash"
+    - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
       id: evaluateStep
       shell: bash
       run: |
@@ -45,11 +38,5 @@ runs:
             break
           fi
         done
-        # set the output using the new way
+        # set the output with the result
         echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
-
-    - name: "Echo if there are changes"
-      id: echoChanges
-      shell: bash
-      run: |
-        echo "Has changes: ${{ steps.evaluateStep.outputs.hasChanges }}"
