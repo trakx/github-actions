@@ -46,9 +46,11 @@ runs:
       id: project-paths
       shell: bash
       run: |
+        PROJECTS=""
         for project in $(find ./src -name "*.csproj" -exec grep -rl "Packable.Projects.props" {} \;); do echo "packaging project $project" && \
-          echo -n "$project," >> $GITHUB_OUTPUT
-        done
+          PROJECTS="$PROJECTS,$project"; done
+        PROJECTS=${PROJECTS:1}
+        echo "all=$PROJECTS" >> $GITHUB_OUTPUT
 
     - name: Echo loaded projects
       shell: bash
