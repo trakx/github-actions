@@ -56,3 +56,11 @@ runs:
       shell: bash
       run: |
         echo "loaded projects: ${{ steps.project-paths.outputs.all }}"
+
+    - name: Echo loaded project paths only
+      shell: bash
+      run: |
+        IFS=',' read -ra projects <<< "${{ steps.project-paths.outputs.all }}"
+        for project in "${projects[@]}"; do
+          echo "project: $project"
+        done
