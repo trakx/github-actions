@@ -90,6 +90,12 @@ runs:
       with:
         paths: ${{ steps.project-paths.outputs.paths }}
 
+    - name: Echo git diff output
+      shell: bash
+      run: |
+        echo "hasChanges=${{ steps.git-diff.outputs.hasChanges }}"
+        echo "changedFiles=${{ steps.git-diff.outputs.changedFiles }}"
+
     - name: Restore and cache private nuget packages
       if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
       uses: ./github-actions-publish-nuget/restore-dotnet
