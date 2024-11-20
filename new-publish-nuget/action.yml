@@ -85,7 +85,7 @@ runs:
         done
 
     - name: Check if there are changes in the packable projects
-      uses: github-actions-publish-nuget/git-diff
+      uses: ./github-actions-publish-nuget/git-diff
       id: git-diff
       with:
         paths: ${{ steps.project-paths.outputs.paths }}
