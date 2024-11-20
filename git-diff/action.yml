@@ -1,5 +1,5 @@
-name: Evaluate Git Diff from a PR
-description: "Evaluates the git diff from a PR and outputs the files that have been modified, added or deleted"
+name: Evaluate Git Diff
+description: "Evaluates the git diff and outputs the files that have been modified, added or deleted"
 
 inputs:
   paths:
