@@ -51,15 +51,20 @@ runs:
         publishOnlyWithChanges=false
         publishAllWhenAnyHasChanges=false
         publishAllRegardlessChanges=false
-        if [ [${{ inputs.publishOnlyWithChanges }} == t*] -o [${{ inputs.publishOnlyWithChanges }} == T*] ]; then
+
+        echo "publishOnlyWithChanges input: ${{ inputs.publishOnlyWithChanges }}"
+        echo "publishAllWhenAnyHasChanges input: ${{ inputs.publishAllWhenAnyHasChanges }}"
+        echo "publishAllRegardlessChanges input: ${{ inputs.publishAllRegardlessChanges }}"
+
+        if [[ ${{ inputs.publishOnlyWithChanges }} == t* || ${{ inputs.publishOnlyWithChanges }} == T* ]]; then
           echo "publishOnlyWithChanges input is true"
           publishOnlyWithChanges=true
         fi
-        if [ [${{ inputs.publishAllWhenAnyHasChanges }} == t*] -o [${{ inputs.publishAllWhenAnyHasChanges }} == T*] ]; then
+        if [[ ${{ inputs.publishAllWhenAnyHasChanges }} == t* || ${{ inputs.publishAllWhenAnyHasChanges }} == T* ]]; then
           echo "publishAllWhenAnyHasChanges input is true"
           publishAllWhenAnyHasChanges=true
         fi
-        if [ [${{ inputs.publishAllRegardlessChanges }} == t*] -o [${{ inputs.publishAllRegardlessChanges }} == T*] ]; then
+        if [[ ${{ inputs.publishAllRegardlessChanges }} == t* || ${{ inputs.publishAllRegardlessChanges }} == T* ]]; then
           echo "publishAllRegardlessChanges input is true"
           publishAllRegardlessChanges=true
         fi
