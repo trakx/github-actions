@@ -46,24 +46,38 @@ runs:
     -name: Validate publish type inputs
       shell: bash
       run: |
+        # normalize the inputs
+        publishOnlyWithChanges=false
+        publishAllWhenAnyHasChanges=false
+        publishAllRegardlessChanges=false
+        if [ [${{ inputs.publishOnlyWithChanges }} == t*] -o [${{ inputs.publishOnlyWithChanges }} == T*] ]; then
+          publishOnlyWithChanges=true
+        fi
+        if [ [${{ inputs.publishAllWhenAnyHasChanges }} == t*] -o [${{ inputs.publishAllWhenAnyHasChanges }} == T*] ]; then
+          publishAllWhenAnyHasChanges=true
+        fi
+        if [ [${{ inputs.publishAllRegardlessChanges }} == t*] -o [${{ inputs.publishAllRegardlessChanges }} == T*] ]; then
+          publishAllRegardlessChanges=true
+        fi
+
         # if any of the inputs is true, an error must be raised
-        if [ [${{ inputs.publishOnlyWithChanges }} == f*] -a [${{ inputs.publishAllWhenAnyHasChanges }} == f*] -a [${{ inputs.publishAllRegardlessChanges }} == f*] ]; then
+        if [ [${{ publishOnlyWithChanges }} == t*] -o [${{ publishAllWhenAnyHasChanges }} == t*] -o [${{ publishAllRegardlessChanges }} == t*] ]; then
           echo "Set one of the publish mode input: publishOnlyWithChanges, publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
           exit 1
         fi
 
-        # ensure that just one is true
-        if [ [${{ inputs.publishOnlyWithChanges }} == t*] -a [${{ inputs.publishAllWhenAnyHasChanges }} == t*] ]; then
+        # if more than one input is true, an error must be raised
+        if [ [${{ publishOnlyWithChanges }} == t*] -a [${{ publishAllWhenAnyHasChanges }} == t*] ]; then
           echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllWhenAnyHasChanges."
           exit 1
         fi
 
-        if [ [${{ inputs.publishOnlyWithChanges }} == t*] -a [${{ inputs.publishAllRegardlessChanges }} == t*] ]; then
+        if [ [${{ publishOnlyWithChanges }} == t*] -a [${{ publishAllRegardlessChanges }} == t*] ]; then
           echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllRegardlessChanges."
           exit 1
         fi
 
-        if [ [${{ inputs.publishAllWhenAnyHasChanges }} == t*] -a [${{ inputs.publishAllRegardlessChanges }} == t*] ]; then
+        if [ [${{ publishAllWhenAnyHasChanges }} == t*] -a [${{ publishAllRegardlessChanges }} == t*] ]; then
           echo "Set only one of the publish mode input: publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
           exit 1
         fi
