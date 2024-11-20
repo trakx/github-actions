@@ -35,6 +35,8 @@ runs:
           # ensure path ends with /
           path="${path%/}/"
 
+          echo "Checking if any file starts with $path"
+
           # check if any file starts with the path
           if [[ ${{ steps.files.outputs.all }} == *"$path"* ]]; then
             hasChanges=true
