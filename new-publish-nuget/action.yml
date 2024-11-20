@@ -44,6 +44,7 @@ runs:
   steps:
 
     - name: Validate publish type inputs
+      id: validate-publish-type
       shell: bash
       run: |
         # normalize the inputs
@@ -82,12 +83,16 @@ runs:
           exit 1
         fi
 
+        # echo the selected publish mode and output it
         if [ [$publishAllRegardlessChanges == t*] ]; then
           echo "Publish mode selected: Publishing all packable projects regardless of changes."
+          echo "mode=all"
         elif [ [$publishAllWhenAnyHasChanges == t*] ]; then
           echo "Publish mode selected: Publishing all packable projects when any of them has changes."
+          echo "mode=any"
         elif [ [$publishOnlyWithChanges == t*] ]; then
           echo "Publish mode selected: Publishing only packable projects with changes."
+          echo "mode=changed"
         fi
 
     - name: Set compilation mode
@@ -150,8 +155,12 @@ runs:
       run: |
         PROJECTS_TO_PACKAGE=""
         HAS_PACKAGES_TO_PUBLISH=false
+
         IFS=',' read -ra projects <<< "${{ steps.project-paths.outputs.projects }}"
         IFS=',' read -ra paths <<< "${{ steps.git-diff.outputs.pathsWithChanges }}"
+
+        echo "These are the paths with changes: ${{ steps.git-diff.outputs.pathsWithChanges }}"
+        echo "These are the paths with changes after split: ${paths[@]}"
 
         for project in "${projects[@]}"; do
           # ensure project does not start with ./
@@ -159,19 +168,19 @@ runs:
           echo "Checking if project $project has changes"
 
           # if the publishAllRegardlessChanges is true, package all projects regardless of changes
-          if [ [${{ inputs.publishAllRegardlessChanges }} == t*] ]; then
+          if [ [${{ steps.validate-publish-type.outputs.mode }} == all] ]; then
             echo "Packaging all projects regardless of changes"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishAllWhenAnyHasChanges is true, package all projects when any of them has changes
-          elif [ [${{ inputs.publishAllWhenAnyHasChanges }} == t*] -a [${{ steps.git-diff.outputs.hasChanges == 'true' }}] ]; then
+          elif [ [${{ steps.validate-publish-type.outputs.mode }} == any] ]; then
             echo "Packaging all projects when any of them has changes"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishOnlyWithChanges is true, only package projects with changes
-          elif [ [${{ inputs.publishOnlyWithChanges }} == t*] -a [${{ steps.git-diff.outputs.hasChanges == 'true' }} ]; then
+          elif [ [${{ steps.validate-publish-type.outputs.mode }} == changed] ]; then
             echo "Packaging only projects with changes"
             
             # check if the project starts with one of the paths with changes
