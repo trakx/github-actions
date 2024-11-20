@@ -168,13 +168,13 @@ runs:
 
           # if the publishAllRegardlessChanges is true, package all projects regardless of changes
           if [ ${{ steps.validate-publish-type.outputs.mode }} == all ]; then
-            echo "[DEBUG] Project $project added to the list of projects to package, since all projects must be packaged"
+            echo "[DEBUG] Project $project added to the list of projects to publish, since all projects must be packaged"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishAllWhenAnyHasChanges is true, package all projects when any of them has changes
           elif [[ ${{ steps.validate-publish-type.outputs.mode }} == any && ${{ steps.git-diff.outputs.hasChanges }} == true ]]; then
-            echo "[DEBUG] Project $project added to the list of projects to package, since at least one project has changes"
+            echo "[DEBUG] Project $project added to the list of projects to publish, since at least one project has changes"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
@@ -182,10 +182,8 @@ runs:
           elif [ ${{ steps.validate-publish-type.outputs.mode }} == changed ]; then
             # check if the project starts with one of the paths with changes
             for path in "${paths[@]}"; do
-              echo "[DEBUG] Checking if project $project starts with path $path"
-
               if [[ $project == *"$path"* ]]; then
-                echo "[DEBUG] Project $project has changes, adding it to the list of projects to package"
+                echo "[DEBUG] Project $project has changes, adding it to the list of projects to publish"
                 PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
                 HAS_PACKAGES_TO_PUBLISH=true
               fi
@@ -193,7 +191,7 @@ runs:
           fi
         done
         PROJECTS_TO_PACKAGE=${PROJECTS_TO_PACKAGE:1}
-        echo "[DEBUG] Projects to package: $PROJECTS_TO_PACKAGE"
+        echo "[DEBUG] Projects to publish: $PROJECTS_TO_PACKAGE"
         echo "[DEBUG] Has packages to publish: $HAS_PACKAGES_TO_PUBLISH"
         echo "projectsToPublish=$PROJECTS_TO_PACKAGE" >> $GITHUB_OUTPUT
         echo "hasPackagesToPublish=$HAS_PACKAGES_TO_PUBLISH" >> $GITHUB_OUTPUT
