@@ -23,17 +23,14 @@ inputs:
   dotnetVersion:
     description: "Version of dotnet to use."
     required: true
-
   publishOnlyWithChanges:
     description: "If true, only publish if there are changes in the packable projects."
     required: false
     default: "true"
-
   publishAllWhenAnyHasChanges:
     description: "If true, publish all packable projects when any of them has changes."
     required: false
     default: "false"
-
   publishAllRegardlessChanges:
     description: "If true, publish all packable projects, regardless of changes."
     required: false
