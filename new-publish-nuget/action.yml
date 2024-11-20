@@ -64,9 +64,7 @@ runs:
         # get the path of the projects
         IFS=',' read -ra projectsList <<< "$PROJECTS"
         for projectCursor in "${projectsList[@]}"; do
-          path=${projectCursor%/*}
-          path="${path%/}/"
-          PATHS="$PATHS,$path"
+          PATHS="$PATHS,${projectCursor%/*}"
         done
         PATHS=${PATHS:1}
 
