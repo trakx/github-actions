@@ -29,6 +29,9 @@ runs:
         IFS=',' read -ra paths <<< "${{ inputs.paths }}"
         hasChanges=false
         for path in "${paths[@]}"; do
+          # ensure path does not start with ./
+          path="${path#./}"
+
           # ensure path ends with /
           path="${path%/}/"
 
