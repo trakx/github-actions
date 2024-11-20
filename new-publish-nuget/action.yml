@@ -158,7 +158,7 @@ runs:
         IFS=',' read -ra projects <<< "${{ steps.project-paths.outputs.projects }}"
         IFS=',' read -ra paths <<< "${{ steps.git-diff.outputs.pathsWithChanges }}"
 
-        echo "[DEBUG] These are the paths with changes: ${paths[@]}"
+        echo "[DEBUG] These are the paths with changes: ${{ steps.git-diff.outputs.pathsWithChanges }}"
 
         for project in "${projects[@]}"; do
           # ensure project does not start with ./
