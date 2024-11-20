@@ -167,8 +167,7 @@ runs:
         IFS=',' read -ra projects <<< "${{ steps.project-paths.outputs.projects }}"
         IFS=',' read -ra paths <<< "${{ steps.git-diff.outputs.pathsWithChanges }}"
 
-        echo "These are the paths with changes: ${{ steps.git-diff.outputs.pathsWithChanges }}"
-        echo "These are the paths with changes after split: ${paths[@]}"
+        echo "These are the paths with changes: ${paths[@]}"
         echo "This is the picked publish mode: ${{ steps.validate-publish-type.outputs.mode }}"
 
         for project in "${projects[@]}"; do
@@ -177,19 +176,19 @@ runs:
           echo "Checking if project $project has changes"
 
           # if the publishAllRegardlessChanges is true, package all projects regardless of changes
-          if [ [${{ steps.validate-publish-type.outputs.mode }} == all] ]; then
+          if [ ${{ steps.validate-publish-type.outputs.mode }} == all ]; then
             echo "Packaging all projects regardless of changes"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishAllWhenAnyHasChanges is true, package all projects when any of them has changes
-          elif [ [${{ steps.validate-publish-type.outputs.mode }} == any] ]; then
+          elif [ ${{ steps.validate-publish-type.outputs.mode }} == any ]; then
             echo "Packaging all projects when any of them has changes"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishOnlyWithChanges is true, only package projects with changes
-          elif [ [${{ steps.validate-publish-type.outputs.mode }} == changed] ]; then
+          elif [ ${{ steps.validate-publish-type.outputs.mode }} == changed ]; then
             echo "Packaging only projects with changes"
             
             # check if the project starts with one of the paths with changes
