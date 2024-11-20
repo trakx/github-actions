@@ -47,15 +47,25 @@ runs:
       shell: bash
       run: |
         PROJECTS=""
+        PATHS=""
+        # find all projects that have the Packable.Projects.props file included
         for project in $(find ./src -name "*.csproj" -exec grep -rl "Packable.Projects.props" {} \;); do echo "packaging project $project" && \
-          PROJECTS="$PROJECTS,$project"; done
+          PROJECTS="$PROJECTS,$project";
+        done
         PROJECTS=${PROJECTS:1}
-        echo "all=$PROJECTS" >> $GITHUB_OUTPUT
 
-    - name: Echo loaded projects
-      shell: bash
-      run: |
-        echo "loaded projects: ${{ steps.project-paths.outputs.all }}"
+        # get the path of the projects
+        IFS=',' read -ra projectsList <<< "$PROJECTS"
+        for projectCursor in "${projectsList[@]}"; do
+          PATHS="$PATHS,${projectCursor%/*}"
+        done
+        PATHS=${PATHS:1}
+
+        echo "Projects available to publish: $PROJECTS"
+        echo "Path of the projects available to publish: $PATHS"
+
+        echo "projects=$PROJECTS" >> $GITHUB_OUTPUT
+        echo "paths=$PATHS" >> $GITHUB_OUTPUT
 
     - name: Echo loaded project paths only (without the file, just the path)
       shell: bash
