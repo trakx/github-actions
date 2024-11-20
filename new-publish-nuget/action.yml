@@ -52,45 +52,48 @@ runs:
         publishAllWhenAnyHasChanges=false
         publishAllRegardlessChanges=false
         if [ [${{ inputs.publishOnlyWithChanges }} == t*] -o [${{ inputs.publishOnlyWithChanges }} == T*] ]; then
+          echo "publishOnlyWithChanges input is true"
           publishOnlyWithChanges=true
         fi
         if [ [${{ inputs.publishAllWhenAnyHasChanges }} == t*] -o [${{ inputs.publishAllWhenAnyHasChanges }} == T*] ]; then
+          echo "publishAllWhenAnyHasChanges input is true"
           publishAllWhenAnyHasChanges=true
         fi
         if [ [${{ inputs.publishAllRegardlessChanges }} == t*] -o [${{ inputs.publishAllRegardlessChanges }} == T*] ]; then
+          echo "publishAllRegardlessChanges input is true"
           publishAllRegardlessChanges=true
         fi
 
-        # if any of the inputs is true, an error must be raised
-        if [[ $publishOnlyWithChanges == t* || $publishAllWhenAnyHasChanges == t* || $publishAllRegardlessChanges == t* ]]; then
+        # if all inputs are false, an error must be raised
+        if [[ $publishOnlyWithChanges == false || $publishAllWhenAnyHasChanges == false || $publishAllRegardlessChanges == false ]]; then
           echo "Set one of the publish mode input: publishOnlyWithChanges, publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
           exit 1
         fi
 
         # if more than one input is true, an error must be raised
-        if [[ $publishOnlyWithChanges == t* && $publishAllWhenAnyHasChanges == t* ]]; then
+        if [[ $publishOnlyWithChanges == true && $publishAllWhenAnyHasChanges == true ]]; then
           echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllWhenAnyHasChanges."
           exit 1
         fi
 
-        if [[ $publishAllWhenAnyHasChanges == t* && $publishAllRegardlessChanges == t* ]]; then
+        if [[ $publishAllWhenAnyHasChanges == true && $publishAllRegardlessChanges == true ]]; then
           echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllRegardlessChanges."
           exit 1
         fi
 
-        if [[ $publishOnlyWithChanges == t* && $publishAllRegardlessChanges == t* ]]; then
+        if [[ $publishOnlyWithChanges == true && $publishAllRegardlessChanges == true ]]; then
           echo "Set only one of the publish mode input: publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
           exit 1
         fi
 
         # echo the selected publish mode and output it
-        if [ [$publishAllRegardlessChanges == t*] ]; then
+        if [ [$publishAllRegardlessChanges == true] ]; then
           echo "Publish mode selected: Publishing all packable projects regardless of changes."
           echo "mode=all"
-        elif [ [$publishAllWhenAnyHasChanges == t*] ]; then
+        elif [ [$publishAllWhenAnyHasChanges == true] ]; then
           echo "Publish mode selected: Publishing all packable projects when any of them has changes."
           echo "mode=any"
-        elif [ [$publishOnlyWithChanges == t*] ]; then
+        elif [ [$publishOnlyWithChanges == true] ]; then
           echo "Publish mode selected: Publishing only packable projects with changes."
           echo "mode=changed"
         fi
