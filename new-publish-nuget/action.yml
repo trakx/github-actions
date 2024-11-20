@@ -65,7 +65,7 @@ runs:
         fi
 
         # if all inputs are false, an error must be raised
-        if [[ $publishOnlyWithChanges == false || $publishAllWhenAnyHasChanges == false || $publishAllRegardlessChanges == false ]]; then
+        if [[ $publishOnlyWithChanges == false && $publishAllWhenAnyHasChanges == false && $publishAllRegardlessChanges == false ]]; then
           echo "Set one of the publish mode input: publishOnlyWithChanges, publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
           exit 1
         fi
