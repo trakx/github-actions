@@ -24,9 +24,50 @@ inputs:
     description: "Version of dotnet to use."
     required: true
 
+  publishOnlyWithChanges:
+    description: "If true, only publish if there are changes in the packable projects."
+    required: false
+    default: "true"
+
+  publishAllWhenAnyHasChanges:
+    description: "If true, publish all packable projects when any of them has changes."
+    required: false
+    default: "false"
+
+  publishAllRegardlessChanges:
+    description: "If true, publish all packable projects, regardless of changes."
+    required: false
+    default: "false"
+
 runs:
   using: "composite"
   steps:
+
+    -name: Validate publish type inputs
+      shell: bash
+      run: |
+        # if any of the inputs is true, an error must be raised
+        if [ [${{ inputs.publishOnlyWithChanges }} == f*] -a [${{ inputs.publishAllWhenAnyHasChanges }} == f*] -a [${{ inputs.publishAllRegardlessChanges }} == f*] ]; then
+          echo "Set one of the publish mode input: publishOnlyWithChanges, publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
+          exit 1
+        fi
+
+        # ensure that just one is true
+        if [ [${{ inputs.publishOnlyWithChanges }} == t*] -a [${{ inputs.publishAllWhenAnyHasChanges }} == t*] ]; then
+          echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllWhenAnyHasChanges."
+          exit 1
+        fi
+
+        if [ [${{ inputs.publishOnlyWithChanges }} == t*] -a [${{ inputs.publishAllRegardlessChanges }} == t*] ]; then
+          echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllRegardlessChanges."
+          exit 1
+        fi
+
+        if [ [${{ inputs.publishAllWhenAnyHasChanges }} == t*] -a [${{ inputs.publishAllRegardlessChanges }} == t*] ]; then
+          echo "Set only one of the publish mode input: publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
+          exit 1
+        fi
+
     - name: Set compilation mode
       shell: bash
       id: comp-mode
@@ -74,35 +115,64 @@ runs:
         echo "projects=$PROJECTS" >> $GITHUB_OUTPUT
         echo "paths=$PATHS" >> $GITHUB_OUTPUT
 
-    - name: Echo loaded project paths only (without the file, just the path)
-      shell: bash
-      run: |
-        IFS=',' read -ra projects <<< "${{ steps.project-paths.outputs.all }}"
-        for project in "${projects[@]}"; do
-          echo "project path: ${project%/*}"
-        done
-
     - name: Check if there are changes in the packable projects
       uses: ./github-actions-publish-nuget/git-diff
       id: git-diff
       with:
         paths: ${{ steps.project-paths.outputs.paths }}
 
-    - name: Echo git diff output
+    - name: Load projects to be packaged based on the publish mode
+      if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
       shell: bash
+      id: load-projects-to-package
       run: |
-        echo "hasChanges=${{ steps.git-diff.outputs.hasChanges }}"
-        echo "changedFiles=${{ steps.git-diff.outputs.changedFiles }}"
+        PROJECTS_TO_PACKAGE=""
+        HAS_PACKAGES_TO_PUBLISH=false
+        IFS=',' read -ra projects <<< "${{ steps.project-paths.outputs.projects }}"
+        IFS=',' read -ra paths <<< "${{ steps.git-diff.outputs.pathsWithChanges }}"
+
+        for project in "${projects[@]}"; do
+          # if the publishAllRegardlessChanges is true, package all projects regardless of changes
+          if [ [${{ inputs.publishAllRegardlessChanges }} == t*] ]; then
+            echo "Packaging all projects regardless of changes"
+            PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
+            HAS_PACKAGES_TO_PUBLISH=true
+
+          # if the publishAllWhenAnyHasChanges is true, package all projects when any of them has changes
+          elif [ [${{ inputs.publishAllWhenAnyHasChanges }} == t*] -a [${{ steps.git-diff.outputs.hasChanges == 'true' }}] ]; then
+            echo "Packaging all projects when any of them has changes"
+            PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
+            HAS_PACKAGES_TO_PUBLISH=true
+
+          # if the publishOnlyWithChanges is true, only package projects with changes
+          elif [ [${{ inputs.publishOnlyWithChanges }} == t*] -a [${{ steps.git-diff.outputs.hasChanges == 'true' }} ]; then
+            echo "Packaging only projects with changes"
+            
+            # check if the project starts with one of the paths with changes
+            for path in "${paths[@]}"; do
+              if [[ $project == *"$path"* ]]; then
+                echo "Project $project has changes, adding it to the list of projects to package"
+                PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
+                HAS_PACKAGES_TO_PUBLISH=true
+              fi
+            done
+          fi
+        done
+        PROJECTS_TO_PACKAGE=${PROJECTS_TO_PACKAGE:1}
+        echo "Projects to package: $PROJECTS_TO_PACKAGE"
+        echo "Has packages to publish: $HAS_PACKAGES_TO_PUBLISH"
+        echo "projectsToPublish=$PROJECTS_TO_PACKAGE" >> $GITHUB_OUTPUT
+        echo "hasPackagesToPublish=$HAS_PACKAGES_TO_PUBLISH" >> $GITHUB_OUTPUT
 
     - name: Restore and cache private nuget packages
-      if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
+      if: ${{ steps.load-projects-to-package.outputs.hasPackagesToPublish == 'true' }}
       uses: ./github-actions-publish-nuget/restore-dotnet
       with:
         dotnetVersion: ${{inputs.dotnetVersion}}
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
 
     - name: Bump version
-      if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
+      if: ${{ steps.load-projects-to-package.outputs.hasPackagesToPublish == 'true' }}
       id: bumpVersion
       uses: ./github-actions-publish-nuget/get-tag
       with:
@@ -110,7 +180,7 @@ runs:
         preRelease: ${{ inputs.debuggable }}
 
     - name: Build
-      if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
+      if: ${{ steps.load-projects-to-package.outputs.hasPackagesToPublish == 'true' }}
       shell: bash
       run: |
         for f in $(find . -name "*.sln"); do echo "building solution $f" && \
@@ -122,16 +192,19 @@ runs:
         done
 
     - name: Package
-      if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
+      if: ${{ steps.load-projects-to-package.outputs.hasPackagesToPublish == 'true' }}
       shell: bash
       run: |
-        for project in $(echo ${{ steps.project-paths.outputs.projects }} | tr "," "\n"); do
+        IFS=',' read -ra projects <<< "${{ steps.load-projects-to-package.outputs.projectsToPublish }}"
+        for project in "${projects[@]}"; do
+          echo "packaging project $project"
+
           dotnet pack $project --no-build --configuration ${{ steps.comp-mode.outputs.compilationMode }} \
             --output ./nuget/ -p:PackageVersion=${{steps.bumpVersion.outputs.fullVersion}} --include-symbols --include-source
         done
 
     - name: Publish
-      if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
+      if: ${{ steps.load-projects-to-package.outputs.hasPackagesToPublish == 'true' }}
       shell: bash
       run: |
         ls ./nuget/*.nupkg
@@ -141,7 +214,7 @@ runs:
         done
 
     - name: Push version tag
-      if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
+      if: ${{ steps.load-projects-to-package.outputs.hasPackagesToPublish == 'true' }}
       id: pushTag
       uses: ./github-actions-publish-nuget/push-tag
       with:
