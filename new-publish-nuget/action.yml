@@ -92,15 +92,15 @@ runs:
         fi
 
         # echo the selected publish mode and output it
-        if [ [$publishAllRegardlessChanges == true] ]; then
+        if [ $publishAllRegardlessChanges == true ]; then
           echo "Publish mode selected: Publishing all packable projects regardless of changes."
-          echo "mode=all"
-        elif [ [$publishAllWhenAnyHasChanges == true] ]; then
+          echo "mode=all" >> $GITHUB_OUTPUT
+        elif [ $publishAllWhenAnyHasChanges == true ]; then
           echo "Publish mode selected: Publishing all packable projects when any of them has changes."
-          echo "mode=any"
-        elif [ [$publishOnlyWithChanges == true] ]; then
+          echo "mode=any" >> $GITHUB_OUTPUT
+        elif [ $publishOnlyWithChanges == true ]; then
           echo "Publish mode selected: Publishing only packable projects with changes."
-          echo "mode=changed"
+          echo "mode=changed" >> $GITHUB_OUTPUT
         fi
 
     - name: Set compilation mode
