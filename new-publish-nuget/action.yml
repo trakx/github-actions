@@ -149,7 +149,6 @@ runs:
         paths: ${{ steps.project-paths.outputs.paths }}
 
     - name: Load projects to be packaged based on the publish mode
-      if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
       shell: bash
       id: load-projects-to-package
       run: |
@@ -191,8 +190,13 @@ runs:
           fi
         done
         PROJECTS_TO_PACKAGE=${PROJECTS_TO_PACKAGE:1}
-        echo "[DEBUG] Projects to publish: $PROJECTS_TO_PACKAGE"
-        echo "[DEBUG] Has packages to publish: $HAS_PACKAGES_TO_PUBLISH"
+
+        if [ $HAS_PACKAGES_TO_PUBLISH == false ]; then
+          echo "[DEBUG] There are no projects to publish"
+        else
+          echo "[DEBUG] Projects to publish: $PROJECTS_TO_PACKAGE"
+        fi
+
         echo "projectsToPublish=$PROJECTS_TO_PACKAGE" >> $GITHUB_OUTPUT
         echo "hasPackagesToPublish=$HAS_PACKAGES_TO_PUBLISH" >> $GITHUB_OUTPUT
 
