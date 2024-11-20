@@ -52,54 +52,47 @@ runs:
         publishAllWhenAnyHasChanges=false
         publishAllRegardlessChanges=false
 
-        echo "publishOnlyWithChanges input: ${{ inputs.publishOnlyWithChanges }}"
-        echo "publishAllWhenAnyHasChanges input: ${{ inputs.publishAllWhenAnyHasChanges }}"
-        echo "publishAllRegardlessChanges input: ${{ inputs.publishAllRegardlessChanges }}"
-
         if [[ ${{ inputs.publishOnlyWithChanges }} == t* || ${{ inputs.publishOnlyWithChanges }} == T* ]]; then
-          echo "publishOnlyWithChanges input is true"
           publishOnlyWithChanges=true
         fi
         if [[ ${{ inputs.publishAllWhenAnyHasChanges }} == t* || ${{ inputs.publishAllWhenAnyHasChanges }} == T* ]]; then
-          echo "publishAllWhenAnyHasChanges input is true"
           publishAllWhenAnyHasChanges=true
         fi
         if [[ ${{ inputs.publishAllRegardlessChanges }} == t* || ${{ inputs.publishAllRegardlessChanges }} == T* ]]; then
-          echo "publishAllRegardlessChanges input is true"
           publishAllRegardlessChanges=true
         fi
 
         # if all inputs are false, an error must be raised
         if [[ $publishOnlyWithChanges == false && $publishAllWhenAnyHasChanges == false && $publishAllRegardlessChanges == false ]]; then
-          echo "Set one of the publish mode input: publishOnlyWithChanges, publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
+          echo "[ERROR] Set one of the publish mode input: publishOnlyWithChanges, publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
           exit 1
         fi
 
         # if more than one input is true, an error must be raised
         if [[ $publishOnlyWithChanges == true && $publishAllWhenAnyHasChanges == true ]]; then
-          echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllWhenAnyHasChanges."
+          echo "[ERROR] Set only one of the publish mode input: publishOnlyWithChanges or publishAllWhenAnyHasChanges."
           exit 1
         fi
 
         if [[ $publishAllWhenAnyHasChanges == true && $publishAllRegardlessChanges == true ]]; then
-          echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllRegardlessChanges."
+          echo "[ERROR] Set only one of the publish mode input: publishOnlyWithChanges or publishAllRegardlessChanges."
           exit 1
         fi
 
         if [[ $publishOnlyWithChanges == true && $publishAllRegardlessChanges == true ]]; then
-          echo "Set only one of the publish mode input: publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
+          echo "[ERROR] Set only one of the publish mode input: publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
           exit 1
         fi
 
         # echo the selected publish mode and output it
         if [ $publishAllRegardlessChanges == true ]; then
-          echo "Publish mode selected: Publishing all packable projects regardless of changes."
+          echo "[DEBUG] Publish mode selected: Publishing all packable projects regardless of changes."
           echo "mode=all" >> $GITHUB_OUTPUT
         elif [ $publishAllWhenAnyHasChanges == true ]; then
-          echo "Publish mode selected: Publishing all packable projects when any of them has changes."
+          echo "[DEBUG] Publish mode selected: Publishing all packable projects when any of them has changes."
           echo "mode=any" >> $GITHUB_OUTPUT
         elif [ $publishOnlyWithChanges == true ]; then
-          echo "Publish mode selected: Publishing only packable projects with changes."
+          echo "[DEBUG] Publish mode selected: Publishing only packable projects with changes."
           echo "mode=changed" >> $GITHUB_OUTPUT
         fi
 
@@ -113,7 +106,7 @@ runs:
           COMP_MODE=Debug
         fi
         echo "compilationMode=$COMP_MODE" >> $GITHUB_OUTPUT
-        echo "compilation mode set to $COMP_MODE"
+        echo "[DEBUG] Compilation mode set to $COMP_MODE"
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -144,9 +137,8 @@ runs:
         done
         PATHS=${PATHS:1}
 
-        echo "Projects available to publish: $PROJECTS"
-        echo "Path of the projects available to publish: $PATHS"
-
+        echo "[DEBUG] Projects available to publish: $PROJECTS"
+        echo "[DEBUG] Path of the projects available to publish: $PATHS"
         echo "projects=$PROJECTS" >> $GITHUB_OUTPUT
         echo "paths=$PATHS" >> $GITHUB_OUTPUT
 
@@ -167,36 +159,33 @@ runs:
         IFS=',' read -ra projects <<< "${{ steps.project-paths.outputs.projects }}"
         IFS=',' read -ra paths <<< "${{ steps.git-diff.outputs.pathsWithChanges }}"
 
-        echo "These are the paths with changes: ${paths[@]}"
-        echo "This is the picked publish mode: ${{ steps.validate-publish-type.outputs.mode }}"
+        echo "[DEBUG] These are the paths with changes: ${paths[@]}"
 
         for project in "${projects[@]}"; do
           # ensure project does not start with ./
           project="${project#./}"
-          echo "Checking if project $project has changes"
+          echo "[DEBUG] Checking if project $project has changes"
 
           # if the publishAllRegardlessChanges is true, package all projects regardless of changes
           if [ ${{ steps.validate-publish-type.outputs.mode }} == all ]; then
-            echo "Packaging all projects regardless of changes"
+            echo "[DEBUG] Project $project added to the list of projects to package, since all projects must be packaged"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishAllWhenAnyHasChanges is true, package all projects when any of them has changes
-          elif [ ${{ steps.validate-publish-type.outputs.mode }} == any ]; then
-            echo "Packaging all projects when any of them has changes"
+          elif [[ ${{ steps.validate-publish-type.outputs.mode }} == any && ${{ steps.git-diff.outputs.hasChanges }} == true ]]; then
+            echo "[DEBUG] Project $project added to the list of projects to package, since at least one project has changes"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishOnlyWithChanges is true, only package projects with changes
           elif [ ${{ steps.validate-publish-type.outputs.mode }} == changed ]; then
-            echo "Packaging only projects with changes"
-            
             # check if the project starts with one of the paths with changes
             for path in "${paths[@]}"; do
-              echo "Checking if project $project starts with path $path"
+              echo "[DEBUG] Checking if project $project starts with path $path"
 
               if [[ $project == *"$path"* ]]; then
-                echo "Project $project has changes, adding it to the list of projects to package"
+                echo "[DEBUG] Project $project has changes, adding it to the list of projects to package"
                 PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
                 HAS_PACKAGES_TO_PUBLISH=true
               fi
@@ -204,8 +193,8 @@ runs:
           fi
         done
         PROJECTS_TO_PACKAGE=${PROJECTS_TO_PACKAGE:1}
-        echo "Projects to package: $PROJECTS_TO_PACKAGE"
-        echo "Has packages to publish: $HAS_PACKAGES_TO_PUBLISH"
+        echo "[DEBUG] Projects to package: $PROJECTS_TO_PACKAGE"
+        echo "[DEBUG] Has packages to publish: $HAS_PACKAGES_TO_PUBLISH"
         echo "projectsToPublish=$PROJECTS_TO_PACKAGE" >> $GITHUB_OUTPUT
         echo "hasPackagesToPublish=$HAS_PACKAGES_TO_PUBLISH" >> $GITHUB_OUTPUT
 
@@ -228,7 +217,7 @@ runs:
       if: ${{ steps.load-projects-to-package.outputs.hasPackagesToPublish == 'true' }}
       shell: bash
       run: |
-        for f in $(find . -name "*.sln"); do echo "building solution $f" && \
+        for f in $(find . -name "*.sln"); do echo "[DEBUG] Building solution $f" && \
           dotnet build $f \
             --configuration ${{steps.comp-mode.outputs.compilationMode}} \
             -p:Version=${{steps.bumpVersion.outputs.assemblyVersion}} \
@@ -242,7 +231,7 @@ runs:
       run: |
         IFS=',' read -ra projects <<< "${{ steps.load-projects-to-package.outputs.projectsToPublish }}"
         for project in "${projects[@]}"; do
-          echo "packaging project $project"
+          echo "[DEBUG] Packaging project $project"
 
           dotnet pack $project --no-build --configuration ${{ steps.comp-mode.outputs.compilationMode }} \
             --output ./nuget/ -p:PackageVersion=${{steps.bumpVersion.outputs.fullVersion}} --include-symbols --include-source
@@ -254,7 +243,7 @@ runs:
       run: |
         ls ./nuget/*.nupkg
         for f in ./nuget/*.symbols.nupkg; \
-          do echo "pushing $f file.." \
+          do echo "[DEBUG] Pushing $f file.." \
           && dotnet nuget push $f --api-key ${{inputs.githubToken}} --source "https://nuget.pkg.github.com/trakx/index.json";
         done
 
