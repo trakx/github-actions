@@ -23,18 +23,10 @@ inputs:
   dotnetVersion:
     description: "Version of dotnet to use."
     required: true
-  publishOnlyWithChanges:
-    description: "If true, only publish if there are changes in the packable projects."
-    required: false
-    default: "false"
-  publishAllWhenAnyHasChanges:
-    description: "If true, publish all packable projects when any of them has changes."
-    required: false
-    default: "false"
-  publishAllRegardlessChanges:
-    description: "If true, publish all packable projects, regardless of changes."
-    required: false
-    default: "false"
+  publishMode:
+    description: "Publish mode to use (always | when_any | only_changed). [always] will publish all packable projects regardless of changes. [when_any] will publish all packable projects when any of them has changes. [only_changed] will publish only packable projects with changes."
+    required: true
+    default: "only_changed"
 
 runs:
   using: "composite"
@@ -44,53 +36,19 @@ runs:
       id: validate-publish-type
       shell: bash
       run: |
-        # normalize the inputs
-        publishOnlyWithChanges=false
-        publishAllWhenAnyHasChanges=false
-        publishAllRegardlessChanges=false
-
-        if [[ ${{ inputs.publishOnlyWithChanges }} == t* || ${{ inputs.publishOnlyWithChanges }} == T* ]]; then
-          publishOnlyWithChanges=true
-        fi
-        if [[ ${{ inputs.publishAllWhenAnyHasChanges }} == t* || ${{ inputs.publishAllWhenAnyHasChanges }} == T* ]]; then
-          publishAllWhenAnyHasChanges=true
-        fi
-        if [[ ${{ inputs.publishAllRegardlessChanges }} == t* || ${{ inputs.publishAllRegardlessChanges }} == T* ]]; then
-          publishAllRegardlessChanges=true
-        fi
-
-        # if all inputs are false, an error must be raised
-        if [[ $publishOnlyWithChanges == false && $publishAllWhenAnyHasChanges == false && $publishAllRegardlessChanges == false ]]; then
-          echo "[ERROR] Set one of the publish mode input: publishOnlyWithChanges, publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
-          exit 1
-        fi
-
-        # if more than one input is true, an error must be raised
-        if [[ $publishOnlyWithChanges == true && $publishAllWhenAnyHasChanges == true ]]; then
-          echo "[ERROR] Set only one of the publish mode input: publishOnlyWithChanges or publishAllWhenAnyHasChanges."
-          exit 1
-        fi
-
-        if [[ $publishAllWhenAnyHasChanges == true && $publishAllRegardlessChanges == true ]]; then
-          echo "[ERROR] Set only one of the publish mode input: publishOnlyWithChanges or publishAllRegardlessChanges."
-          exit 1
-        fi
-
-        if [[ $publishOnlyWithChanges == true && $publishAllRegardlessChanges == true ]]; then
-          echo "[ERROR] Set only one of the publish mode input: publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
-          exit 1
-        fi
-
         # echo the selected publish mode and output it
-        if [ $publishAllRegardlessChanges == true ]; then
+        if [ ${{ inputs.publishMode }} == always ]; then
           echo "[DEBUG] Publish mode selected: Publishing all packable projects regardless of changes."
-          echo "mode=all" >> $GITHUB_OUTPUT
-        elif [ $publishAllWhenAnyHasChanges == true ]; then
+          echo "mode=always" >> $GITHUB_OUTPUT
+        elif [ ${{ inputs.publishMode }} == when_any ]; then
           echo "[DEBUG] Publish mode selected: Publishing all packable projects when any of them has changes."
-          echo "mode=any" >> $GITHUB_OUTPUT
-        elif [ $publishOnlyWithChanges == true ]; then
+          echo "mode=when_any" >> $GITHUB_OUTPUT
+        elif [ ${{ inputs.publishMode }} == only_changed ]; then
           echo "[DEBUG] Publish mode selected: Publishing only packable projects with changes."
-          echo "mode=changed" >> $GITHUB_OUTPUT
+          echo "mode=only_changed" >> $GITHUB_OUTPUT
+        else
+          echo "[ERROR] Invalid value for publishMode input. Valid values are: always, when_any, only_changed."
+          exit 1
         fi
 
     - name: Set compilation mode
@@ -163,19 +121,19 @@ runs:
           echo "[DEBUG] Checking if project $project has changes"
 
           # if the publishAllRegardlessChanges is true, package all projects regardless of changes
-          if [ ${{ steps.validate-publish-type.outputs.mode }} == all ]; then
+          if [ ${{ inputs.publishMode }} == always ]; then
             echo "[DEBUG] Project $project added to the list of projects to publish, since all projects must be packaged"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishAllWhenAnyHasChanges is true, package all projects when any of them has changes
-          elif [[ ${{ steps.validate-publish-type.outputs.mode }} == any && ${{ steps.git-diff.outputs.hasChanges }} == true ]]; then
+          elif [[ ${{ inputs.publishMode }} == when_any && ${{ steps.git-diff.outputs.hasChanges }} == true ]]; then
             echo "[DEBUG] Project $project added to the list of projects to publish, since at least one project has changes"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishOnlyWithChanges is true, only package projects with changes
-          elif [ ${{ steps.validate-publish-type.outputs.mode }} == changed ]; then
+          elif [ ${{ inputs.publishMode }} == only_changed ]; then
             # check if the project starts with one of the paths with changes
             for path in "${paths[@]}"; do
               if [[ $project == *"$path"* ]]; then
