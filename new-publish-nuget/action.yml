@@ -43,7 +43,44 @@ runs:
   using: "composite"
   steps:
 
-    
+    -name: Validate publish type inputs
+      shell: bash
+      run: |
+        # normalize the inputs
+        publishOnlyWithChanges=false
+        publishAllWhenAnyHasChanges=false
+        publishAllRegardlessChanges=false
+        if [ [${{ inputs.publishOnlyWithChanges }} == t*] -o [${{ inputs.publishOnlyWithChanges }} == T*] ]; then
+          publishOnlyWithChanges=true
+        fi
+        if [ [${{ inputs.publishAllWhenAnyHasChanges }} == t*] -o [${{ inputs.publishAllWhenAnyHasChanges }} == T*] ]; then
+          publishAllWhenAnyHasChanges=true
+        fi
+        if [ [${{ inputs.publishAllRegardlessChanges }} == t*] -o [${{ inputs.publishAllRegardlessChanges }} == T*] ]; then
+          publishAllRegardlessChanges=true
+        fi
+
+        # if any of the inputs is true, an error must be raised
+        if [[ $publishOnlyWithChanges == t* || $publishAllWhenAnyHasChanges == t* || $publishAllRegardlessChanges == t* ]]; then
+          echo "Set one of the publish mode input: publishOnlyWithChanges, publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
+          exit 1
+        fi
+
+        # if more than one input is true, an error must be raised
+        if [[ $publishOnlyWithChanges == t* && $publishAllWhenAnyHasChanges == t* ]]; then
+          echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllWhenAnyHasChanges."
+          exit 1
+        fi
+
+        if [[ $publishAllWhenAnyHasChanges == t* && $publishAllRegardlessChanges == t* ]]; then
+          echo "Set only one of the publish mode input: publishOnlyWithChanges or publishAllRegardlessChanges."
+          exit 1
+        fi
+
+        if [[ $publishOnlyWithChanges == t* && $publishAllRegardlessChanges == t* ]]; then
+          echo "Set only one of the publish mode input: publishAllWhenAnyHasChanges or publishAllRegardlessChanges."
+          exit 1
+        fi
 
     - name: Set compilation mode
       shell: bash
@@ -109,6 +146,9 @@ runs:
         IFS=',' read -ra paths <<< "${{ steps.git-diff.outputs.pathsWithChanges }}"
 
         for project in "${projects[@]}"; do
+          # ensure project does not start with ./
+          project="${project#./}"
+
           # if the publishAllRegardlessChanges is true, package all projects regardless of changes
           if [ [${{ inputs.publishAllRegardlessChanges }} == t*] ]; then
             echo "Packaging all projects regardless of changes"
