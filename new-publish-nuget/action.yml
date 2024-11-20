@@ -125,7 +125,7 @@ runs:
       if: ${{ steps.git-diff.outputs.hasChanges == 'true' }}
       shell: bash
       run: |
-        for project in $(find ./src -name "*.csproj" -exec grep -rl "Packable.Projects.props" {} \;); do echo "packaging project $project" && \
+        for project in $(echo ${{ steps.project-paths.outputs.projects }} | tr "," "\n"); do
           dotnet pack $project --no-build --configuration ${{ steps.comp-mode.outputs.compilationMode }} \
             --output ./nuget/ -p:PackageVersion=${{steps.bumpVersion.outputs.fullVersion}} --include-symbols --include-source
         done
