@@ -148,6 +148,7 @@ runs:
         for project in "${projects[@]}"; do
           # ensure project does not start with ./
           project="${project#./}"
+          echo "Checking if project $project has changes"
 
           # if the publishAllRegardlessChanges is true, package all projects regardless of changes
           if [ [${{ inputs.publishAllRegardlessChanges }} == t*] ]; then
