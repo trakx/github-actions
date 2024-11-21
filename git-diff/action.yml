@@ -18,39 +18,56 @@ outputs:
 runs:
   using: "composite"
   steps:
-
-    - name: "Detect Changes"
+    - name: "Detect changes from event commits"
       id: files
-      uses: jitterbit/get-changed-files@v1
-      with:
-        format: 'json'
-
-    - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
-      id: evaluateStep
       shell: bash
       run: |
-        IFS=',' read -ra paths <<< "${{ inputs.paths }}"
-        hasChanges=false
-        pathsWithChanges=""
-
-        for path in "${paths[@]}"; do
-          # ensure path does not start with ./
-          path="${path#./}"
-
-          # ensure path ends with /
-          path="${path%/}/"
-
-          echo "Checking if any file starts with $path"
-
-          # check if any file starts with the path
-          if [[ ${{ steps.files.outputs.all }} == *"$path"* ]]; then
-            echo "Found changes in path $path"
-            pathsWithChanges="$path,$pathsWithChanges"
-            hasChanges=true
-          fi
+        commitShas='${{ join(github.event.commits.*.id, ' ') }}'
+        declare -A changedFiles
+        for sha in $commitShas; do
+          commits=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${{ github.repository }}/commits/${sha}")
+          filenames=$(jq --join-output '.files[] | select(.status == "modified" or .status == "added") | "\(.filename) "' <<<"${commits}")
+          for filename in $filenames; do
+            changedFiles[$filename]=1
+          done
         done
-        pathsWithChanges=${pathsWithChanges:-1}
+        echo "changedFiles=${!changedFiles[@]}"
 
-        # set the output with the result
-        echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
-        echo "pathsWithChanges=$pathsWithChanges" >> $GITHUB_OUTPUT
+    # - name: "Detect Changes"
+    #   id: files
+    #   uses: jitterbit/get-changed-files@v1
+    #   with:
+    #     format: 'json'
+
+    # - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
+    #   id: evaluateStep
+    #   shell: bash
+    #   run: |
+    #     IFS=',' read -ra paths <<< "${{ inputs.paths }}"
+    #     hasChanges=false
+    #     pathsWithChanges=""
+
+    #     for path in "${paths[@]}"; do
+    #       # ensure path does not start with ./
+    #       path="${path#./}"
+
+    #       # ensure path ends with /
+    #       path="${path%/}/"
+
+    #       echo "Checking if any file starts with $path"
+
+    #       # check if any file starts with the path
+    #       if [[ ${{ steps.files.outputs.all }} == *"$path"* ]]; then
+    #         echo "Found changes in path $path"
+    #         pathsWithChanges="$path,$pathsWithChanges"
+    #         hasChanges=true
+    #       fi
+    #     done
+    #     pathsWithChanges=${pathsWithChanges:-1}
+
+    #     # set the output with the result
+    #     echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
+    #     echo "pathsWithChanges=$pathsWithChanges" >> $GITHUB_OUTPUT
