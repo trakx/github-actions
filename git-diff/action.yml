@@ -49,7 +49,8 @@ runs:
         inputPaths="${{ inputs.paths }}"
 
         echo "[DEBUG] Checking if any file starts with those paths: $inputPaths"
-        echo "[DEBUG] Files loaded from event commits: "${{ steps.files.outputs.changedFiles }}" | tr ',' '\n'
+        echo "[DEBUG] Files loaded from event commits:"
+        echo "${{ steps.files.outputs.changedFiles }}" | tr ',' '\n'
 
         # ensure inputPaths has at least one comma
         if [[ $inputPaths != *","* ]]; then
