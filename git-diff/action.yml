@@ -62,8 +62,8 @@ runs:
         # split the paths by comma
         IFS=',' read -ra paths <<< "${inputPaths}"
 
-        # split files step output changedFiles by space
-        IFS=' ' read -ra changedFiles <<< "${{ steps.files.outputs.changedFiles }}"
+        # split files step output changedFiles by comma
+        IFS=',' read -ra changedFiles <<< "${{ steps.files.outputs.changedFiles }}"
 
         hasChanges=false
         pathsWithChanges=""
