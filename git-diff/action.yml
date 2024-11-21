@@ -48,23 +48,19 @@ runs:
       run: |
         inputPaths="${{ inputs.paths }}"
 
-        echo "Change files from previous step: ${{ steps.files.outputs.changedFiles }}"
-        echo "Checking if any file starts with $inputPaths"
+        echo "[DEBUG] Files loaded from event commits: ${{ steps.files.outputs.changedFiles }}"
+        echo "[DEBUG] Checking if any file starts with those paths: $inputPaths"
 
         # ensure inputPaths has at least one comma
         if [[ $inputPaths != *","* ]]; then
           inputPaths="$inputPaths,"
         fi
 
-        echo "Splitting paths by comma"
-
         # split the paths by comma
         IFS=',' read -ra paths <<< "${inputPaths}"
-        echo "Paths: ${paths[@]}"
 
         # split files step output changedFiles by space
         IFS=' ' read -ra changedFiles <<< "${{ steps.files.outputs.changedFiles }}"
-        echo "Files: ${changedFiles[@]}"
 
         hasChanges=false
         pathsWithChanges=""
@@ -80,7 +76,7 @@ runs:
 
           # if is root path, should always be true
           if [[ $path == "/" ]]; then
-              echo "Root path detected, all files are considered changed"
+              echo "[DEBUG] Root path detected, all files are considered changed"
               pathsWithChanges="$path,$pathsWithChanges"
               hasChanges=true
               break
@@ -89,7 +85,7 @@ runs:
           # check if any file starts with the path
           for file in "${changedFiles[@]}"; do
             if [[ $file == "$path"* ]]; then
-              echo "Found changes in path $path"
+              echo "[DEBUG] Found changes in path $path"
               pathsWithChanges="$path,$pathsWithChanges"
               hasChanges=true
               break
