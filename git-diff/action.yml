@@ -48,11 +48,8 @@ runs:
       run: |
         inputPaths="${{ inputs.paths }}"
 
-        # echo files from previous event, replacing comma by new line
-        echo "[DEBUG] Files loaded from event commits:"
-        echo "${{ steps.files.outputs.changedFiles }}" | tr ',' '\n'
-        
         echo "[DEBUG] Checking if any file starts with those paths: $inputPaths"
+        echo "[DEBUG] Files loaded from event commits: "${{ steps.files.outputs.changedFiles }}" | tr ',' '\n'
 
         # ensure inputPaths has at least one comma
         if [[ $inputPaths != *","* ]]; then
@@ -82,19 +79,20 @@ runs:
               echo "[DEBUG] Root path detected, all files are considered changed"
               pathsWithChanges="$path,$pathsWithChanges"
               hasChanges=true
-              break
+          else
+            # check if any file starts with the path
+            for file in "${changedFiles[@]}"; do
+              if [[ $file == "$path"* ]]; then
+                echo "[DEBUG] Found changes in path $path"
+                pathsWithChanges="$path,$pathsWithChanges"
+                hasChanges=true
+                break
+              fi
+            done
           fi
-
-          # check if any file starts with the path
-          for file in "${changedFiles[@]}"; do
-            if [[ $file == "$path"* ]]; then
-              echo "[DEBUG] Found changes in path $path"
-              pathsWithChanges="$path,$pathsWithChanges"
-              hasChanges=true
-              break
-            fi
-          done
         done
+        echo "[DEBUG] Paths with changes (BEFORE): $pathsWithChanges"
+
         pathsWithChanges=${pathsWithChanges:-1}
 
         echo "[DEBUG] Paths with changes: $pathsWithChanges"
