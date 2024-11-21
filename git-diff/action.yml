@@ -80,7 +80,7 @@ runs:
           # ensure path ends with /
           path="${path%/}/"
 
-          echo "[DEBUG] Checking path $path"
+          echo "[DEBUG] Checking path: $path"
 
           # if is root path, should always be true
           if [[ $path == "/" ]]; then
@@ -99,10 +99,7 @@ runs:
             done
           fi
         done
-        echo "[DEBUG] Paths with changes (BEFORE): $pathsWithChanges"
-
         pathsWithChanges=${pathsWithChanges:-1}
-
         echo "[DEBUG] Paths with changes: $pathsWithChanges"
 
         # set the output with the result
