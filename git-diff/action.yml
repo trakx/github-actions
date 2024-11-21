@@ -54,11 +54,13 @@ runs:
         inputPaths="${{ inputs.paths }}"
 
         # ensure inputPaths has at least one comma
-        inputPaths="${inputPaths/,/}"
+        if [[ $inputPaths != *","* ]]; then
+          inputPaths="$inputPaths,"
+        fi
 
         # split the paths by comma
         IFS=',' read -ra paths <<< "${inputPaths}"
-        
+
         hasChanges=false
         pathsWithChanges=""
 
