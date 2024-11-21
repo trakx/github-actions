@@ -39,6 +39,7 @@ runs:
         PUBLISH_MODE="${{ inputs.publishMode }}"
         # the publish is overridden to always when event is workflow_dispatch
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "[DEBUG] Event is workflow_dispatch, overriding publish mode to always"
           PUBLISH_MODE="always"
         fi
 

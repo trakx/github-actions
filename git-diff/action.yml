@@ -99,8 +99,9 @@ runs:
             done
           fi
         done
-        pathsWithChanges=${pathsWithChanges:-1}
+
         echo "[DEBUG] Paths with changes: $pathsWithChanges"
+        pathsWithChanges=${pathsWithChanges:-1}
 
         # set the output with the result
         echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
