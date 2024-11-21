@@ -129,19 +129,19 @@ runs:
           project="${project#./}"
 
           # if the publishAllRegardlessChanges is true, package all projects regardless of changes
-          if [ ${{ steps.validate-publish-type.outputs.publishMode }} == "always" ]; then
+          if [ "${{ steps.validate-publish-type.outputs.publishMode }}" == "always" ]; then
             echo "[DEBUG] Project $project added to the list of projects to publish, since all projects must be packaged"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishAllWhenAnyHasChanges is true, package all projects when any of them has changes
-          elif [[ ${{ steps.validate-publish-type.outputs.publishMode }} == "when_any" && ${{ steps.git-diff.outputs.hasChanges }} == true ]]; then
+          elif [[ "${{ steps.validate-publish-type.outputs.publishMode }}" == "when_any" && ${{ steps.git-diff.outputs.hasChanges }} == true ]]; then
             echo "[DEBUG] Project $project added to the list of projects to publish, since at least one project has changes"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishOnlyWithChanges is true, only package projects with changes
-          elif [ ${{ steps.validate-publish-type.outputs.publishMode }} == "only_changed" ]; then
+          elif [ "${{ steps.validate-publish-type.outputs.publishMode }}" == "only_changed" ]; then
             # check if the project starts with one of the paths with changes
             for path in "${paths[@]}"; do
               if [[ $project == *"$path"* ]]; then
