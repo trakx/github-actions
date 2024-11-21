@@ -36,20 +36,28 @@ runs:
       id: validate-publish-type
       shell: bash
       run: |
+        PUBLISH_MODE="${{ inputs.publishMode }}"
+        # the publish is overridden to always when event is workflow_dispatch
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          PUBLISH_MODE="always"
+        fi
+
         # echo the selected publish mode and output it
-        if [ ${{ inputs.publishMode }} == always ]; then
+        if [ $PUBLISH_MODE == always ]; then
           echo "[DEBUG] Publish mode selected: Publishing all packable projects regardless of changes."
           echo "mode=always" >> $GITHUB_OUTPUT
-        elif [ ${{ inputs.publishMode }} == when_any ]; then
+        elif [ $PUBLISH_MODE == when_any ]; then
           echo "[DEBUG] Publish mode selected: Publishing all packable projects when any of them has changes."
           echo "mode=when_any" >> $GITHUB_OUTPUT
-        elif [ ${{ inputs.publishMode }} == only_changed ]; then
+        elif [ $PUBLISH_MODE == only_changed ]; then
           echo "[DEBUG] Publish mode selected: Publishing only packable projects with changes."
           echo "mode=only_changed" >> $GITHUB_OUTPUT
         else
           echo "[ERROR] Invalid value for publishMode input. Valid values are: always, when_any, only_changed."
           exit 1
         fi
+        # outputs $PUBLISH_MODE
+        echo "publishMode=$PUBLISH_MODE" >> $GITHUB_OUTPUT
 
     - name: Set compilation mode
       shell: bash
@@ -120,19 +128,19 @@ runs:
           project="${project#./}"
 
           # if the publishAllRegardlessChanges is true, package all projects regardless of changes
-          if [ ${{ inputs.publishMode }} == always ]; then
+          if [ ${{ steps.validate-publish-type.outputs.publishMode }} == always ]; then
             echo "[DEBUG] Project $project added to the list of projects to publish, since all projects must be packaged"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishAllWhenAnyHasChanges is true, package all projects when any of them has changes
-          elif [[ ${{ inputs.publishMode }} == when_any && ${{ steps.git-diff.outputs.hasChanges }} == true ]]; then
+          elif [[ ${{ steps.validate-publish-type.outputs.publishMode }} == when_any && ${{ steps.git-diff.outputs.hasChanges }} == true ]]; then
             echo "[DEBUG] Project $project added to the list of projects to publish, since at least one project has changes"
             PROJECTS_TO_PACKAGE="$PROJECTS_TO_PACKAGE,$project"
             HAS_PACKAGES_TO_PUBLISH=true
 
           # if the publishOnlyWithChanges is true, only package projects with changes
-          elif [ ${{ inputs.publishMode }} == only_changed ]; then
+          elif [ ${{ steps.validate-publish-type.outputs.publishMode }} == only_changed ]; then
             # check if the project starts with one of the paths with changes
             for path in "${paths[@]}"; do
               if [[ $project == *"$path"* ]]; then
