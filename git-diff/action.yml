@@ -44,6 +44,7 @@ runs:
       run: |
         inputPaths="${{ inputs.paths }}"
 
+        echo "Change files from previous step: ${{ steps.files.outputs.changedFiles }}"
         echo "Checking if any file starts with $inputPaths"
 
         # ensure inputPaths has at least one comma
