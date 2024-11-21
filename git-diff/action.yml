@@ -53,13 +53,19 @@ runs:
         # set inputs.paths to a new var
         inputPaths="${{ inputs.paths }}"
 
+        echo "Checking if any file starts with $inputPaths"
+
         # ensure inputPaths has at least one comma
         if [[ $inputPaths != *","* ]]; then
           inputPaths="$inputPaths,"
         fi
 
+        echo "Splitting paths by comma"
+
         # split the paths by comma
         IFS=',' read -ra paths <<< "${inputPaths}"
+
+        echo "Paths: ${paths[@]}"
 
         hasChanges=false
         pathsWithChanges=""
