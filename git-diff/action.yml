@@ -37,14 +37,7 @@ runs:
             changedFiles[$filename]=1
           done
         done
-        echo "changedFiles=${!changedFiles[@]}"
         echo "all=$changedFiles" >> $GITHUB_OUTPUT
-
-    # - name: "Detect Changes"
-    #   id: files
-    #   uses: jitterbit/get-changed-files@v1
-    #   with:
-    #     format: 'json'
 
     - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
       id: evaluateStep
@@ -64,31 +57,41 @@ runs:
 
         # split the paths by comma
         IFS=',' read -ra paths <<< "${inputPaths}"
-
         echo "Paths: ${paths[@]}"
+
+        # split files by space
+        IFS=' ' read -ra changedFiles <<< "${changedFiles}"
+        echo "Files: ${changedFiles[@]}"
 
         hasChanges=false
         pathsWithChanges=""
 
         for path in "${paths[@]}"; do
-          echo "Checking if path starts with ./"
-
           # ensure path does not start with ./
-          path="${path#./}"
-
-          echo "Checking if path ends with /"
+          if [[ $path == "./"* ]]; then
+            path="${path#./}"
+          fi
 
           # ensure path ends with /
           path="${path%/}/"
 
-          echo "Checking if any file starts with $path"
+          # if is root path, should always be true
+          if [[ $path == "/" ]]; then
+              echo "Root path detected, all files are considered changed"
+              pathsWithChanges="$path,$pathsWithChanges"
+              hasChanges=true
+              break
+          fi
 
           # check if any file starts with the path
-          if [[ ${{ steps.files.outputs.all }} == *"$path"* ]]; then
-            echo "Found changes in path $path"
-            pathsWithChanges="$path,$pathsWithChanges"
-            hasChanges=true
-          fi
+          for file in "${changedFiles[@]}"; do
+            if [[ $file == "$path"* ]]; then
+              echo "Found changes in path $path"
+              pathsWithChanges="$path,$pathsWithChanges"
+              hasChanges=true
+              break
+            fi
+          done
         done
         pathsWithChanges=${pathsWithChanges:-1}
 
