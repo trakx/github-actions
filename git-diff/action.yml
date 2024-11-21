@@ -58,7 +58,7 @@ runs:
         echo "Paths: ${paths[@]}"
 
         # split files by space
-        IFS=' ' read -ra changedFiles <<< "${changedFiles}"
+        IFS=' ' read -ra changedFiles <<< "${ steps.files.outputs.all }"
         echo "Files: ${changedFiles[@]}"
 
         hasChanges=false
