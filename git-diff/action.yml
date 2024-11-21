@@ -75,6 +75,8 @@ runs:
           # ensure path ends with /
           path="${path%/}/"
 
+          echo "[DEBUG] Checking path $path"
+
           # if is root path, should always be true
           if [[ $path == "/" ]]; then
               echo "[DEBUG] Root path detected, all files are considered changed"
