@@ -36,7 +36,7 @@ runs:
             changedFiles[$filename]=1
           done
         done
-        echo "all=$changedFiles" >> $GITHUB_OUTPUT
+        echo "changedFiles=$changedFiles" >> $GITHUB_OUTPUT
 
     - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
       id: evaluateStep
@@ -57,8 +57,8 @@ runs:
         IFS=',' read -ra paths <<< "${inputPaths}"
         echo "Paths: ${paths[@]}"
 
-        # split files by space
-        IFS=' ' read -ra changedFiles <<< "${ steps.files.outputs.all }"
+        # split files step output changedFiles by space
+        IFS=' ' read -ra changedFiles <<< "${{ steps.files.outputs.changedFiles }}"
         echo "Files: ${changedFiles[@]}"
 
         hasChanges=false
