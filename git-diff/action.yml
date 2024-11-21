@@ -20,6 +20,8 @@ runs:
   steps:
     - name: "Detect changes from event commits"
       id: files
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       shell: bash
       run: |
         commitShas='${{ join(github.event.commits.*.id, ' ') }}'
