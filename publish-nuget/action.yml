@@ -26,7 +26,7 @@ inputs:
   publishMode:
     description: "Publish mode to use (always | when_any | only_changed). [always] will publish all packable projects regardless of changes. [when_any] will publish all packable projects when any of them has changes. [only_changed] will publish only packable projects with changes."
     required: true
-    default: "only_changed"
+    default: "always"
 
 runs:
   using: "composite"
