@@ -38,6 +38,7 @@ runs:
           done
         done
         echo "changedFiles=${!changedFiles[@]}"
+        echo "all=$changedFiles" >> $GITHUB_OUTPUT
 
     # - name: "Detect Changes"
     #   id: files
@@ -45,32 +46,32 @@ runs:
     #   with:
     #     format: 'json'
 
-    # - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
-    #   id: evaluateStep
-    #   shell: bash
-    #   run: |
-    #     IFS=',' read -ra paths <<< "${{ inputs.paths }}"
-    #     hasChanges=false
-    #     pathsWithChanges=""
+    - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
+      id: evaluateStep
+      shell: bash
+      run: |
+        IFS=',' read -ra paths <<< "${{ inputs.paths }}"
+        hasChanges=false
+        pathsWithChanges=""
 
-    #     for path in "${paths[@]}"; do
-    #       # ensure path does not start with ./
-    #       path="${path#./}"
+        for path in "${paths[@]}"; do
+          # ensure path does not start with ./
+          path="${path#./}"
 
-    #       # ensure path ends with /
-    #       path="${path%/}/"
+          # ensure path ends with /
+          path="${path%/}/"
 
-    #       echo "Checking if any file starts with $path"
+          echo "Checking if any file starts with $path"
 
-    #       # check if any file starts with the path
-    #       if [[ ${{ steps.files.outputs.all }} == *"$path"* ]]; then
-    #         echo "Found changes in path $path"
-    #         pathsWithChanges="$path,$pathsWithChanges"
-    #         hasChanges=true
-    #       fi
-    #     done
-    #     pathsWithChanges=${pathsWithChanges:-1}
+          # check if any file starts with the path
+          if [[ ${{ steps.files.outputs.all }} == *"$path"* ]]; then
+            echo "Found changes in path $path"
+            pathsWithChanges="$path,$pathsWithChanges"
+            hasChanges=true
+          fi
+        done
+        pathsWithChanges=${pathsWithChanges:-1}
 
-    #     # set the output with the result
-    #     echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
-    #     echo "pathsWithChanges=$pathsWithChanges" >> $GITHUB_OUTPUT
+        # set the output with the result
+        echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
+        echo "pathsWithChanges=$pathsWithChanges" >> $GITHUB_OUTPUT
