@@ -72,6 +72,11 @@ runs:
             path="${path#./}"
           fi
 
+          # ensure path does not start with .
+          if [[ $path == "."* ]]; then
+            path="${path#.}"
+          fi
+
           # ensure path ends with /
           path="${path%/}/"
 
