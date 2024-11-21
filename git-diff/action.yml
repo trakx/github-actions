@@ -48,7 +48,10 @@ runs:
       run: |
         inputPaths="${{ inputs.paths }}"
 
-        echo "[DEBUG] Files loaded from event commits: ${{ steps.files.outputs.changedFiles }}"
+        # echo files from previous event, replacing comma by new line
+        echo "[DEBUG] Files loaded from event commits:"
+        echo "${{ steps.files.outputs.changedFiles }}" | tr ',' '\n'
+        
         echo "[DEBUG] Checking if any file starts with those paths: $inputPaths"
 
         # ensure inputPaths has at least one comma
