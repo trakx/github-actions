@@ -25,7 +25,7 @@ runs:
       shell: bash
       run: |
         commitShas='${{ join(github.event.commits.*.id, ' ') }}'
-        declare -A changedFiles
+        FILES=""
         for sha in $commitShas; do
           commits=$(gh api \
             -H "Accept: application/vnd.github+json" \
@@ -33,10 +33,14 @@ runs:
             "/repos/${{ github.repository }}/commits/${sha}")
           filenames=$(jq --join-output '.files[] | select(.status == "modified" or .status == "added") | "\(.filename) "' <<<"${commits}")
           for filename in $filenames; do
-            changedFiles[$filename]=1
+            # concat fileName to FILES split by comma if not already there
+            if [[ $FILES != *"$filename"* ]]; then
+              FILES="$filename,$FILES"
+            fi
           done
         done
-        echo "changedFiles=$changedFiles" >> $GITHUB_OUTPUT
+        FILES=${FILES::-1}
+        echo "changedFiles=$FILES" >> $GITHUB_OUTPUT
 
     - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
       id: evaluateStep
