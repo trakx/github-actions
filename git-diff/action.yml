@@ -24,21 +24,7 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        # if event is workflow_run, get the commits from the event
-        if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
-          echo "[DEBUG] Event is workflow_run, getting commits from the event"
-          echo "[DEBUG] wf run id: ${{ github.run_id }}"
-          echo "[DEBUG] wf id: ${{ github.workflow_run.id }}"
-          echo "[DEBUG] wf run head sha: ${{ github.workflow_run.head_sha }}"
-
-          commitShas=$(gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/commits" | jq -r '.commits[].sha')
-        else
-          commitShas='${{ join(github.event.commits.*.id, ' ') }}'
-        fi
-
+        commitShas='${{ join(github.event.commits.*.id, ' ') }}'
         FILES=""
         for sha in $commitShas; do
           commits=$(gh api \

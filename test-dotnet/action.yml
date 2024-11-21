@@ -26,6 +26,11 @@ inputs:
     required: false
     default: "master"
 
+outputs:
+  eventCommits:
+    description: "Event commit ids"
+    value: ${{ steps.getEventCommits.outputs.eventCommits }}
+
 runs:
   using: "composite"
   steps:
@@ -56,6 +61,14 @@ runs:
         aws-secret-access-key: ${{inputs.awsAccessKeySecret}}
         aws-region: ${{inputs.awsRegion}}
 
+    - name: Output event commit ids
+      id: getEventCommits
+      shell: bash
+      run: |
+        eventCommits='${{ join(github.event.commits.*.id, ' ') }}'
+        echo "[DEBUG] Event commit ids: $eventCommits"
+        echo "eventCommits=$eventCommits" >> $GITHUB_OUTPUT
+
     # GitHubActionsTestLogger nuget package should be installed in the test project.
     # coverlet.msbuild nuget package should be installed to generate coverage report.
     # The loop is necessary to prevent the following error:
@@ -65,7 +78,7 @@ runs:
       run: |
         for f in $(find . -name "*.Tests.csproj");
         do
-          echo "testing project $f" && \
+          echo "[DEBUG] Testing project $f" && \
           csprojName=${f##*/} && \
           projectName="${csprojName/.csproj/}" && \
           dotnet test $f \
