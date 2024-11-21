@@ -71,8 +71,12 @@ runs:
         pathsWithChanges=""
 
         for path in "${paths[@]}"; do
+          echo "Checking if path starts with ./"
+
           # ensure path does not start with ./
           path="${path#./}"
+
+          echo "Checking if path ends with /"
 
           # ensure path ends with /
           path="${path%/}/"
