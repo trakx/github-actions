@@ -97,6 +97,8 @@ runs:
         done
         pathsWithChanges=${pathsWithChanges:-1}
 
+        echo "[DEBUG] Paths with changes: $pathsWithChanges"
+
         # set the output with the result
         echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
         echo "pathsWithChanges=$pathsWithChanges" >> $GITHUB_OUTPUT
