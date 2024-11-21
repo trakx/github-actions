@@ -50,7 +50,13 @@ runs:
       id: evaluateStep
       shell: bash
       run: |
-        IFS=',' read -ra paths <<< "${{ inputs.paths }}"
+        PATHS=${{ inputs.paths }}
+        # ensure paths has at least one comma
+        if [[ $PATHS != *","* ]]; then
+          PATHS="$PATHS,"
+        fi
+
+        IFS=',' read -ra paths <<< "$PATHS"
         hasChanges=false
         pathsWithChanges=""
 
