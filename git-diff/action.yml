@@ -33,6 +33,7 @@ runs:
             "/repos/${{ github.repository }}/commits/${sha}")
           filenames=$(jq --join-output '.files[] | select(.status == "modified" or .status == "added") | "\(.filename) "' <<<"${commits}")
           for filename in $filenames; do
+            echo "Adding $filename to the list of changed files"
             changedFiles[$filename]=1
           done
         done
