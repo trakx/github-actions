@@ -58,7 +58,7 @@ runs:
           let data = fs.readFileSync('./ga-event-commits');
           return data;
 
-    - name "Outputs ga-event-commits file content"
+    - name: "Outputs ga-event-commits file content"
       id: getEventCommits
       shell: bash
       run: |
