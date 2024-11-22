@@ -16,6 +16,7 @@ runs:
         name: ga-event-commits
 
     - name: Unzip event commits artifact
+      shell: bash
       run: |
         unzip ga-event-commits.zip
         mv ga-event-commits.txt $GITHUB_OUTPUT
