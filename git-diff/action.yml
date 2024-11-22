@@ -35,9 +35,6 @@ runs:
     - name: Install GH CLI
       uses: ./github-actions-git-diff/install-github-cli
 
-    - name: Install GH CLI
-      uses: ./github-actions-git-diff/install-github-cli
-
     # When the event is a workflow_run, we need to download the artifact
     # This artifact is being created by test-dotnet action, since this action usually triggers other workflows
     - name: "Load event commits from artifact (when event is workflow_run)"
