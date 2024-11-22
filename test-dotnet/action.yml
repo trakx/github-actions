@@ -31,6 +31,9 @@ outputs:
     description: "Event commit ids"
     value: ${{ steps.getEventCommits.outputs.eventCommits }}
 
+env:
+  EVENT_COMMITS: ${{ steps.getEventCommits.outputs.eventCommits }}
+
 runs:
   using: "composite"
   steps:
