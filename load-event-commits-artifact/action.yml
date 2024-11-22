@@ -46,13 +46,11 @@ runs:
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/ga-event-commits.zip`, Buffer.from(download.data));
 
     - name: Upload zipped artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: zip-ga-event-commits
         path: ga-event-commits.zip
         retention-days: 1
-        compression-level: 0
-        overwrite: true
 
     - name: "Unzip ga-event-commits artifact"
       shell: bash
