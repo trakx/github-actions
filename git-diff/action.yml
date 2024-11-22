@@ -34,7 +34,7 @@ runs:
 
     - name: Dump some stuff that is installed
       shell: bash
-      run |
+      run: |
         npm -v
         node -v
 
