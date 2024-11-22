@@ -42,8 +42,8 @@ runs:
       id: getEventCommits
       shell: bash
       run: |
-        eventCommits='${{ join(github.event.commits.*.id, ' ') }}'
-        echo "eventCommits=$eventCommits" >> $GITHUB_OUTPUT
+        commitIds='${{ join(github.event.commits.*.id, ' ') }}'
+        echo "commitIds=$commitIds" >> $GITHUB_OUTPUT
 
     - name: "Detect changes from event commits"
       id: files
@@ -51,13 +51,13 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        echo "[DEBUG] Event commits from artifact: ${{ steps.getArtifactCommits.outputs.eventCommits }}"
+        echo "[DEBUG] Event commits from artifact: ${{ steps.getArtifactCommits.outputs.artifactCommits }}"
 
         # if has no commits from the current event, should use the commits from the artifact
-        commitShas="${{ steps.getEventCommits.outputs.eventCommits }}"
+        commitShas="${{ steps.getEventCommits.outputs.commitIds }}"
         if [[ -z $commitShas ]]; then
           echo "[DEBUG] No commits found in the event, using commits from the artifact"
-          commitShas="${{ steps.getArtifactCommits.outputs.eventCommits }}"
+          commitShas="${{ steps.getArtifactCommits.outputs.artifactCommits }}"
         fi
 
         echo "[DEBUG] Event commits found: $commitShas"

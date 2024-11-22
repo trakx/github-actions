@@ -7,9 +7,9 @@ inputs:
     required: false
 
 outputs:
-  eventCommits:
+  artifactCommits:
     description: "Commit ids loaded from artifact"
-    value: ${{ steps.getEventCommits.outputs.eventCommits }}
+    value: ${{ steps.getArtifactCommits.outputs.eventCommits }}
 
 runs:
   using: "composite"
@@ -23,9 +23,9 @@ runs:
         github-token: ${{ github.token }}
 
     - name: "Load event commits from ga-event-commits unzipped file"
-      id: getEventCommits
+      id: getArtifactCommits
       shell: bash
       run: |
-        eventCommitsFromFile=$(cat ga-event-commits.txt)
-        echo "[DEBUG] Event commits fetched from ga-event-commits artifact: $eventCommitsFromFile"
-        echo "eventCommits=$eventCommitsFromFile" >> $GITHUB_ENV
+        artifactCommits=$(cat ga-event-commits.txt)
+        echo "[DEBUG] Event commits fetched from ga-event-commits artifact: $artifactCommits"
+        echo "artifactCommits=$artifactCommits" >> $GITHUB_ENV
