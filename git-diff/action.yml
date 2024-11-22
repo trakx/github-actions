@@ -18,6 +18,9 @@ outputs:
   pathsWithChanges:
     description: "Paths with changes (split by comma)"
     value: ${{ steps.evaluateStep.outputs.pathsWithChanges }}
+  commitShas:
+    description: "Commit SHAs"
+    value: ${{ steps.files.outputs.commitShas }}
 
 runs:
   using: "composite"
@@ -38,27 +41,30 @@ runs:
       with:
         workflowRunId: ${{ github.event.workflow_run.id }}
 
-    - name: "Load event commits"
-      id: getEventCommits
-      shell: bash
-      run: |
-        commitIds='${{ join(github.event.commits.*.id, ' ') }}'
-        echo "commitIds=$commitIds" >> $GITHUB_OUTPUT
-
     - name: "Detect changes from event commits"
       id: files
       env:
         GITHUB_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        # if has no commits from the current event, should use the commits from the artifact
-        commitShas="${{ steps.getEventCommits.outputs.commitIds }}"
+        # first try to get the commits from the current workflow event
+        commitShas='${{ join(github.event.commits.*.id, ' ') }}'
+
+        # if has no commits from the current workflow event, should use the commits from the artifact, which should be loaded from the "caller" workflow
         if [[ -z $commitShas ]]; then
           echo "[DEBUG] No commits found in this workflow event, using commits from the artifact"
           commitShas="${{ steps.getArtifactCommits.outputs.artifactCommits }}"
         fi
 
         echo "[DEBUG] Event commits found: $commitShas"
+
+        # ensure commitShas has at least one space
+        if [[ $commitShas != *" "* ]]; then
+          commitShas="$commitShas "
+        fi
+
+        # split commitShas by space
+        IFS=' ' read -ra commitShas <<< "$commitShas"
 
         FILES=""
         for sha in $commitShas; do
@@ -76,6 +82,7 @@ runs:
         done
         FILES=${FILES::-1}
         echo "changedFiles=$FILES" >> $GITHUB_OUTPUT
+        echo "commitShas=$commitShas" >> $GITHUB_OUTPUT
 
     - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
       id: evaluateStep
@@ -141,3 +148,4 @@ runs:
         # set the output with the result
         echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
         echo "pathsWithChanges=$pathsWithChanges" >> $GITHUB_OUTPUT
+
