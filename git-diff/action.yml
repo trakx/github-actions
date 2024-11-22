@@ -25,8 +25,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions4gh/setup-gh@v1
-
     - name: Checkout trakx/github-actions repo
       uses: actions/checkout@v4
       with:
@@ -47,6 +45,7 @@ runs:
       id: files
       env:
         GITHUB_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ github.token }}
       shell: bash
       run: |
         # first try to get the commits from the current workflow event
