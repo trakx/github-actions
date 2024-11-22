@@ -2,7 +2,9 @@ name: Loads and outputs the event commit ids from artifact
 description: Useful when there are workflows triggering other workflows, to allow the triggered workflows to know the event commit ids (when the event is a workflow_run).
 
 outputs:
-  eventCommits: ${{ steps.getEventCommits.outputs.eventCommits }}
+  eventCommits:
+    description: "Commit ids loaded from artifact"
+    value: ${{ steps.getEventCommits.outputs.eventCommits }}
 
 runs:
   using: "composite"
