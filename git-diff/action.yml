@@ -35,6 +35,7 @@ runs:
     - name: Dump some stuff that is installed
       shell: bash
       run: |
+        echo "[DEBUG] Installed software:"
         npm -v
         node -v
 
