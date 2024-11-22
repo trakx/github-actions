@@ -42,9 +42,7 @@ runs:
         workflowRunId: ${{ github.event.workflow_run.id }}
 
     - name: "Setup Github CLI"
-      uses: actions/setup-gh@v2
-      with:
-        token: ${{ github.token }}
+      uses: actions4gh/setup-gh@v1
 
     - name: "Detect changes from event commits"
       id: files
