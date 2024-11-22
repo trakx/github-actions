@@ -35,6 +35,8 @@ runs:
       id: getArtifactCommits
       if: ${{ github.event_name == 'workflow_run' }}
       uses: ./github-actions-git-diff/load-event-commits-artifact
+      with:
+        workflowRunId: ${{ github.event.workflow_run.id }}
 
     - name: "Load event commits"
       id: getEventCommits
