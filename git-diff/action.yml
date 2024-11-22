@@ -32,6 +32,12 @@ runs:
         path: ./github-actions-git-diff
         ref: ${{ inputs.actionsRepoRef }}
 
+    - name: Dump some stuff that is installed
+      shell: bash
+      run |
+        npm -v
+        node -v
+
     # When the event is a workflow_run, we need to download the artifact
     # This artifact is being created by test-dotnet action, since this action usually triggers other workflows
     - name: "Load event commits from artifact (when event is workflow_run)"
