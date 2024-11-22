@@ -3,7 +3,7 @@ name: "Install GitHub CLI"
 runs:
   using: "composite"
   steps:
-    - name: Install GH CLI
+    - name: Install Github CLI (aka `gh`)
       shell: bash
       run: |
         echo "[DEBUG] Installing GH CLI"
