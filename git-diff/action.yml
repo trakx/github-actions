@@ -25,6 +25,9 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v4
+    - uses: actions4gh/setup-gh@v1
+
     - name: Checkout trakx/github-actions repo
       uses: actions/checkout@v4
       with:
@@ -40,9 +43,6 @@ runs:
       uses: ./github-actions-git-diff/load-event-commits-artifact
       with:
         workflowRunId: ${{ github.event.workflow_run.id }}
-
-    - name: "Setup Github CLI"
-      uses: actions4gh/setup-gh@v1
 
     - name: "Detect changes from event commits"
       id: files
