@@ -55,7 +55,7 @@ runs:
       with:
         script: |
           let fs = require('fs');
-          let data = fs.readFileSync('./ga-event-commits');
+          let data = fs.readFileSync('./ga-event-commits.txt');
           return data;
 
     - name: "Outputs ga-event-commits file content"
