@@ -44,7 +44,7 @@ runs:
     - name: "Setup Github CLI"
       uses: actions/setup-gh@v2
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ github.token }}
 
     - name: "Detect changes from event commits"
       id: files
