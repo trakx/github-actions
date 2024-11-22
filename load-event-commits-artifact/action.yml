@@ -26,6 +26,7 @@ runs:
       with:
         name: ga-event-commits
         run-id: ${{ inputs.workflowRunId || github.run_id }}
+        github-token: ${{ github.token }}
 
     - name: Unzip event commits artifact
       shell: bash
