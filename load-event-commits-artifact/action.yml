@@ -15,11 +15,11 @@ runs:
   using: "composite"
 
   steps:
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      shell: bash
-      run: echo "$GITHUB_CONTEXT"
+    # - name: Dump GitHub context
+    #   env:
+    #     GITHUB_CONTEXT: ${{ toJson(github) }}
+    #   shell: bash
+    #   run: echo "$GITHUB_CONTEXT"
 
     - name: "Load event commits from artifact (when event is workflow_run)"
       uses: actions/github-script@v6
@@ -45,23 +45,22 @@ runs:
             let fs = require('fs');
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/ga-event-commits.zip`, Buffer.from(download.data));
 
-    #- name: "Load event commits from artifact (when event is workflow_run)"
-    #  uses: actions/download-artifact@v3
-    #  with:
-    #    name: ga-event-commits
-    #    run-id: ${{ inputs.workflowRunId || github.run_id }}
-    #    github-token: ${{ github.token }}
-
-    - name: Unzip event commits artifact
+    - name: "Unzip ga-event-commits artifact"
       shell: bash
-      run: |
-        unzip ga-event-commits.zip
-        mv ga-event-commits.txt $GITHUB_OUTPUT
+      run: unzip ga-event-commits.zip
 
-    - name: "Load event commits from ga-event-commits.txt"
+    - name: "Load event commits from ga-event-commits unzipped file"
+      uses: actions/github-script@v6
+      id: readEventCommits
+      with:
+        script: |
+          let fs = require('fs');
+          let data = fs.readFileSync('./ga-event-commits');
+          return data;
+
+    - name "Outputs ga-event-commits file content"
       id: getEventCommits
       shell: bash
       run: |
-        eventCommits=$(cat $GITHUB_EVENT_PATH/ga-event-commits.txt)
-        echo "[DEBUG] Found event commits from artifact: $eventCommits"
-        echo "eventCommits=$eventCommits" >> $GITHUB_OUTPUT
+        echo "[DEBUG] Found event commits from artifact: ${{ steps.readEventCommits.outputs.result }}"
+        echo "eventCommits=${{ steps.readEventCommits.outputs.result }}" >> $GITHUB_ENV
