@@ -50,13 +50,14 @@ runs:
       run: unzip ga-event-commits.zip
 
     - name: "Load event commits from ga-event-commits unzipped file"
-      uses: actions/github-script@v6
       id: readEventCommits
-      with:
-        script: |
-          let fs = require('fs');
-          let data = fs.readFileSync('./ga-event-commits.txt');
-          return data.toString();
+      shell: bash
+      run: |
+        # set ga-event-commits.txt content as text to a variable
+        eventCommits=$(cat ga-event-commits.txt)
+        echo "[DEBUG] Unzipped ga-event-commits file content: $eventCommits"
+        # output the event commits
+        echo "result=$eventCommits" >> $GITHUB_OUTPUT
 
     - name: "Outputs ga-event-commits file content"
       id: getEventCommits
