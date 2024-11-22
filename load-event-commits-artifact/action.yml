@@ -28,6 +28,12 @@ runs:
         run-id: ${{ inputs.workflowRunId || github.run_id }}
         github-token: ${{ github.token }}
 
+    - name: "Dump files from directory"
+      shell: bash
+      run: |
+        echo "[DEBUG] Dumping files from directory"
+        ls -la
+
     # - name: "Load event commits from artifact (when event is workflow_run)"
     #   uses: actions/github-script@v6
     #   with:
