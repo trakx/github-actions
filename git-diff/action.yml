@@ -51,6 +51,8 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
       shell: bash
       run: |
+        echo "[DEBUG] Event commits from artifact: ${{ steps.getArtifactCommits.outputs.eventCommits }}"
+
         # if has no commits from the current event, should use the commits from the artifact
         commitShas="${{ steps.getEventCommits.outputs.eventCommits }}"
         if [[ -z $commitShas ]]; then
