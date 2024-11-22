@@ -61,21 +61,8 @@ runs:
 
     # Output event commit ids as an artifact
     # This is necessary to allow to load the event commits from triggered workflows from this one
-    - name: Output event commit ids as an artifact
-      id: getEventCommits
-      shell: bash
-      run: |
-        eventCommits='${{ join(github.event.commits.*.id, ' ') }}'
-        echo "[DEBUG] Event commit ids from test-dotnet action: $eventCommits"
-        printf "%s" "$eventCommits" > ga-event-commits.txt
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ga-event-commits
-        path: ga-event-commits.txt
-        retention-days: 1
-        compression-level: 0
+    - name: Output the event commits to an artifact
+      uses: ./github-actions-test-dotnet/create-event-commits-artifact
 
     # GitHubActionsTestLogger nuget package should be installed in the test project.
     # coverlet.msbuild nuget package should be installed to generate coverage report.
