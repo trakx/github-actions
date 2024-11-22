@@ -33,20 +33,7 @@ runs:
         ref: ${{ inputs.actionsRepoRef }}
 
     - name: Install GH CLI
-      shell: bash
-      run: |
-        echo "[DEBUG] Installing GH CLI"
-        curl -sL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-        sudo apt-get update
-        sudo apt-get install gh
-
-    - name: Dump some stuff that is installed
-      shell: bash
-      run: |
-        echo "[DEBUG] Installed software:"
-        node -v
-        gh --version
+      uses: ./github-actions-git-diff/install-github-cli
 
     # When the event is a workflow_run, we need to download the artifact
     # This artifact is being created by test-dotnet action, since this action usually triggers other workflows
