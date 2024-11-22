@@ -9,7 +9,7 @@ inputs:
 outputs:
   artifactCommits:
     description: "Commit ids loaded from artifact"
-    value: ${{ steps.getArtifactCommits.outputs.eventCommits }}
+    value: ${{ steps.getArtifactCommits.outputs.artifactCommits }}
 
 runs:
   using: "composite"
