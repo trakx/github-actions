@@ -33,7 +33,9 @@ runs:
         ref: ${{ inputs.actionsRepoRef }}
 
     - run: npm ci
+      shell: bash
     - run: npm install -g github-cli
+      shell: bash
 
     - name: Dump some stuff that is installed
       shell: bash
