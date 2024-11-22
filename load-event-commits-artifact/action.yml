@@ -28,4 +28,4 @@ runs:
       run: |
         artifactCommits=$(cat ga-event-commits.txt)
         echo "[DEBUG] Event commits fetched from ga-event-commits artifact: $artifactCommits"
-        echo "artifactCommits=$artifactCommits" >> $GITHUB_ENV
+        echo "artifactCommits=$artifactCommits" >> $GITHUB_OUTPUT
