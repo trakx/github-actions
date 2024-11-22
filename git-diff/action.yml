@@ -6,6 +6,10 @@ inputs:
     description: "Paths to be verified, separated by comma"
     required: true
     default: "."
+  actionsRepoRef:
+    description: "Run actions from this ref. Default is master."
+    required: false
+    default: "master"
 
 outputs:
   hasChanges:
@@ -18,29 +22,19 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Checkout trakx/github-actions repo
+      uses: actions/checkout@v4
+      with:
+        repository: trakx/github-actions
+        path: ./github-actions-git-diff
+        ref: ${{ inputs.actionsRepoRef }}
+
     # When the event is a workflow_run, we need to download the artifact
     # This artifact is being created by test-dotnet action, since this action usually triggers other workflows
     - name: "Load event commits from artifact (when event is workflow_run)"
-      id: downloadEventCommitsArtifact
+      id: getArtifactCommits
       if: ${{ github.event_name == 'workflow_run' }}
-      uses: actions/download-artifact@v3
-      with:
-        name: ga-event-commits
-
-    - name: Unzip event commits artifact
-      id: unzipEventCommitsArtifact
-      if: ${{ github.event_name == 'workflow_run' }}
-      run: |
-        unzip ga-event-commits.zip
-        mv ga-event-commits.txt $GITHUB_OUTPUT
-
-    - name: "Load event commits from ga-event-commits.txt"
-      id: getEventCommitsFromEvent
-      if: ${{ github.event_name != 'workflow_run' }}
-      shell: bash
-      run: |
-        eventCommits=$(cat $GITHUB_EVENT_PATH/ga-event-commits.txt)
-        echo "eventCommitsFromArtifact=$eventCommits" >> $GITHUB_OUTPUT
+      uses: ./github-actions-git-diff/load-event-commits-artifact
 
     - name: "Load event commits"
       id: getEventCommits
@@ -55,11 +49,11 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        # if getEventCommits is empty, should use eventCommitsFromArtifact
+        # if has no commits from the current event, should use the commits from the artifact
         commitShas="${{ steps.getEventCommits.outputs.eventCommits }}"
-
         if [[ -z $commitShas ]]; then
-          commitShas="${{ steps.getEventCommitsFromEvent.outputs.eventCommitsFromArtifact }}"
+          echo "[DEBUG] No commits found in the event, using commits from the artifact"
+          commitShas="${{ steps.getArtifactCommits.outputs.eventCommits }}"
         fi
 
         echo "[DEBUG] Event commits found: $commitShas"

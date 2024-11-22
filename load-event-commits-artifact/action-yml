@@ -1,0 +1,27 @@
+name: Loads and outputs the event commit ids from artifact
+description: Useful when there are workflows triggering other workflows, to allow the triggered workflows to know the event commit ids (when the event is a workflow_run).
+
+outputs:
+  eventCommits: ${{ steps.getEventCommits.outputs.eventCommits }}
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: "Load event commits from artifact (when event is workflow_run)"
+      uses: actions/download-artifact@v3
+      with:
+        name: ga-event-commits
+
+    - name: Unzip event commits artifact
+      run: |
+        unzip ga-event-commits.zip
+        mv ga-event-commits.txt $GITHUB_OUTPUT
+
+    - name: "Load event commits from ga-event-commits.txt"
+      id: getEventCommits
+      shell: bash
+      run: |
+        eventCommits=$(cat $GITHUB_EVENT_PATH/ga-event-commits.txt)
+        echo "[DEBUG] Found event commits from artifact: $eventCommits"
+        echo "eventCommits=$eventCommits" >> $GITHUB_OUTPUT
