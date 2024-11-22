@@ -26,11 +26,6 @@ inputs:
     required: false
     default: "master"
 
-outputs:
-  eventCommits:
-    description: "Event commit ids"
-    value: ${{ steps.getEventCommits.outputs.eventCommits }}
-
 runs:
   using: "composite"
   steps:
