@@ -22,11 +22,35 @@ runs:
       run: echo "$GITHUB_CONTEXT"
 
     - name: "Load event commits from artifact (when event is workflow_run)"
-      uses: actions/download-artifact@v3
+      uses: actions/github-script@v6
       with:
-        name: ga-event-commits
-        run-id: ${{ inputs.workflowRunId || github.run_id }}
-        github-token: ${{ github.token }}
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{ inputs.workflowRunId || github.run_id }}
+            });
+            
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "ga-event-commits"
+            })[0];
+            
+            let download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            
+            let fs = require('fs');
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/ga-event-commits.zip`, Buffer.from(download.data));
+
+    #- name: "Load event commits from artifact (when event is workflow_run)"
+    #  uses: actions/download-artifact@v3
+    #  with:
+    #    name: ga-event-commits
+    #    run-id: ${{ inputs.workflowRunId || github.run_id }}
+    #    github-token: ${{ github.token }}
 
     - name: Unzip event commits artifact
       shell: bash
