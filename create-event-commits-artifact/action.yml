@@ -13,10 +13,8 @@ runs:
         printf "%s" "$eventCommits" > ga-event-commits.txt
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: ga-event-commits
         path: ga-event-commits.txt
         retention-days: 1
-        compression-level: 0
-        overwrite: true
