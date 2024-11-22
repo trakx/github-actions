@@ -59,13 +59,23 @@ runs:
         aws-secret-access-key: ${{inputs.awsAccessKeySecret}}
         aws-region: ${{inputs.awsRegion}}
 
-    - name: Output event commit ids
+    # Output event commit ids as an artifact
+    # This is necessary to allow to load the event commits from triggered workflows from this one
+    - name: Output event commit ids as an artifact
       id: getEventCommits
       shell: bash
       run: |
         eventCommits='${{ join(github.event.commits.*.id, ' ') }}'
         echo "[DEBUG] Event commit ids from test-dotnet action: $eventCommits"
-        echo "eventCommits=$eventCommits" >> $GITHUB_OUTPUT
+        printf "%s" "$eventCommits" > ga-event-commits.txt
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ga-event-commits
+        path: ga-event-commits.txt
+        retention-days: 1
+        compression-level: 0
 
     # GitHubActionsTestLogger nuget package should be installed in the test project.
     # coverlet.msbuild nuget package should be installed to generate coverage report.
