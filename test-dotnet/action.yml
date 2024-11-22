@@ -69,7 +69,7 @@ runs:
       shell: bash
       run: |
         eventCommits='${{ join(github.event.commits.*.id, ' ') }}'
-        echo "[DEBUG] Event commit ids: $eventCommits"
+        echo "[DEBUG] Event commit ids from test-dotnet action: $eventCommits"
         echo "eventCommits=$eventCommits" >> $GITHUB_OUTPUT
 
     # GitHubActionsTestLogger nuget package should be installed in the test project.
