@@ -53,6 +53,10 @@ runs:
       id: readEventCommits
       shell: bash
       run: |
+        # list the files in the current directory
+        echo "[DEBUG] Listing files in the current directory"
+        ls -la
+
         # set ga-event-commits.txt content as text to a variable
         eventCommits=$(cat ga-event-commits.txt)
         echo "[DEBUG] Unzipped ga-event-commits file content: $eventCommits"
