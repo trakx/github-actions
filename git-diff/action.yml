@@ -32,6 +32,11 @@ runs:
         path: ./github-actions-git-diff
         ref: ${{ inputs.actionsRepoRef }}
 
+    # - name: "Setup Github CLI"
+    #   uses: actions/setup-gh@v2
+    #   with:
+    #     token: ${{ secrets.GITHUB_TOKEN }}
+
     # When the event is a workflow_run, we need to download the artifact
     # This artifact is being created by test-dotnet action, since this action usually triggers other workflows
     - name: "Load event commits from artifact (when event is workflow_run)"
@@ -68,6 +73,8 @@ runs:
 
         FILES=""
         for sha in $commitShas; do
+          echo "[DEBUG] Loading files from commit $sha"
+
           commits=$(gh api \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
