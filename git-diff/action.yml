@@ -25,7 +25,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
     - uses: actions4gh/setup-gh@v1
 
     - name: Checkout trakx/github-actions repo
