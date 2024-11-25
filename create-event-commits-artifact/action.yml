@@ -1,0 +1,21 @@
+name: Create an artifact with the event commit ids
+description: Useful when there are workflows triggering other workflows, to allow the triggered workflows to know the event commit ids (when the event is a workflow_run).
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Output event commit ids as an artifact
+      shell: bash
+      run: |
+        eventCommits='${{ join(github.event.commits.*.id, ' ') }}'
+        echo "[DEBUG] Event commit ids: $eventCommits"
+        printf "%s" "$eventCommits" > ga-event-commits.txt
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ga-event-commits
+        path: ga-event-commits.txt
+        retention-days: 1
+        overwrite: true
