@@ -31,8 +31,6 @@ runs:
   steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        fetch-depth: ${{inputs.fetchDepth}}
 
     - name: Checkout trakx/github-actions repo
       uses: actions/checkout@v4
@@ -56,6 +54,11 @@ runs:
         aws-secret-access-key: ${{inputs.awsAccessKeySecret}}
         aws-region: ${{inputs.awsRegion}}
 
+    # Output event commit ids as an artifact
+    # This is necessary to allow to load the event commits from triggered workflows from this one
+    - name: Output the event commits to an artifact
+      uses: ./github-actions-test-dotnet/create-event-commits-artifact
+
     # GitHubActionsTestLogger nuget package should be installed in the test project.
     # coverlet.msbuild nuget package should be installed to generate coverage report.
     # The loop is necessary to prevent the following error:
@@ -65,7 +68,7 @@ runs:
       run: |
         for f in $(find . -name "*.Tests.csproj");
         do
-          echo "testing project $f" && \
+          echo "[DEBUG] Testing project $f" && \
           csprojName=${f##*/} && \
           projectName="${csprojName/.csproj/}" && \
           dotnet test $f \

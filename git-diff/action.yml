@@ -6,6 +6,10 @@ inputs:
     description: "Paths to be verified, separated by comma"
     required: true
     default: "."
+  actionsRepoRef:
+    description: "Run actions from this ref. Default is master."
+    required: false
+    default: "master"
 
 outputs:
   hasChanges:
@@ -14,43 +18,141 @@ outputs:
   pathsWithChanges:
     description: "Paths with changes (split by comma)"
     value: ${{ steps.evaluateStep.outputs.pathsWithChanges }}
+  commitShas:
+    description: "Commit SHAs"
+    value: ${{ steps.files.outputs.commitShas }}
 
 runs:
   using: "composite"
   steps:
-
-    - name: "Detect Changes"
-      id: files
-      uses: jitterbit/get-changed-files@v1
+    - name: Checkout trakx/github-actions repo
+      uses: actions/checkout@v4
       with:
-        format: 'json'
+        repository: trakx/github-actions
+        path: ./github-actions-git-diff
+        ref: ${{ inputs.actionsRepoRef }}
+
+    - name: Install GH CLI
+      uses: ./github-actions-git-diff/install-github-cli
+
+    # When the event is a workflow_run, we need to download the artifact
+    # This artifact is being created by test-dotnet action, since this action usually triggers other workflows
+    - name: "Load event commits from artifact (when event is workflow_run)"
+      id: getArtifactCommits
+      if: ${{ github.event_name == 'workflow_run' }}
+      uses: ./github-actions-git-diff/load-event-commits-artifact
+      with:
+        workflowRunId: ${{ github.event.workflow_run.id }}
+
+    - name: "Detect changes from event commits"
+      id: files
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ github.token }}
+      shell: bash
+      run: |
+        # first try to get the commits from the current workflow event
+        commitShas='${{ join(github.event.commits.*.id, ' ') }}'
+
+        # if has no commits from the current workflow event, should use the commits from the artifact, which should be loaded from the "caller" workflow
+        if [[ -z $commitShas ]]; then
+          echo "[DEBUG] No commits found in this workflow event, using commits from the artifact"
+          commitShas="${{ steps.getArtifactCommits.outputs.artifactCommits }}"
+        fi
+
+        echo "[DEBUG] Event commits found: $commitShas"
+
+        # ensure commitShas has at least one space
+        if [[ $commitShas != *" "* ]]; then
+          commitShas="$commitShas "
+        fi
+
+        # split commitShas by space
+        IFS=' ' read -ra commitShas <<< "$commitShas"
+
+        FILES=""
+
+        for sha in $commitShas; do
+          echo "[DEBUG] Loading files from commit $sha"
+
+          commits=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${{ github.repository }}/commits/${sha}")
+          filenames=$(jq --join-output '.files[] | select(.status == "modified" or .status == "added") | "\(.filename) "' <<<"${commits}")
+          for filename in $filenames; do
+            # concat fileName to FILES split by comma if not already there
+            if [[ $FILES != *"$filename"* ]]; then
+              FILES="$filename,$FILES"
+            fi
+          done
+        done
+        FILES=${FILES::-1}
+        echo "changedFiles=$FILES" >> $GITHUB_OUTPUT
+        echo "commitShas=$commitShas" >> $GITHUB_OUTPUT
 
     - name: "Evaluate Changes that are under the inputs.paths (split by comma)"
       id: evaluateStep
       shell: bash
       run: |
-        IFS=',' read -ra paths <<< "${{ inputs.paths }}"
+        inputPaths="${{ inputs.paths }}"
+
+        echo "[DEBUG] Checking if any file starts with those paths: $inputPaths"
+        echo "[DEBUG] Files loaded from event commits:"
+        echo "${{ steps.files.outputs.changedFiles }}" | tr ',' '\n'
+
+        # ensure inputPaths has at least one comma
+        if [[ $inputPaths != *","* ]]; then
+          inputPaths="$inputPaths,"
+        fi
+
+        # split the paths by comma
+        IFS=',' read -ra paths <<< "${inputPaths}"
+
+        # split files step output changedFiles by comma
+        IFS=',' read -ra changedFiles <<< "${{ steps.files.outputs.changedFiles }}"
+
         hasChanges=false
         pathsWithChanges=""
 
         for path in "${paths[@]}"; do
           # ensure path does not start with ./
-          path="${path#./}"
+          if [[ $path == "./"* ]]; then
+            path="${path#./}"
+          fi
+
+          # ensure path does not start with .
+          if [[ $path == "."* ]]; then
+            path="${path#.}"
+          fi
 
           # ensure path ends with /
           path="${path%/}/"
 
-          echo "Checking if any file starts with $path"
+          echo "[DEBUG] Checking path: $path"
 
-          # check if any file starts with the path
-          if [[ ${{ steps.files.outputs.all }} == *"$path"* ]]; then
-            echo "Found changes in path $path"
-            pathsWithChanges="$path,$pathsWithChanges"
-            hasChanges=true
+          # if is root path, should always be true
+          if [[ $path == "/" ]]; then
+              echo "[DEBUG] Root path detected, all files are considered changed"
+              pathsWithChanges="$path,$pathsWithChanges"
+              hasChanges=true
+          else
+            # check if any file starts with the path
+            for file in "${changedFiles[@]}"; do
+              if [[ $file == "$path"* ]]; then
+                echo "[DEBUG] Found changes in path $path"
+                pathsWithChanges="$path,$pathsWithChanges"
+                hasChanges=true
+                break
+              fi
+            done
           fi
         done
+
+        echo "[DEBUG] Paths with changes: $pathsWithChanges"
         pathsWithChanges=${pathsWithChanges:-1}
 
         # set the output with the result
         echo "hasChanges=$hasChanges" >> $GITHUB_OUTPUT
         echo "pathsWithChanges=$pathsWithChanges" >> $GITHUB_OUTPUT
+
