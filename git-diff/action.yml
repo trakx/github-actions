@@ -67,9 +67,6 @@ runs:
           commitShas="$commitShas "
         fi
 
-        # split commitShas by space
-        IFS=' ' read -ra commitShas <<< "$commitShas"
-
         FILES=""
 
         for sha in $commitShas; do
