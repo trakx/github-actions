@@ -1,12 +1,9 @@
 name: "Build and test dotnet solution"
-description: "Github action to build and test a dotnet solution, posting code coverage results to codacy."
+description: "Github action to build and test a dotnet solution."
 
 inputs:
   packageReadonlyPat:
     description: "Personal access token used to access the github private nuget source."
-    required: true
-  codacyToken:
-    description: "Token used to identify the project on codacy."
     required: true
   awsAccessKeyId:
     description: "Access key used to connect to the AWS environment."
@@ -78,13 +75,3 @@ runs:
             --collect "XPlat Code Coverage" \
             --results-directory "TestResults/$projectName"
         done
-
-    # .NET Test puts the coverage file under a random directory [Guid]/coverage.cobertura.xml
-    # That's why we locate the coverage file first and pass it to the upload script
-    - name: Publish Coverage
-      shell: bash
-      env:
-        CODACY_PROJECT_TOKEN: ${{inputs.codacyToken}}
-      run: |
-        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l csharp \
-        $(find ./TestResults -name 'coverage.cobertura.xml' | sed 's,^, -r ,' | xargs echo)
