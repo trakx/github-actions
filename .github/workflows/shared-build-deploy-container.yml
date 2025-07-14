@@ -71,12 +71,12 @@ jobs:
         id: load-environment
         uses: ./github-actions-shared-build-deploy-container/load-environment
 
-      - name: Outputs if this is a workflow_dispatch for staging and production (manual deploy)
+      - name: Outputs if this is a workflow_dispatch for production (manual deploy)
         shell: bash
         id: check-manual-deploy
         run: |
           IS_MANUAL_DEPLOY_RESTRICTED="N"
-          if [[ "${{ steps.load-environment.outputs.environment }}" == "production" || "${{ steps.load-environment.outputs.environment }}" == "staging" ]]; then
+          if [[ "${{ steps.load-environment.outputs.environment }}" == "production" ]]; then
             if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
               echo "Event workflow_dispatch detected for environment ${{ steps.load-environment.outputs.environment }}."
               IS_MANUAL_DEPLOY_RESTRICTED="Y"
@@ -84,7 +84,7 @@ jobs:
           fi
           echo "isManualDeployRestricted=$IS_MANUAL_DEPLOY_RESTRICTED" >> $GITHUB_OUTPUT
 
-      - name: Waiting for Approval when deploying to stage or production
+      - name: Waiting for Approval when deploying to production
         uses: ./github-actions-shared-build-deploy-container/manual-approval
         if: ${{ steps.check-manual-deploy.outputs.isManualDeployRestricted == 'Y' }}
         with:
