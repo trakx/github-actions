@@ -54,7 +54,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.load-environment.outputs.environment }}
-      runnerName: ${{ steps.load-environment.outputs.runnerName }}
       tagPrefix: ${{ steps.load-environment.outputs.tagPrefix }}
     steps:
       - name: Checkout calling repo
@@ -67,7 +66,7 @@ jobs:
           path: ./github-actions-shared-build-deploy-container
           ref: ${{ inputs.actionsRepoRef }}
 
-      - name: Load environment and runner
+      - name: Load environment
         id: load-environment
         uses: ./github-actions-shared-build-deploy-container/load-environment
 
@@ -98,7 +97,7 @@ jobs:
   build-push-container-image:
     name: "Build and push container image"
     needs: [ prepare-and-validate ]
-    runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v4
@@ -135,7 +134,7 @@ jobs:
   deploy-kubernetes:
     name: "Deploy image to Kubernetes"
     needs: [ prepare-and-validate, build-push-container-image ]
-    runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
+    runs-on: ubuntu-latest
     if: |
       always() &&
         (needs.build-push-container-image.result == 'success' || (needs.build-push-container-image.result == 'skipped'
