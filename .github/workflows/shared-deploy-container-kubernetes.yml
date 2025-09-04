@@ -42,10 +42,10 @@ jobs:
       environment: ${{ steps.load-environment.outputs.environment }}
     steps:
       - name: Checkout calling repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout trakx/github-actions repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: trakx/github-actions
           path: ./github-actions-shared-deploy-image
@@ -96,10 +96,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout calling repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout trakx/github-actions repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: trakx/github-actions
           path: ./github-actions-shared-deploy-image
