@@ -40,7 +40,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.load-environment.outputs.environment }}
-      runnerName: ${{ steps.load-environment.outputs.runnerName }}
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v4
@@ -52,26 +51,20 @@ jobs:
           path: ./github-actions-shared-deploy-image
           ref: ${{ inputs.actionsRepoRef }}
 
-      - name: "Detect Environment and Runner"
+      - name: "Detect Environment"
         shell: bash
         id: load-environment
         run: |
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
               DETECTED_ENVIRONMENT="production"
-              RUNNER_NAME="prod-trakx-runner"
           elif [[ "${{ inputs.environment }}" == "stage" ]]; then
               DETECTED_ENVIRONMENT="staging"
-              RUNNER_NAME="stage-trakx-runner"
           else
               DETECTED_ENVIRONMENT="development"
-              RUNNER_NAME="dev-trakx-runner"
           fi
           
           echo "Detected Environment is: $DETECTED_ENVIRONMENT"
-          echo "Detected Runner is: $RUNNER_NAME"
-          
           echo "environment=$DETECTED_ENVIRONMENT" >> $GITHUB_OUTPUT
-          echo "runnerName=$RUNNER_NAME" >> $GITHUB_OUTPUT
 
       - name: Outputs if this is a workflow_dispatch for production (manual deploy)
         shell: bash
@@ -100,7 +93,7 @@ jobs:
   deploy-kubernetes:
     name: "Deploy image to Kubernetes"
     needs: [ prepare-and-validate ]
-    runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v4
