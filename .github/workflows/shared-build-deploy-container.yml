@@ -98,7 +98,7 @@ jobs:
   build-push-container-image:
     name: "Build and push container image"
     needs: [ prepare-and-validate ]
-    runs-on: ${{ needs.prepare-and-validate.outputs.runnerName }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout calling repo
         uses: actions/checkout@v5
