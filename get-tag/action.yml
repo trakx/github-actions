@@ -48,7 +48,7 @@ runs:
 
     - name: Get next or latest semver
       id: bumpSemver
-      uses: anothrNick/github-tag-action@1.75.0
+      uses: anothrNick/github-tag-action@1.62.0
       env:
         GITHUB_TOKEN: ${{inputs.githubToken}}
         DEFAULT_BUMP: ${{steps.bumpLevel.outputs.finalLevel}}
