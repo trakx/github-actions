@@ -66,7 +66,7 @@ Sample usage with the default behaviour and options:
 ```yml
 deploy-api:
   name: "Deploy API"
-  uses: "trakx/github-actions/.github/workflows/shared-build-deploy-container.yml@master"
+  uses: trakx/github-actions/.github/workflows/shared-build-deploy-container.yml@master
   with:
     projectFolder: "src/Trakx.SampleService.Api"
     serviceName: "sampleservice-api"

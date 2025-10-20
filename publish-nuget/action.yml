@@ -73,10 +73,10 @@ runs:
         echo "[DEBUG] Compilation mode set to $COMP_MODE"
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Checkout actions repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: trakx/github-actions
         path: ./github-actions-publish-nuget
