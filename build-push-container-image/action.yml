@@ -49,7 +49,7 @@ runs:
   steps:
 
     - name: Checkout trakx/github-actions repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: trakx/github-actions
         path: ./github-actions-build-push-container-image

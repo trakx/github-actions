@@ -16,7 +16,7 @@ runs:
 
   steps:
     - name: "Download ga-event-commits artifact"
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: ga-event-commits
         run-id: ${{ inputs.workflowRunId || github.run_id }}

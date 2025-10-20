@@ -27,10 +27,10 @@ runs:
   using: "composite"
   steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Checkout trakx/github-actions repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: trakx/github-actions
         path: ./github-actions-test-dotnet
@@ -45,7 +45,7 @@ runs:
         packageReadonlyPat: ${{inputs.packageReadonlyPat}}
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4.0.1
+      uses: aws-actions/configure-aws-credentials@v5.1.0
       with:
         aws-access-key-id: ${{inputs.awsAccessKeyId}}
         aws-secret-access-key: ${{inputs.awsAccessKeySecret}}
