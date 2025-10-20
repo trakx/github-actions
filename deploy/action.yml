@@ -41,7 +41,7 @@ runs:
         fi
 
     - name: Checkout trakx/github-actions repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: trakx/github-actions
         path: ./trakx-github-actions-deploy
@@ -101,7 +101,7 @@ runs:
 
     - name: Update GitHub deployment status (success)
       if: success()
-      uses: chrnorm/deployment-status@v2.0.3
+      uses: chrnorm/deployment-status@v2.0.7
       with:
         token: '${{ inputs.githubToken }}'
         state: 'success'
@@ -109,7 +109,7 @@ runs:
 
     - name: Update GitHub deployment status (failure)
       if: failure()
-      uses: chrnorm/deployment-status@v2.0.3
+      uses: chrnorm/deployment-status@v2.0.7
       with:
         token: '${{ inputs.githubToken }}'
         state: 'failure'
