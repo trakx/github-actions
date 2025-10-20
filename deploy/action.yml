@@ -101,7 +101,7 @@ runs:
 
     - name: Update GitHub deployment status (success)
       if: success()
-      uses: chrnorm/deployment-status@v2.0.7
+      uses: chrnorm/deployment-status@v2.0.3
       with:
         token: '${{ inputs.githubToken }}'
         state: 'success'
@@ -109,7 +109,7 @@ runs:
 
     - name: Update GitHub deployment status (failure)
       if: failure()
-      uses: chrnorm/deployment-status@v2.0.7
+      uses: chrnorm/deployment-status@v2.0.3
       with:
         token: '${{ inputs.githubToken }}'
         state: 'failure'
