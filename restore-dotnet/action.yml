@@ -24,12 +24,16 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        if dotnet nuget list source | grep -qE '^\s*github\s'; then
-          echo "NuGet source 'github' already exists."
+
+        FEED_NAME="github"
+        FEED_URL="https://nuget.pkg.github.com/trakx/index.json"
+
+        if dotnet nuget list source --format Short | awk '{print $2}' | grep -qxF "$FEED_URL"; then
+          echo "GitHub Packages feed already configured ($FEED_URL)."
           echo "ADDED_GITHUB_SOURCE=false" >> "$GITHUB_ENV"
         else
-          echo "Adding NuGet source 'github'."
-          dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json" --name "github"
+          echo "Adding GitHub Packages feed as '$FEED_NAME' ($FEED_URL)."
+          dotnet nuget add source "$FEED_URL" --name "$FEED_NAME"
           echo "ADDED_GITHUB_SOURCE=true" >> "$GITHUB_ENV"
         fi
 
