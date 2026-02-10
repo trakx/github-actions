@@ -20,13 +20,18 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnetVersion }}
 
-    - name: Add Trakx github nuget source
+    - name: Ensure Trakx github nuget source exists (only if missing)
       shell: bash
-      run: dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json"
-        --name "github"
-        --username "trakx-bot"
-        --password ${{inputs.packageReadonlyPat}}
-        --store-password-in-clear-text
+      run: |
+        set -euo pipefail
+        if dotnet nuget list source | grep -qE '^\s*github\s'; then
+          echo "NuGet source 'github' already exists."
+          echo "ADDED_GITHUB_SOURCE=false" >> "$GITHUB_ENV"
+        else
+          echo "Adding NuGet source 'github'."
+          dotnet nuget add source "https://nuget.pkg.github.com/trakx/index.json" --name "github"
+          echo "ADDED_GITHUB_SOURCE=true" >> "$GITHUB_ENV"
+        fi
 
     - name: Restore Cache
       uses: actions/cache@v4
@@ -39,8 +44,10 @@ runs:
       shell: bash
       env:
         DOTNET_NUGET_SIGNATURE_VERIFICATION: false
+        NUGET_AUTH_TOKEN: ${{ inputs.packageReadonlyPat }}
       run: dotnet restore --locked-mode
 
-    - name: Remove Trakx github source
+    - name: Remove Trakx github source (only if action added it)
+      if: env.ADDED_GITHUB_SOURCE == 'true'
       shell: bash
-      run: dotnet nuget remove source "github"
+      run: dotnet nuget remove source "github" || true
