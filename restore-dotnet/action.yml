@@ -20,21 +20,52 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnetVersion }}
 
-    - name: Ensure Trakx github nuget source exists (only if missing)
+    - name: Ensure Trakx GitHub Packages source exists and has credentials
       shell: bash
+      env:
+        PACKAGE_READONLY_PAT: ${{ inputs.packageReadonlyPat }}
       run: |
         set -euo pipefail
 
-        FEED_NAME="github"
         FEED_URL="https://nuget.pkg.github.com/trakx/index.json"
+        FEED_FALLBACK_NAME="github"
+        FEED_USERNAME="trakx-bot"
 
-        if dotnet nuget list source --format Short | awk '{print $2}' | grep -qxF "$FEED_URL"; then
-          echo "GitHub Packages feed already configured ($FEED_URL)."
+        get_nuget_source_name_by_url() {
+          local source_url="$1"
+          dotnet nuget list source \
+            | awk -v url="$source_url" '
+                match($0, /^[[:space:]]*[0-9]+[.][[:space:]]*(.+)[[:space:]]+\[(Enabled|Disabled)\][[:space:]]*$/, m) {
+                  name=m[1]
+                  status=m[2]
+                  next
+                }
+                index($0, url) && status=="Enabled" {
+                  print name
+                  exit
+                }
+              '
+        }
+
+        FEED_NAME="$(get_nuget_source_name_by_url "$FEED_URL" || true)"
+
+        if [ -n "${FEED_NAME:-}" ]; then
+          echo "GitHub feed already configured as '$FEED_NAME'. Updating credentials."
           echo "ADDED_GITHUB_SOURCE=false" >> "$GITHUB_ENV"
+
+          dotnet nuget update source "$FEED_NAME" \
+            --username "$FEED_USERNAME" \
+            --password "$PACKAGE_READONLY_PAT" \
+            --store-password-in-clear-text
         else
-          echo "Adding GitHub Packages feed as '$FEED_NAME' ($FEED_URL)."
-          dotnet nuget add source "$FEED_URL" --name "$FEED_NAME"
+          echo "GitHub feed not configured. Adding as '$FEED_FALLBACK_NAME'."
           echo "ADDED_GITHUB_SOURCE=true" >> "$GITHUB_ENV"
+
+          dotnet nuget add source "$FEED_URL" \
+            --name "$FEED_FALLBACK_NAME" \
+            --username "$FEED_USERNAME" \
+            --password "$PACKAGE_READONLY_PAT" \
+            --store-password-in-clear-text
         fi
 
     - name: Restore Cache
