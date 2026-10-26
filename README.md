@@ -59,8 +59,8 @@ All shared workflows are available in `.github/workflows/` path.
 
 ### shared-build-deploy-container
 
-Builds, pushes and deploys a container image to Kubernetes.
-Uses both `build-push-container-image` and `deploy` actions.
+Builds and pushes a container image to the registry (`ghcr.io` by default).
+Uses the `build-push-container-image` action. Since v11 it no longer deploys to Kubernetes.
 Sample usage with the default behaviour and options:
 
 ```yml
